@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import Feature from "@/components/feature";
+import Link from "next/link";
 
 export default function HomePage() {
   return (
@@ -12,6 +13,7 @@ export default function HomePage() {
           fill
           style={{ objectFit: "cover"}}
           priority
+          sizes="100vw"
         />
           {/* Overlay content */}
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white">
@@ -19,8 +21,12 @@ export default function HomePage() {
           <p className="text-xl mb-6 font-bold text-emerald-300 drop-shadow-md">Your onestop shop for tariff calculations</p>
 
           <div className="flex gap-4">
-            <Button variant="default" size="lg" className="bg-amber-900">Register</Button>
-            <Button variant="default" size="lg" className="bg-amber-900">Login</Button>
+            <Link href="/register">
+              <Button variant="default" size="lg" className="bg-amber-900">Register</Button>
+            </Link>
+            <Link href="/login">
+              <Button variant="default" size="lg" className="bg-amber-900">Login</Button>
+            </Link>
           </div>
 
           <Button variant="link" size="lg" className="text-white">Continue as Guest</Button>

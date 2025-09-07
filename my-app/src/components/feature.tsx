@@ -17,15 +17,16 @@ export default function Feature() {
                   Calculate with confidence
                 </p>
                 <p className="mt-2 max-w-lg text-sm/6 text-gray-600 max-lg:text-center">
-                  Get the latest tariff changes instantly, so you never miss important updates.
+                  Use our built-in calculator to estimate costs, duties, and savings in seconds.
                 </p>
               </div>
               <div className="@container relative min-h-120 w-full grow max-lg:mx-auto max-lg:max-w-sm">
                 {/* Image here */}
                 <Image
                   alt=""
-                  src="/images/background1.jpg"
+                  src="/images/background4.jpg"
                   fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
                 />
               </div>
             </div>
