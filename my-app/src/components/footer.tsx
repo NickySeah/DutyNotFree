@@ -24,7 +24,7 @@ export default function Footer() {
             <div>
             <h3 className="text-xl font-semibold text-white mb-4">Explore</h3>
             <ul className="space-y-3">
-              <li><Link href="#">Features</Link></li>
+              <li><Link href="/product">Tariff Definition</Link></li>
               <li><Link href="#">Pricing</Link></li>
               <li><Link href="#">Testimonials</Link></li>
             </ul>

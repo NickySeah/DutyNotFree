@@ -1,0 +1,127 @@
+"use client";
+
+import { ColumnDef } from "@tanstack/react-table";
+import { MoreHorizontal, ArrowUpDown } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+import { DataTableColumnHeader } from "@/components/data-table-column-header";
+
+// This type is used to define the shape of our data.
+// You can use a Zod schema here if you want.
+import type { TradeRate } from "@/types/trade";
+
+export const columns: ColumnDef<TradeRate>[] = [
+  {
+    accessorKey: "productName",
+    header: ({ column }) => {
+      return <DataTableColumnHeader column={column} title="Product Name" />;
+    },
+    cell: ({ row }) => (
+      <div className="text-right">{row.getValue("productName")}</div>
+    ),
+  },
+  {
+    accessorKey: "exportingFrom",
+    header: () => <div className="text-right">Exporting From</div>,
+    cell: ({ row }) => (
+      <div className="text-right">{row.getValue("exportingFrom")}</div>
+    ),
+  },
+  {
+    accessorKey: "importingTo",
+    header: () => <div className="text-right">Importing To</div>,
+    cell: ({ row }) => (
+      <div className="text-right">{row.getValue("importingTo")}</div>
+    ),
+  },
+  {
+    accessorKey: "type",
+    header: () => <div className="text-right">Type</div>,
+    cell: ({ row }) => <div className="text-right">{row.getValue("type")}</div>,
+  },
+  {
+    accessorKey: "rate",
+    header: ({ column }) => {
+      return <DataTableColumnHeader column={column} title="Rate" />;
+    },
+    cell: ({ row }) => (
+      <div className="text-right">{row.getValue("rate")}%</div>
+    ), //Cell rendering with percentage
+  },
+  {
+    accessorKey: "effectiveDate",
+    header: ({ column }) => {
+      return <DataTableColumnHeader column={column} title="Effective Date" />;
+    },
+    cell: ({ row }) => {
+      const date = new Date(row.getValue("effectiveDate"));
+      return (
+        <div className="text-right">
+          {date.toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+          })}
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "expirationDate",
+    header: () => <div className="text-right">Expiration Date</div>,
+    cell: ({ row }) => {
+      const date = new Date(row.getValue("expirationDate"));
+      return (
+        <div className="text-right">
+          {date.toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+          })}
+        </div>
+      );
+    },
+  },
+  {
+    id: "actions",
+    cell: ({ row }) => {
+      const tradeRate = row.original;
+
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuItem
+              onClick={() =>
+                navigator.clipboard.writeText(tradeRate.productName)
+              }
+            >
+              Copy trade rate product name
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => console.log("View Components clicked")}
+            >
+              View Components
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      );
+    },
+  },
+];

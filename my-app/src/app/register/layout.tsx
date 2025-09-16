@@ -7,9 +7,9 @@ export default function RegisterLayout({
 }>) {
   return (
     <>
-      <div className="pt-24">
+
         {children}
-        </div>
+
     </>
   );
 }

@@ -19,7 +19,7 @@ export default function Navbar() {
     return (
       <div className="w-full flex items-center justify-between p-6 bg-gray-900 shadow-md fixed top-0 z-50 h-24">
         <Link href="/">
-          <Image src="/images/Duty1.svg" alt="Logo" width={64} height={64} />
+          <Image src="/images/Duty1.svg" alt="Logo" width={64} height={64} priority />
         </Link>
         <div className="flex space-x-4">
           <div className="w-20 h-10 bg-gray-700 animate-pulse rounded"></div>
@@ -34,6 +34,14 @@ export default function Navbar() {
       </Link>
 
       <div className="flex space-x-4">
+        <div className="hidden md:flex space-x-6">
+          <Link href="/product" className="text-lg font-semibold text-white">
+            Browse Tariffs
+          </Link>
+          <Link href="/calculator" className="text-lg font-semibold text-white">
+            Calculator
+          </Link>
+        </div>
         {isPending ? (
           <div className="w-20 h-10 bg-gray-700 animate-pulse rounded"></div>
         ) : session ? (

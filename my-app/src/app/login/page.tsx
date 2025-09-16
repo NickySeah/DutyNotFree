@@ -25,6 +25,7 @@ export default function LoginPage() {
       {
         email: email as string,
         password: password as string,
+        callbackURL: "/product",
       },
       {
         onRequest: (ctx) => {
@@ -110,7 +111,7 @@ export default function LoginPage() {
               await authClient.signIn.social(
                 {
                   provider: "google",
-                  callbackURL: "/",
+                  callbackURL: "/product",
                 },
                 {
                   onRequest: (ctx) => {

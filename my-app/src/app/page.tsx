@@ -29,7 +29,7 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <Button variant="link" size="lg" className="text-white">Continue as Guest</Button>
+          <Link href="/product"><Button variant="link" size="lg" className="text-white">Continue as Guest</Button></Link>
         </div>
 
       </div>
