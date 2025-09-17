@@ -1,9 +1,10 @@
 export interface TradeRate {
-  productName: string;
+  description: string;
+  hsCode: string;
   exportingFrom: string;
   importingTo: string;
   type: string;          // e.g. "Tariff", "Duty", etc.
   rate: number;           // percentage or numeric
-  effectiveDate: Date;
-  expirationDate: Date;
+  effectiveDate: Date | undefined;
+  expirationDate: Date | undefined;
 }

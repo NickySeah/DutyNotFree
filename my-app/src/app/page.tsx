@@ -1,9 +1,14 @@
+"use client";
+
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import Feature from "@/components/feature";
 import Link from "next/link";
+import { useUserRole } from "@/lib/checkRole";
 
 export default function HomePage() {
+  const { isAuthenticated } = useUserRole();
+
   return (
     <div>
       <div className="relative w-full h-screen">
@@ -11,34 +16,52 @@ export default function HomePage() {
           src="/images/background4.jpg"
           alt="Landing Background"
           fill
-          style={{ objectFit: "cover"}}
+          style={{ objectFit: "cover" }}
           priority
           sizes="100vw"
         />
           {/* Overlay content */}
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white">
-          <h1 className="text-9xl font-bold mb-4 text-emerald-400 drop-shadow-lg">DutyNotFree</h1>
-          <p className="text-xl mb-6 font-bold text-emerald-300 drop-shadow-md">Your onestop shop for tariff calculations</p>
+          <h1 className="text-9xl font-bold mb-4 text-emerald-400 drop-shadow-lg">
+            DutyNotFree
+          </h1>
+          <p className="text-xl mb-6 font-bold text-emerald-300 drop-shadow-md">
+            Your onestop shop for tariff calculations
+          </p>
+          {!isAuthenticated() ? (
+            <div>
+              <div className="flex gap-4">
+                <Link href="/register">
+                  <Button variant="default" size="lg" className="bg-amber-900">
+                    Register
+                  </Button>
+                </Link>
+                <Link href="/login">
+                  <Button variant="default" size="lg" className="bg-amber-900">
+                    Login
+                  </Button>
+                </Link>
+              </div>
 
-          <div className="flex gap-4">
-            <Link href="/register">
-              <Button variant="default" size="lg" className="bg-amber-900">Register</Button>
+              <Link href="/tariff">
+                <Button variant="link" size="lg" className="text-white">
+                  Continue as Guest
+                </Button>
+              </Link>
+            </div>
+          ) : (
+            <Link href="/tariff">
+              <Button variant="default" size="lg" className="bg-amber-900">
+                Get Started
+              </Button>
             </Link>
-            <Link href="/login">
-              <Button variant="default" size="lg" className="bg-amber-900">Login</Button>
-            </Link>
-          </div>
-
-          <Link href="/product"><Button variant="link" size="lg" className="text-white">Continue as Guest</Button></Link>
+          )}
         </div>
-
       </div>
-
 
       <section className="relative w-full bg-gray-50">
         <Feature />
       </section>
-
     </div>
   );
 }

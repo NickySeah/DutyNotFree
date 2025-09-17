@@ -9,7 +9,8 @@ export default function ProductPage() {
   // For now, using dummy data
   const dummyData: TradeRate[] = [
     {
-      productName: "Product A",
+      description: "Product A",
+      hsCode: "HSN123",
       exportingFrom: "Country A",
       importingTo: "Country B",
       type: "Tariff",
@@ -18,7 +19,8 @@ export default function ProductPage() {
       expirationDate: new Date(),
     },
     {
-      productName: "Product B",
+      description: "Product B",
+      hsCode: "HSN124",
       exportingFrom: "Country A",
       importingTo: "Country C",
       type: "Duty",
@@ -27,7 +29,8 @@ export default function ProductPage() {
       expirationDate: new Date(),
     },
     {
-      productName: "Product C",
+      description: "Product C",
+      hsCode: "HSN125",
       exportingFrom: "Country B",
       importingTo: "Country A",
       type: "Tariff",
@@ -36,7 +39,8 @@ export default function ProductPage() {
       expirationDate: new Date(),
     },
     {
-      productName: "Product A",
+      description: "Product A",
+      hsCode: "HSN123",
       exportingFrom: "Country A",
       importingTo: "Country B",
       type: "Tariff",
@@ -45,7 +49,8 @@ export default function ProductPage() {
       expirationDate: new Date(),
     },
     {
-      productName: "Product B",
+      description: "Product B",
+      hsCode: "HSN124",
       exportingFrom: "Country A",
       importingTo: "Country C",
       type: "Duty",
@@ -54,7 +59,8 @@ export default function ProductPage() {
       expirationDate: new Date(),
     },
     {
-      productName: "Product C",
+      description: "Product C",
+      hsCode: "HSN125",
       exportingFrom: "Country B",
       importingTo: "Country A",
       type: "Tariff",
@@ -63,7 +69,8 @@ export default function ProductPage() {
       expirationDate: new Date(),
     },
     {
-      productName: "Product A",
+      description: "Product A",
+      hsCode: "HSN123",
       exportingFrom: "Country A",
       importingTo: "Country B",
       type: "Tariff",
@@ -72,7 +79,8 @@ export default function ProductPage() {
       expirationDate: new Date(),
     },
     {
-      productName: "Product B",
+      description: "Product B",
+      hsCode: "HSN124",
       exportingFrom: "Country A",
       importingTo: "Country C",
       type: "Duty",
@@ -81,7 +89,8 @@ export default function ProductPage() {
       expirationDate: new Date(),
     },
     {
-      productName: "Product C",
+      description: "Product C",
+      hsCode: "HSN125",
       exportingFrom: "Country B",
       importingTo: "Country A",
       type: "Tariff",
@@ -90,7 +99,8 @@ export default function ProductPage() {
       expirationDate: new Date(),
     },
     {
-      productName: "Product A",
+      description: "Product A",
+      hsCode: "HSN123",
       exportingFrom: "Country A",
       importingTo: "Country B",
       type: "Tariff",
@@ -99,7 +109,8 @@ export default function ProductPage() {
       expirationDate: new Date(),
     },
     {
-      productName: "Product B",
+      description: "Product B",
+      hsCode: "HSN124",
       exportingFrom: "Country A",
       importingTo: "Country C",
       type: "Duty",
@@ -108,7 +119,8 @@ export default function ProductPage() {
       expirationDate: new Date(),
     },
     {
-      productName: "Product C",
+      description: "Product C",
+      hsCode: "HSN125",
       exportingFrom: "Country B",
       importingTo: "Country A",
       type: "Tariff",
@@ -120,9 +132,9 @@ export default function ProductPage() {
   return (
     <div>
       <div className="p-8 mx-auto text-center">
-        <h1 className="text-2xl font-bold">Product Tariff Definition</h1>
+        <h1 className="text-2xl font-bold">Tariff Definition</h1>
         <h3 className="text-lg font-medium text-gray-500">
-          View, manage, and define product tariffs and fees
+          View, manage, and define tariffs and fees
         </h3>
       </div>
       <div className="container mx-auto">

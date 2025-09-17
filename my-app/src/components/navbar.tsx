@@ -1,15 +1,15 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
-import { useSession, signOut } from "@/lib/auth-client";
+import {  signOut } from "@/lib/auth-client";
 import { Button } from "./ui/button";
 import { useEffect, useState } from "react";
 import { LoaderCircle } from "lucide-react";
+import { useUserRole } from "@/lib/checkRole";
 
 export default function Navbar() {
-  const { data: session, isPending } = useSession();
+  const { isAdmin, isAuthenticated, isPending } = useUserRole();
   const [mounted, setMounted] = useState(false);
-  console.log(session);
 
   useEffect(() => {
     setMounted(true);
@@ -35,7 +35,12 @@ export default function Navbar() {
 
       <div className="flex space-x-4">
         <div className="hidden md:flex space-x-6">
-          <Link href="/product" className="text-lg font-semibold text-white">
+          {isAdmin() && (
+            <Link href="/admin-dashboard" className="text-lg font-semibold text-white">
+              Manage Users
+            </Link>
+          )}
+          <Link href="/tariff" className="text-lg font-semibold text-white">
             Browse Tariffs
           </Link>
           <Link href="/calculator" className="text-lg font-semibold text-white">
@@ -44,7 +49,7 @@ export default function Navbar() {
         </div>
         {isPending ? (
           <div className="w-20 h-10 bg-gray-700 animate-pulse rounded"></div>
-        ) : session ? (
+        ) : isAuthenticated() ? (
           <Button variant={"destructive"} onClick={() => signOut()}>
             {" "}
             Sign Out{" "}

@@ -21,12 +21,21 @@ import type { TradeRate } from "@/types/trade";
 
 export const columns: ColumnDef<TradeRate>[] = [
   {
-    accessorKey: "productName",
+    accessorKey: "description",
     header: ({ column }) => {
-      return <DataTableColumnHeader column={column} title="Product Name" />;
+      return <DataTableColumnHeader column={column} title="Description " />;
     },
     cell: ({ row }) => (
-      <div className="text-right">{row.getValue("productName")}</div>
+      <div className="text-right">{row.getValue("description")}</div>
+    ),
+  },
+  {
+    accessorKey: "hsCode",
+    header: ({ column }) => {
+      return <DataTableColumnHeader column={column} title="HSN Code" />;
+    },
+    cell: ({ row }) => (
+      <div className="text-right">{row.getValue("hsCode")}</div>
     ),
   },
   {
@@ -108,16 +117,16 @@ export const columns: ColumnDef<TradeRate>[] = [
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
               onClick={() =>
-                navigator.clipboard.writeText(tradeRate.productName)
+                navigator.clipboard.writeText(tradeRate.description)
               }
             >
-              Copy trade rate product name
+              Copy trade rate product description
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              onClick={() => console.log("View Components clicked")}
+              onClick={() => console.log("Modify Tariff Details clicked")}
             >
-              View Components
+              Modify Tariff Details
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

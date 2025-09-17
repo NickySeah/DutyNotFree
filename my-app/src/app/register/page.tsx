@@ -17,7 +17,7 @@ export default function RegisterPage() {
         name,
         email,
         password,
-        callbackURL: "/product",
+        callbackURL: "/tariff",
       },
       {
         onSuccess: () => {
