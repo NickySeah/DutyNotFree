@@ -1,17 +1,30 @@
+"use client"
+
 import type { TradeRate } from "@/types/trade";
 import { DataTable } from "./data-table";
 import { columns } from "./columns";
 import Link from "next/dist/client/link";
 import { ArrowRight } from 'lucide-react';
+import { useTariffs } from "@/hooks/useTariffs";
 
 export default function ProductPage() {
+  const { data: tariffs = [], isLoading, error } = useTariffs();
+
+  // if(isLoading){
+  //   return <div className="p-8 text-center">Loading tariffs...</div>;
+  // }
+
+  // if(error){
+  //   return <div className="p-8 text-center text-red-500">Error loading tariffs</div>;
+  // }
+
   // Need to replace with real data fetching logic
   // For now, using dummy data
   const dummyData: TradeRate[] = [
     {
       description: "Product A",
       hsCode: "HSN123",
-      exportingFrom: "Country A",
+      exportingFrom: "United States",
       importingTo: "Country B",
       type: "Tariff",
       rate: 5,
@@ -22,7 +35,7 @@ export default function ProductPage() {
       description: "Product B",
       hsCode: "HSN124",
       exportingFrom: "Country A",
-      importingTo: "Country C",
+      importingTo: "Singapore",
       type: "Duty",
       rate: 10,
       effectiveDate: new Date(),
@@ -137,7 +150,7 @@ export default function ProductPage() {
           View, manage, and define tariffs and fees
         </h3>
       </div>
-      <div className="container mx-auto">
+      <div className="container mx-auto p-5">
         <DataTable columns={columns} data={dummyData} />
       </div>
       <div className="p-8 mx-auto text-center">

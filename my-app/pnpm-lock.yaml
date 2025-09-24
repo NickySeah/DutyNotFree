@@ -71,6 +71,9 @@ importers:
       react:
         specifier: 19.1.0
         version: 19.1.0
+      react-country-flag:
+        specifier: ^3.1.0
+        version: 3.1.0(react@19.1.0)
       react-day-picker:
         specifier: ^9.10.0
         version: 9.10.0(react@19.1.0)
@@ -83,6 +86,9 @@ importers:
       tailwind-merge:
         specifier: ^3.3.1
         version: 3.3.1
+      world-countries:
+        specifier: ^5.1.0
+        version: 5.1.0
     devDependencies:
       '@eslint/eslintrc':
         specifier: ^3
@@ -2222,6 +2228,12 @@ packages:
   queue-microtask@1.2.3:
     resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==}
 
+  react-country-flag@3.1.0:
+    resolution: {integrity: sha512-JWQFw1efdv9sTC+TGQvTKXQg1NKbDU2mBiAiRWcKM9F1sK+/zjhP2yGmm8YDddWyZdXVkR8Md47rPMJmo4YO5g==}
+    engines: {node: '>=12'}
+    peerDependencies:
+      react: '>=16'
+
   react-day-picker@9.10.0:
     resolution: {integrity: sha512-tedecLSd+fpSN+J08601MaMsf122nxtqZXxB6lwX37qFoLtuPNuRJN8ylxFjLhyJS1kaLfAqL1GUkSLd2BMrpQ==}
     engines: {node: '>=18'}
@@ -2581,6 +2593,9 @@ packages:
   word-wrap@1.2.5:
     resolution: {integrity: sha512-BN22B5eaMMI9UMtjrGd5g5eCYPpCPDUy0FJXbYsaT5zYxjFOckS53SQDE3pWkVoWpHXVb3BrYcEN4Twa55B5cA==}
     engines: {node: '>=0.10.0'}
+
+  world-countries@5.1.0:
+    resolution: {integrity: sha512-CXR6EBvTbArDlDDIWU3gfKb7Qk0ck2WNZ234b/A0vuecPzIfzzxH+O6Ejnvg1sT8XuiZjVlzOH0h08ZtaO7g0w==}
 
   yallist@5.0.0:
     resolution: {integrity: sha512-YgvUTfwqyc7UXVMrB+SImsVYSmTS8X/tSrtdNZMImM+n7+QTriRXyXim0mBrTXNeqzVF0KWGgHPeiyViFFrNDw==}
@@ -4799,6 +4814,10 @@ snapshots:
 
   queue-microtask@1.2.3: {}
 
+  react-country-flag@3.1.0(react@19.1.0):
+    dependencies:
+      react: 19.1.0
+
   react-day-picker@9.10.0(react@19.1.0):
     dependencies:
       '@date-fns/tz': 1.4.1
@@ -5273,6 +5292,8 @@ snapshots:
       isexe: 2.0.0
 
   word-wrap@1.2.5: {}
+
+  world-countries@5.1.0: {}
 
   yallist@5.0.0: {}
 

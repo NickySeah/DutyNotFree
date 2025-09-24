@@ -5,8 +5,11 @@ import { toast } from "sonner";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function RegisterPage() {
+  const router = useRouter();
+
   const handleEmailPasswordRegister = async (
     name: string,
     email: string,
@@ -17,11 +20,11 @@ export default function RegisterPage() {
         name,
         email,
         password,
-        callbackURL: "/tariff",
       },
       {
         onSuccess: () => {
           toast.success("Registration successful!");
+          router.push("/tariff");
         },
         onError: (ctx) => {
           toast.error(ctx.error.message);

@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { DataTablePagination } from "@/components/data-table-pagination";
 import {
@@ -71,7 +71,13 @@ export function DataTable<TData, TValue>({
 }: DataTableProps<TData, TValue>) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  // const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  // const [selectedTariff, setSelectedTariff] = useState<TradeRate | null>(null);
+
   const { isAdmin } = useUserRole();
+
+  const [mounted, setMounted] = useState(false);
   
   const [formData, setFormData] = useState({
     exportingCountry: "",
@@ -184,6 +190,11 @@ export function DataTable<TData, TValue>({
     },
   });
 
+  useEffect(() => {
+  setMounted(true);
+}, []);
+
+
   return (
     <div>
       <div className="flex items-center py-4 justify-between">
@@ -205,7 +216,7 @@ export function DataTable<TData, TValue>({
             Clear
           </Button>
         </div>
-        {isAdmin() &&
+        {mounted && isAdmin() &&
         <Button
           variant="default"
           onClick={() => {
