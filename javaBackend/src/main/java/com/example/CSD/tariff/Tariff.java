@@ -20,7 +20,6 @@ import com.example.CSD.country.*;
 public class Tariff {  
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    // @Column(name = "product_id")    // maps to column product_id in db
     private Long id;
 
     @ManyToOne(fetch = FetchType.EAGER)
@@ -36,11 +35,13 @@ public class Tariff {
     @JoinColumn(name = "dest_country_code", nullable = false)
     private Country destCountry;
 
-    @NotNull @Column(length = 20) 
+    @NotBlank @Column(length = 20) 
     private String tariffType;
+
+    //TODO: maybe add tariff description later
 
     private Double standardRate;
     private Double flatFee;
-    private LocalDate startDate;
-    private LocalDate endDate;
+    @NotNull private LocalDate effectiveDate;
+    private LocalDate expirationDate;
 } 

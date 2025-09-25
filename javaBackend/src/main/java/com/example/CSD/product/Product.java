@@ -24,13 +24,11 @@ public class Product {
     // @JsonBackReference   
     private HSCode hsCode;
 
-    @NotNull @Column(length = 100)
+    @NotBlank @Column(length = 100)
     private String name;
 
-    // @ManyToOne
-    // @JoinColumn(name = "user_id", nullable = false) //TODO: no user table for now
-    @NotNull
-    private int userId;
+    @NotBlank
+    private String userId; //TODO: change to string later
 
     private boolean isPrivate;
 }

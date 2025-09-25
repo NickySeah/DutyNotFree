@@ -23,22 +23,12 @@ public class HSCodeController {
         return hsCodeService.listHSCode();
     }
 
-    // @GetMapping("/code/{code}")
-    // public HSCode getByHSCode(@PathVariable String code) {
-    //     return hsCodeService.findByCode(code);
-    // }
-
-    // @GetMapping("/category/{category}")
-    // public List<HSCode> getByCategory(@PathVariable String category) {
-    //     return hsCodeService.findByCategory(category);
-    // }
-
     @GetMapping()
-    public List<HSCode> getHSCode(@RequestParam(required = false) String code, @RequestParam(required = false) String category) {
-        return hsCodeService.getHSCode(code, category);
+    public List<HSCode> getHSCode(@RequestParam(required = false) String code) {
+        return hsCodeService.getHSCode(code);
     } 
 
-    //TODO: another GET method for description or part of description (_keyword_ in description)
+    //TODO: future featuer: another GET method for description or part of description (_keyword_ in description)
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping()

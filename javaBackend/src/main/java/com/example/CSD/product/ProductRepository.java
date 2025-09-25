@@ -9,13 +9,10 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
-    // Additional query methods can be defined here if needed
     List<Product> findById(long id);
-    // List<Product> findByHsCode_Code(String code);
-    // List<Product> findByName(String name);
-    Optional<Product> findByNameAndUserIdAndHsCode_Code(String name, int userId, String code);
-    boolean existsByNameAndUserIdAndHsCode_Code(String name, int userId, String code);
-    void deleteByNameAndUserIdAndHsCode_Code(String name, int userId, String code);
+    Optional<Product> findByNameAndUserIdAndHsCode_Code(String name, String userId, String code);
+    boolean existsByNameAndUserIdAndHsCode_Code(String name, String userId, String code);
+    void deleteByNameAndUserIdAndHsCode_Code(String name, String userId, String code);
 
     @Query("""
     SELECT p FROM Product p 

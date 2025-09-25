@@ -27,33 +27,6 @@ public class TariffService {
         return tariffs.findAll();
     }
 
-    // TODO: Review whether following methods are redundant
-    // Retrieve all tariffs from ORIGIN COUNTRY
-    // public List<Tariff> listTariffsByOriginCountry(String countryCode) {
-    //     return tariffs.findByOriginCountryCode(countryCode);
-    // }
-
-    // // Retrieve all tariffs to DEST COUNTRY
-    // public List<Tariff> listTariffsByDestCountry(String countryCode) {
-    //     return tariffs.findByDestCountryCode(countryCode);
-    // }
-
-    // // Retrieve all tariffs for products with <HS CODE>
-    // public List<Tariff> listTariffsByHSCode(String code) {
-    //     return tariffs.findByHsCode_Code(code);
-    // }
-
-    // // Retrieve all tariffs between <ORIGIN COUNTRY> & <DEST COUNTRY>
-    // public List<Tariff> listTariffsByOriginAndDestCountry(String originCode, String destCode) {
-    //     return tariffs.findByOriginCountry_CodeAndDestCountry_Code(originCode, destCode);
-    // }
-
-    // // Retrieve all tariffs between <ORIGIN COUNTRY> & <DEST COUNTRY> for <HS CODE>
-    // public List<Tariff> listTariffsByOriginDestAndHSCode(String originCode, String destCode, String hsCode) {
-    //     return tariffs.findByOriginCountry_CodeAndDestCountry_CodeAndHsCode_Code(originCode, destCode, hsCode);
-    // }
-
-    // TODO: Review this method - I think it is a better query (general method that can filter anything; no strict format)
     // Retrieve tariffs based on given condition(s)
     public List<Tariff> getTariff(String originCode, String destCode, String hsCode, String tariffType) {
         // If no parameters provided, return all tariffs
@@ -72,65 +45,45 @@ public class TariffService {
 
     // TODO: what kind of exception to throw - custom TariffException or Runtime or IllegalArg or etc
     // Create & add a new tariff to DB          
-    public Tariff createTariff(TariffRequest request) {
+    public Tariff createTariff(TariffCreateRequest request) {
         // (1) Validate Tariff Request
         String originCode = request.getOriginCountry();
         String destCode = request.getDestCountry();
         
-        // Origin & Destination Country Codes (compulsory fields)
-        if (originCode == null || originCode.isEmpty()) {                       // (!) Origin country code left empty
-            throw new RuntimeException("Origin country code cannot be left empty.");
-        }
-        else if (destCode == null || destCode.isEmpty()) {                      // (!) Destination country code left empty
-            throw new RuntimeException("Destination country code cannot be left empty.");
-        }
-        else if (originCode.equals(destCode)) {                                 // (!) Origin & destination codes are the same
+        // Origin & Destination Country Codes (compulsory fields)               // TODO: note null/trim().length() checks removed because of @NotBlank
+        if (originCode.equals(destCode)) {                                      // (!) Origin & destination codes are the same
             throw new RuntimeException("Origin and destination country codes cannot be the same.");
         }
 
         Country originCountry = countries.findByCode(originCode)                // (?) Check if country with originCode exists
-        .orElseThrow(() -> new RuntimeException("No country with ISO code '" + originCode + "' found. Please provide a valid code for origin country."));
-        Country destCountry = countries.findByCode(destCode)                    // (?) Check if country with destOrigin exists
+        .orElseThrow(() -> new RuntimeException("No country with ISO code '" + originCode + "' found. Please provide a valid country code for origin country."));
+        Country destCountry = countries.findByCode(destCode)                    // (?) Check if country with destCode exists
         .orElseThrow(() -> new RuntimeException("No country with ISO code '" + destCode + "' found. Please provide a valid country code for destination country."));
 
         // HS Code & Tariff Type  (compulsory fields)
         String hsCodeValue = request.getHsCode();
         String tariffType = request.getTariffType();
 
-        if (hsCodeValue == null || hsCodeValue.isEmpty()) {                     // (!) HS code left empty
-            throw new RuntimeException("HS Code cannot be left empty.");
-        }
         HSCode hsCode = hscodes.findByCode(hsCodeValue)                         // (?) Check if HS code exists
         .orElseThrow(() -> new RuntimeException("HS Code '" + hsCodeValue + "' not found. Please provide a valid HS Code."));
-        
-        if (tariffType == null || tariffType.trim().isEmpty()) {                // (!) Tariff Type left empty   //TODO; need validate? w/enum maybe
-            throw new RuntimeException("Tariff type cannot be left empty.");
-        }
-
+    
         // Rate & Flat Fee (only one must be present)
         Double rate = request.getStandardRate();
         Double flatFee = request.getFlatFee();
 
         if (rate == null && flatFee == null) {                                  // (!) Both left empty
-            throw new RuntimeException("Tariff must have either a standard rate or a flat fee.");
+            throw new RuntimeException("Both standardRate and flatFee not provided. Please provide either one but not both.");
         }
         else if (rate != null && flatFee != null) {                             // (!) Both are provided
-            throw new RuntimeException("Tariff cannot have both a standard rate or a flat fee.");
+            throw new RuntimeException("Both standardRate and flatFee provided. Please provide either one but not both.");
         }
         
-        // Start & End Date (optional)
-        String startDateStr = request.getStartDate();                               // TODO: i dunno if can be empty
-        String endDateStr = request.getEndDate();                                   // if empty, tariff is currently being used
-
-        if (startDateStr == null && endDateStr != null) {                           // (!) Tariff has an end date but no start date
-            throw new RuntimeException("Tariff cannot have a end date without a start date");
-        }
+        // Start Date (compulsory) & End Date (optional)
+        LocalDate startDate = validateLocalDate(request.getEffectiveDate(), "Start");       // returns LocalDate or throws exception if invalid format      
+        LocalDate endDate = validateLocalDate(request.getExpirationDate(), "End");             // if empty/null, tariff is currently used        
         
-        LocalDate startDate = validateLocalDate(startDateStr, "Start");             
-        LocalDate endDate = validateLocalDate(endDateStr, "End");                   
-        
-        if (startDate != null && endDate != null && startDate.isAfter(endDate)) {   // (!) Both dates are given but start date is after end date 
-            throw new RuntimeException("Start date of the tariff cannot be after its end date");
+        if (endDate != null && startDate.isAfter(endDate)) {                            // (!) Start date is after end date 
+            throw new RuntimeException("Start date of the tariff cannot be after its end date. Please provide a valid start date.");
         }
 
         // (2) Check if a tariff with the same origin, dest, hsCode, tariff type exists
@@ -149,8 +102,8 @@ public class TariffService {
         tariff.setTariffType(tariffType);
         tariff.setStandardRate(rate);
         tariff.setFlatFee(flatFee);
-        tariff.setStartDate(startDate);
-        tariff.setEndDate(endDate);
+        tariff.setEffectiveDate(startDate);
+        tariff.setExpirationDate(endDate);
         return tariffs.save(tariff);
     }
 
@@ -168,50 +121,54 @@ public class TariffService {
         return null;                                                                    // No date provided
     }
 
-    // TODO: allow updating parameter values? - we agreed that if user want to edit country or hs codes or tariff type, they should be making a new one
-    // TODO: if value is null - is it removed or unchange - maybe to know it is unchanged, set value as "UNCHANGED" or smth
-    
     // Updates only standardRate, flatFee, start & end date; ; Find tariff using country codes, hs code & tariff type
-    public Tariff updateTariff(String originCode, String destCode, String hsCodeValue, String tariffType, TariffRequest request) {
+    public Tariff updateTariff(String originCode, String destCode, String hsCodeValue, String tariffType, TariffUpdateRequest request) {
         // (1) Retrieve queried tariff
         Tariff existingTariff = tariffs.findByOriginCountry_CodeAndDestCountry_CodeAndHsCode_CodeAndTariffType(originCode, destCode, hsCodeValue, tariffType)
         .orElseThrow(() -> new RuntimeException("Tariff not found."));
-
-        // (2) Validate tariff request
-        Double rate = request.getStandardRate();
-        Double flatFee = request.getFlatFee();  
-
-        if (rate == null && flatFee == null) {                                      // (!) Both left empty
-            throw new RuntimeException("Tariff must have either a standard rate or a flat fee.");
-        }
-        else if (rate != null && flatFee != null) {                                 // (!) Both are provided
-            throw new RuntimeException("Tariff cannot have both a standard rate or a flat fee.");
-        }
-
-        String startDateStr = request.getStartDate();                               // TODO: i dunno if can be empty
-        String endDateStr = request.getEndDate();                                   // if empty, tariff is currently used
-
-        if (startDateStr == null && endDateStr != null) {                           // (!) Tariff has an end date but no start date
-            throw new RuntimeException("Tariff cannot have a end date without a start date");
-        }
         
-        LocalDate startDate = validateLocalDate(startDateStr, "Start");             
-        LocalDate endDate = validateLocalDate(endDateStr, "End");                   
-        
-        if (startDate != null && endDate != null && startDate.isAfter(endDate)) {   // (!) Both dates are given but start date is after end date 
-            throw new RuntimeException("Start date of the tariff cannot be after its end date");
+        // (2) Validate tariff request & update queried tariff
+        // Rate & Fee
+        if (request.isStandardRateProvided() || request.isFlatFeeProvided()) {
+            Double finalRate = request.isStandardRateProvided() ? request.getStandardRate() : existingTariff.getStandardRate();
+            Double finalFee = request.isFlatFeeProvided() ? request.getFlatFee() : existingTariff.getFlatFee();
+
+            if ((finalRate == null && finalFee == null) || (finalRate != null && finalFee != null)) {
+                throw new RuntimeException("Cannot have both standardRate & flatFee or have none defined.");
+            }
+            if (request.isStandardRateProvided()) {
+                existingTariff.setStandardRate(request.getStandardRate());
+            }
+            if (request.isFlatFeeProvided()) {
+                existingTariff.setFlatFee(request.getFlatFee());
+            }
         }
 
-        // (3) Update queried tariff 
-        existingTariff.setStandardRate(rate);
-        existingTariff.setFlatFee(flatFee);
-        existingTariff.setStartDate(startDate);
-        existingTariff.setEndDate(endDate);
+        // Start & End Dates
+        if (request.isEffectiveDateProvided() || request.isExpirationDateProvided()) {
+            LocalDate finalStart = request.isEffectiveDateProvided() ? validateLocalDate(request.getEffectiveDate(), "Effective") : existingTariff.getEffectiveDate();
+            LocalDate finalEnd = request.isExpirationDateProvided() ? validateLocalDate(request.getExpirationDate(), "Expiration") : existingTariff.getExpirationDate();
+
+            if (finalStart == null) {
+                throw new RuntimeException("Cannot remove a tariff's effective date.");
+            }
+            if (finalEnd != null && finalEnd.isBefore(finalStart)) {
+                throw new RuntimeException("Cannot have an start date ("+finalStart+") after its end date ("+finalEnd+").");
+            }
+
+            if (request.isEffectiveDateProvided()) {
+                existingTariff.setEffectiveDate(finalStart);
+            }
+            if (request.isExpirationDateProvided()) {
+                existingTariff.setExpirationDate(finalEnd);
+            }
+        }
+
         return tariffs.save(existingTariff);
     }
-
+    
     // Update tariff; Find using tariff id
-    public Tariff updateTariffById(Long id, TariffRequest request) {
+    public Tariff updateTariffById(Long id, TariffUpdateRequest request) {
         Tariff eT = getTariffByID(id);
         return updateTariff(eT.getOriginCountry().getCode(), eT.getDestCountry().getCode(), eT.getHsCode().getCode(), eT.getTariffType(), request);
     }

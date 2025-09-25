@@ -9,19 +9,9 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface TariffRepository extends JpaRepository<Tariff, Long> {
-    // List<Tariff> findByid(long id);
-
-    // List<Tariff> findByHsCode_Code(String code);
-    // List<Tariff> findByOriginCountryCode(String countryCode);
-    // List<Tariff> findByDestCountryCode(String countryCode);
-
-    // List<Tariff> findByOriginCountry_CodeAndDestCountry_Code(String originCode, String destCode);
-    // List<Tariff> findByOriginCountry_CodeAndDestCountry_CodeAndHsCode_Code(String originCode, String destCode, String hsCode);
-
     Optional<Tariff> findByOriginCountry_CodeAndDestCountry_CodeAndHsCode_CodeAndTariffType(String originCode, String destCode, String hsCode, String tariffType);
     boolean existsByOriginCountry_CodeAndDestCountry_CodeAndHsCode_CodeAndTariffType(String originCode, String destCode, String hsCode, String tariffType);
     void deleteByOriginCountry_CodeAndDestCountry_CodeAndHsCode_CodeAndTariffType(String originCode, String destCode, String hsCode, String tariffType);
-
     // List<Tariff> findByOriginCountryCodeOrderByEffectiveDateDesc(String countryCode);
     // List<Tariff> findByDestCountryCodeOrderByEffectiveDateDesc(String countryCode);
 

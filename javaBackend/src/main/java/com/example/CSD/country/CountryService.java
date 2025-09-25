@@ -38,7 +38,7 @@ public class CountryService {
         if (iso == null || iso.trim().length() != 3) {
             throw new RuntimeException("Invalid ISO code");
         }
-        if (name == null || name.trim().length() == 0) {
+        if (name == null || name.isBlank()) {
             throw new RuntimeException("Country name cannot be empty");
         }
         if (alpha3 == null || alpha3.trim().length() != 3) {
@@ -56,7 +56,7 @@ public class CountryService {
         String alpha3 = updatedCountry.getAlpha3();
 
         if (name != null) {
-            if (!name.trim().isEmpty()) {
+            if (!name.isBlank()) {
                 country.setName(name);
             }
             else {

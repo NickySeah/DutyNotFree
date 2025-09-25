@@ -1,6 +1,14 @@
 package com.example.CSD.hscode;
 
 import java.util.*;
+// import java.io.IOException;
+// import java.io.InputStream;
+
+// import org.apache.poi.ss.usermodel.Workbook;
+// import org.apache.poi.ss.usermodel.Sheet;
+// import org.apache.poi.ss.usermodel.Row;
+// import org.apache.poi.ss.usermodel.Cell;
+// import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 import jakarta.transaction.Transactional;
@@ -17,36 +25,22 @@ public class HSCodeService {
         return hsCodes.findAll();
     }
 
-    // public HSCode findByCode(String code) {
-    //     return hsCodes.findByCode(code).orElseThrow(() -> new RuntimeException("HSCode not found with code " + code));
-    // }
-    // public List<HSCode> findByCategory(@PathVariable String category) {
-    //     try {
-    //         return hsCodes.findByCategory(category);
-    //     } 
-    //     catch (NoSuchElementException e) {
-    //         throw new RuntimeException("HSCode not found with category " + category);
-    //     }
-    // }
-
-    public List<HSCode> getHSCode(String code, String category) {
-        if (code == null && category == null) {
+    public List<HSCode> getHSCode(String code) {
+        if (code == null) {
             return listHSCode();
         }
 
-        return hsCodes.findByFilters(code, category);
+        return hsCodes.findByFilters(code);
     }
 
     public HSCode addHSCode(@RequestBody HSCode newHSCode) {
-        
         String code = newHSCode.getCode();
         String description = newHSCode.getDescription();
-        // String category = newHSCode.getCategory();
 
         if (code == null || code.trim().length() < 6) {
             throw new RuntimeException("HS Code cannot be empty & is at least 6 numbers long");
         }
-        if (description == null || description.trim().length() == 0) {
+        if (description == null || description.isBlank()) {
             throw new RuntimeException("HS code description cannot be empty");
         }
 
@@ -58,26 +52,16 @@ public class HSCodeService {
         .orElseThrow(() -> new RuntimeException("HSCode not found with code " + code));
        
         String description = updatedHSCode.getDescription();
-        String category = updatedHSCode.getCategory();
 
         if (description != null) {
-            if (!description.trim().isEmpty()) {
+            if (!description.isBlank()) {
                 hsCode.setDescription(description);
             }
             else {
                 throw new RuntimeException("HS code description cannot be empty");
             }
         }
-        // if (category != null) {      // TODO: same problem - null means removed or unchanged
-        //     if (!category.trim().isEmpty()) {
-        //         hsCode.setCategory(category);
-        //     }
-        //     else {
-        //         throw new RuntimeException("HS code category cannot be empty");
-        //     }
-        // }
-
-        hsCode.setCategory(category);
+ 
         return hsCodes.save(hsCode);
     }
 
@@ -89,4 +73,52 @@ public class HSCodeService {
         }
         hsCodes.deleteByCode(code);
     }
+
+    // private void importHSCodesFromExcel(InputStream file) throws IOException {
+    //     List<HSCode> hsCodeList = new ArrayList<>();
+        
+    //     try (Workbook workbook = WorkbookFactory.create(file)) {
+    //         Sheet sheet = workbook.getSheetAt(0);
+            
+    //         for (Row row : sheet) {
+    //             if (row.getRowNum() == 0) continue;                 // Skip header row
+                
+    //             try {
+    //                 String code = getCellValue(row.getCell(1));
+    //                 code = code.substring(0, 6);                        // reduce to first 6 digits; these are used globally
+    
+    //                 String description = getCellValue(row.getCell(2));
+    
+    //                 HSCode hsCode = new HSCode();
+    //                 hsCode.setCode(code);
+    //                 hsCode.setDescription(description);
+    //                 hsCodeList.add(hsCode);
+    //             }
+    //             catch (Exception e) {
+    //                 System.out.println("Error: "+ e.getMessage());
+    //             }
+    //         }
+    //     }
+
+    //     // hsCodes.saveAll(hsCodeList);
+    //     System.out.println("Imported " + hsCodeList.size() + " HS codes");
+    // }
+
+    // private String getCellValue(Cell cell) {
+    //     if (cell == null) return null;
+        
+    //     switch (cell.getCellType()) {
+    //         case STRING:
+    //             return cell.getStringCellValue();
+    //         case NUMERIC:
+    //             // Handle numeric HS codes (remove .0 if present)
+    //             double num = cell.getNumericCellValue();
+    //             if (num == (int) num) {
+    //                 return String.valueOf((int) num);
+    //             }
+    //             return String.valueOf(num);
+    //         default:
+    //             return null;
+    //     }
+    // }
 }
