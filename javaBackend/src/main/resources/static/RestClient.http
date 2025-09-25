@@ -1,0 +1,174 @@
+###
+GET http://localhost:8080/countries
+
+###
+GET http://localhost:8080/countries?iso=222
+
+GET http://localhost:8080/countries?name=Singapore
+GET http://localhost:8080/countries?alpha3=JPN
+
+###
+POST http://localhost:8080/countries
+Content-Type: application/json
+
+{
+    "code": "555",
+    "alpha3": "SGP",
+    "name": "Singapore"
+}
+
+###
+PUT http://localhost:8080/countries?iso=111
+Content-Type: application/json
+
+{
+    "name": "China"
+    //,"alpha3": "CHN"
+}
+
+###
+DELETE http://localhost:8080/countries?iso=123
+
+
+
+#=== HS Codes CRUD Operations ===#
+###
+GET http://localhost:8080/hscodes/all
+
+###
+GET http://localhost:8080/hscodes?category=Animals
+
+###
+GET http://localhost:8080/hscodes?code=123456
+
+###
+POST http://localhost:8080/hscodes
+Content-Type: application/json
+
+{
+    "code": "123456",
+    "description": "Mock HS Code 1a"
+    //,"category": "Food"
+}
+
+###
+PUT http://localhost:8080/hscodes?code=123456
+Content-Type: application/json
+
+{
+    //"description": "Mock HS Code 1b",
+    "category": "Food"
+}
+
+###
+DELETE http://localhost:8080/hscodes?code=123456
+
+
+
+
+
+#=== HS Codes CRUD Operations ===#
+# Format ?userID=<uID>&name=<name>&hsCode=<Code> ==> all optional; can write in any order
+
+###
+GET http://localhost:8080/products/all
+
+###
+GET http://localhost:8080/products?name=Blue Seahorse
+
+###
+GET http://localhost:8080/products?userID=0&hsCode=123456
+
+###
+POST http://localhost:8080/products 
+Content-Type: application/json
+
+{
+    "name": "MockProduct 4",
+    "hsCode": "123456", 
+    "userId": 1
+    //,"isPrivate": false
+}   
+
+###
+PUT http://localhost:8080/products?hsCode=123456&name=MockProduct 3&userID=4
+Content-Type: application/json
+
+{
+    "name": "MockProduct 3",
+    "isPrivate": true
+}   
+
+###
+PUT http://localhost:8080/products/14
+Content-Type: application/json
+
+{
+    "name": "MockProduct 3",
+    "isPrivate": false
+}   
+
+###
+DELETE http://localhost:8080/products?hsCode=123456&name=MockProduct 3&userID=2
+
+###
+DELETE http://localhost:8080/products/13
+
+
+
+
+
+#=== Tariffs CRUD Operations ===#
+# Format ?origin=<ISO>&dest=<ISO>&hsCode=<Code>&type=<Type> ==> all optional; can write in any order
+
+###
+GET http://localhost:8080/tariffs/all
+
+###
+GET http://localhost:8080/tariffs?origin=724
+
+###
+GET http://localhost:8080/tariffs/1
+
+###
+POST http://localhost:8080/tariffs
+Content-Type: application/json
+
+{
+    "originCountry": "702",
+    "destCountry": "724",
+    "hsCode": "123456",
+    "tariffType": "Mock Z",
+    "standardRate": null,
+    "flatFee": 100,
+    "startDate": null,
+    "endDate": null
+}
+
+###
+PUT http://localhost:8080/tariffs?origin=702&dest=724&hsCode=123456&type=Mock Z
+Content-Type: application/json
+
+{
+    "standardRate": 12,
+    "flatFee": null,
+    "startDate": "2023-01-01",
+    "endDate": "2030-01-01"
+}
+
+###
+PUT http://localhost:8080/tariffs/10
+Content-Type: application/json
+
+{
+    "standardRate": 12,
+    "flatFee": null,
+    "startDate": "2023-01-01",
+    "endDate": "2030-01-01"
+}
+
+####
+DELETE http://localhost:8080/tariffs?hsCode=123456&origin=702&dest=724&type=Mock Z
+
+###
+DELETE http://localhost:8080/tariffs/10
