@@ -38,7 +38,7 @@ export const createColumns = (onModify: (tariff: TradeRate) => void): ColumnDef<
       return <DataTableColumnHeader column={column} title="HSN Code" />;
     },
     cell: ({ row }) => (
-      <div className="text-center">{row.getValue("hsCode")}</div>
+      <div className="text-center">{row.getValue("hsCode") }</div>
     ),
   },
   {
@@ -48,7 +48,7 @@ export const createColumns = (onModify: (tariff: TradeRate) => void): ColumnDef<
       const countryName = row.getValue("exportingFrom") as string;
       const countryCode = getCountryIsoCode(countryName);
       return (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between w-40 min-w-40">
           {countryName}
           <ReactCountryFlag
             countryCode={countryCode}
@@ -66,12 +66,12 @@ export const createColumns = (onModify: (tariff: TradeRate) => void): ColumnDef<
       const countryName = row.getValue("importingTo") as string;
       const countryCode = getCountryIsoCode(countryName);
       return (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between w-40 min-w-40">
           {countryName}
           <ReactCountryFlag
             countryCode={countryCode}
             svg
-            style={{ width: "3em", height: "3em" }}
+            style={{ width: "3em", height: "3em"}}
           />
         </div>
       );
@@ -83,23 +83,44 @@ export const createColumns = (onModify: (tariff: TradeRate) => void): ColumnDef<
     cell: ({ row }) => <div className="text-center">{row.getValue("type")}</div>,
   },
   {
-    accessorKey: "rate",
+    id: "tariffValue",
     header: ({ column }) => {
-      return <DataTableColumnHeader column={column} title="Rate" />;
+      return <DataTableColumnHeader column={column} title="Tariff Value" />;
     },
-    cell: ({ row }) => (
-      <div className="text-center">{row.getValue("rate")}%</div>
-    ), //Cell rendering with percentage
-  },
-  {
-    accessorKey: "flatFee",
-    header: ({ column }) => {
-      return <DataTableColumnHeader column={column} title="Flat Fee" />;
+    cell: ({ row }) => {
+      const tradeRate = row.original; // Access the original data
+      const type = tradeRate.type;
+      const rate = tradeRate.rate;
+      const flatFee = tradeRate.flatFee;
+      
+      return (
+        <div className="text-center">
+          {type?.toLowerCase() === "ad valorem" 
+            ? `${rate}%` 
+            : `$${flatFee}`
+          }
+        </div>
+      );
     },
-    cell: ({ row }) => (
-      <div className="text-center">${row.getValue("flatFee")}</div>
-    ),
   },
+  // {
+  //   accessorKey: "rate",
+  //   header: ({ column }) => {
+  //     return <DataTableColumnHeader column={column} title="Rate" />;
+  //   },
+  //   cell: ({ row }) => (
+  //     <div className="text-center">{row.getValue("rate")}%</div>
+  //   ), //Cell rendering with percentage
+  // },
+  // {
+  //   accessorKey: "flatFee",
+  //   header: ({ column }) => {
+  //     return <DataTableColumnHeader column={column} title="Flat Fee" />;
+  //   },
+  //   cell: ({ row }) => (
+  //     <div className="text-center">${row.getValue("flatFee")}</div>
+  //   ),
+  // },
   {
     accessorKey: "effectiveDate",
     header: ({ column }) => {
@@ -119,21 +140,74 @@ export const createColumns = (onModify: (tariff: TradeRate) => void): ColumnDef<
     },
   },
   {
-    accessorKey: "expirationDate",
-    header: () => <div className="text-center">Expiration Date</div>,
+    id: "isActive",
+    header: ({ column }) => {
+      return <DataTableColumnHeader column={column} title="Status" className="text-center" />;
+    },
     cell: ({ row }) => {
-      const date = new Date(row.getValue("expirationDate"));
+      const tradeRate = row.original;
+      const currentDate = new Date();
+      const effectiveDate = tradeRate.effectiveDate;
+      const expirationDate = tradeRate.expirationDate;
+      
+      let isActive = false;
+      
+      if (effectiveDate) {
+        const isAfterEffective = currentDate >= new Date(effectiveDate);
+        const isBeforeExpiration = !expirationDate || currentDate <= new Date(expirationDate);
+        isActive = isAfterEffective && isBeforeExpiration;
+      }
+      
       return (
         <div className="text-center">
-          {date.toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-          })}
+          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+            isActive 
+              ? 'bg-green-100 text-green-800' 
+              : 'bg-red-100 text-red-800'
+          }`}>
+            {isActive ? 'Active' : 'Inactive'}
+          </span>
         </div>
       );
     },
+    sortingFn: (rowA, rowB) => {
+      const currentDate = new Date();
+      
+      const getIsActive = (row: any) => {
+        const effectiveDate = row.original.effectiveDate;
+        const expirationDate = row.original.expirationDate;
+        
+        if (!effectiveDate) return false;
+        
+        const isAfterEffective = currentDate >= new Date(effectiveDate);
+        const isBeforeExpiration = !expirationDate || currentDate <= new Date(expirationDate);
+        return isAfterEffective && isBeforeExpiration;
+      };
+      
+      const aActive = getIsActive(rowA);
+      const bActive = getIsActive(rowB);
+      
+      // Active items first
+      return bActive ? 1 : aActive ? -1 : 0;
+    },
+    enableSorting: true,
   },
+  // {
+  //   accessorKey: "expirationDate",
+  //   header: () => <div className="text-center">Expiration Date</div>,
+  //   cell: ({ row }) => {
+  //     const date = new Date(row.getValue("expirationDate"));
+  //     return (
+  //       <div className="text-center">
+  //         {date.toLocaleDateString("en-US", {
+  //           year: "numeric",
+  //           month: "2-digit",
+  //           day: "2-digit",
+  //         })}
+  //       </div>
+  //     );
+  //   },
+  // },
   {
     id: "actions",
     cell: ({ row }) => {

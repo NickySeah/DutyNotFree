@@ -14,48 +14,49 @@ export default function ProductPage() {
   const [selectedTariff, setSelectedTariff] = useState<TradeRate | null>(null);
 
   const handleModifyTariff = (tariff: TradeRate) => {
+    console.log("Modifying tariff:", tariff);
     setSelectedTariff(tariff);
     setIsUpdateModalOpen(true);
   };
 
   const columns = createColumns(handleModifyTariff);
 
-  // const { data: tariffs = [], isLoading, error } = useTariffs();
+  const { data: tariffs = [], isLoading, error } = useTariffs();
 
-  // if(isLoading){
-  //   return <div className="p-8 text-center">Loading tariffs...</div>;
-  // }
+  if(isLoading){
+    return <div className="p-8 text-center">Loading tariffs...</div>;
+  }
 
-  // if(error){
-  //   return <div className="p-8 text-center text-red-500">Error loading tariffs</div>;
-  // }
+  if(error){
+    return <div className="p-8 text-center text-red-500">Error loading tariffs</div>;
+  }
 
   // Need to replace with real data fetching logic
   // For now, using dummy data
-  const dummyData: TradeRate[] = [
-    {
-      tariff_id: 1,
-      description: "Product A",
-      hsCode: "HSN123",
-      exportingFrom: "United States",
-      importingTo: "Country B",
-      type: "Tariff",
-      rate: 5,
-      effectiveDate: new Date(),
-      expirationDate: new Date(),
-    },
-    {
-      tariff_id : 2,
-      description: "Product B",
-      hsCode: "HSN124",
-      exportingFrom: "Country A",
-      importingTo: "Singapore",
-      type: "Duty",
-      rate: 10,
-      effectiveDate: new Date(),
-      expirationDate: new Date(),
-    },
-  ];
+  // const dummyData: TradeRate[] = [
+  //   {
+  //     tariff_id: 1,
+  //     description: "Product A",
+  //     hsCode: "HSN123",
+  //     exportingFrom: "United States",
+  //     importingTo: "Country B",
+  //     type: "Tariff",
+  //     rate: 5,
+  //     effectiveDate: new Date(),
+  //     expirationDate: new Date(),
+  //   },
+  //   {
+  //     tariff_id : 2,
+  //     description: "Product B",
+  //     hsCode: "HSN124",
+  //     exportingFrom: "Country A",
+  //     importingTo: "Singapore",
+  //     type: "Duty",
+  //     rate: 10,
+  //     effectiveDate: new Date(),
+  //     expirationDate: new Date(),
+  //   },
+  // ];
 
   return (
     <div>
@@ -66,7 +67,7 @@ export default function ProductPage() {
         </h3>
       </div>
       <div className="container mx-auto p-5">
-        <DataTable columns={columns} data={dummyData} />
+        <DataTable columns={columns} data={tariffs} />
       </div>
       <div className="p-8 mx-auto text-center">
         <h1 className="text-2xl font-bold">Need help calculating tariffs?</h1>

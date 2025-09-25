@@ -39,7 +39,6 @@ export function DataTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
-
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const { isAdmin } = useUserRole();
   const [mounted, setMounted] = useState(false);
@@ -47,13 +46,25 @@ export function DataTable<TData, TValue>({
   const globalFilter = (row: any, columnId: string, value: string) => {
     const description = String(row.getValue("description")).toLowerCase();
     const hsCode = String(row.getValue("hsCode")).toLowerCase();
+    const exportingFrom = String(row.getValue("exportingFrom")).toLowerCase();
+    const importingTo = String(row.getValue("importingTo")).toLowerCase();
+    // Add more fields as needed
     const searchValue = value.toLowerCase();
 
-    return description.includes(searchValue) || hsCode.includes(searchValue);
+    return (
+      description.includes(searchValue) ||
+      hsCode.includes(searchValue) ||
+      exportingFrom.includes(searchValue) ||
+      importingTo.includes(searchValue)
+    );
   };
 
-
-  const [sorting, setSorting] = useState<SortingState>([]);
+  const [sorting, setSorting] = useState<SortingState>([
+    {
+      id: "effectiveDate",
+      desc: true, // Initialize with default sorting
+    },
+  ]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const table = useReactTable({
     data,
@@ -72,16 +83,15 @@ export function DataTable<TData, TValue>({
   });
 
   useEffect(() => {
-  setMounted(true);
-}, []);
-
+    setMounted(true);
+  }, []);
 
   return (
     <div>
       <div className="flex items-center py-4 justify-between">
         <div className="flex items-center space-x-2 w-md">
           <Input
-            placeholder="Filter by description or HsCode..."
+            placeholder="Filter by description or HsCode or Country..."
             value={table.getState().globalFilter ?? ""}
             onChange={(event) => {
               table.setGlobalFilter(event.target.value);
@@ -97,16 +107,16 @@ export function DataTable<TData, TValue>({
             Clear
           </Button>
         </div>
-        {mounted && isAdmin() &&
-        <Button
-          variant="default"
-          onClick={() => {
-            setIsCreateModalOpen(true);
-          }}
-        >
-          Define New Tariff
-        </Button>
-}
+        {mounted && isAdmin() && (
+          <Button
+            variant="default"
+            onClick={() => {
+              setIsCreateModalOpen(true);
+            }}
+          >
+            Define New Tariff
+          </Button>
+        )}
       </div>
       <div className="overflow-hidden rounded-md border">
         <Table>
@@ -166,7 +176,6 @@ export function DataTable<TData, TValue>({
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
       />
-
     </div>
   );
 }

@@ -3,18 +3,14 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { ArrowRight, CalendarIcon } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,
@@ -26,9 +22,10 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { format } from "date-fns";
-import { countries, typeOfTariffs } from "@/lib/testData";
 import { useUpdateTariff } from "@/hooks/useUpdateTariff";
 import type { TradeRate } from "@/types/trade";
+import { getCountryIsoCode } from "@/utils/countryUtils";
+import ReactCountryFlag from "react-country-flag";
 
 interface UpdateTariffModalProps {
   isOpen: boolean;
@@ -42,30 +39,35 @@ export function UpdateTariffModal({
   tariff,
 }: UpdateTariffModalProps) {
   const [formData, setFormData] = useState({
-    exportingFrom: "", // changed from exportingCountry
-    importingTo: "", // changed from importingCountry
-    description: "",
-    rate: 0, // changed from tariffRate
-    type: "", // changed from tariffType
-    hsCode: "",
-    flatFee: 0, // added flatFee field
+    // exportingFrom: "",
+    // importingTo: "",
+    // description: "",
+    // hsCode: "",
+    type: "",
+    rate: 0,
+    flatFee: 0,
     effectiveDate: undefined as Date | undefined,
     expirationDate: undefined as Date | undefined,
   });
+
+  const [noExpiration, setNoExpiration] = useState(false);
 
   const { mutate, isPending } = useUpdateTariff();
 
   // Populate form data when tariff prop changes
   useEffect(() => {
     if (tariff && isOpen) {
+      const hasNoExpiration = !tariff.expirationDate;
+      setNoExpiration(hasNoExpiration);
+
       // Map the TradeRate properties to form data
       setFormData({
-        exportingFrom: tariff.exportingFrom || "",
-        importingTo: tariff.importingTo || "",
-        description: tariff.description || "",
-        rate: tariff.rate || 0,
+        // exportingFrom: tariff.exportingFrom || "",
+        // importingTo: tariff.importingTo || "",
+        // description: tariff.description || "",
+        // hsCode: tariff.hsCode || "",
         type: tariff.type || "",
-        hsCode: tariff.hsCode || "",
+        rate: tariff.rate || 0,
         flatFee: tariff.flatFee || 0,
         effectiveDate: tariff.effectiveDate
           ? new Date(tariff.effectiveDate)
@@ -79,12 +81,12 @@ export function UpdateTariffModal({
 
   const resetFormData = () => {
     setFormData({
-      exportingFrom: "",
-      importingTo: "",
-      description: "",
-      rate: 0,
+      // exportingFrom: "",
+      // importingTo: "",
+      // description: "",
       type: "",
-      hsCode: "",
+      // hsCode: "",
+      rate: 0,
       flatFee: 0,
       effectiveDate: undefined,
       expirationDate: undefined,
@@ -92,26 +94,6 @@ export function UpdateTariffModal({
   };
 
   const validateForm = () => {
-    if (!formData.exportingFrom) {
-      toast.error("Please select an exporting country");
-      return false;
-    }
-
-    if (!formData.importingTo) {
-      toast.error("Please select an importing country");
-      return false;
-    }
-
-    if (formData.exportingFrom === formData.importingTo) {
-      toast.error("Exporting and importing countries cannot be the same");
-      return false;
-    }
-
-    if (!formData.description.trim()) {
-      toast.error("Please enter a tariff description");
-      return false;
-    }
-
     if (formData.rate < 0) {
       toast.error("Please enter a valid tariff rate greater or equals to 0");
       return false;
@@ -119,21 +101,6 @@ export function UpdateTariffModal({
 
     if (formData.rate > 100) {
       toast.error("Tariff rate cannot exceed 100%");
-      return false;
-    }
-
-    if (!formData.type) {
-      toast.error("Please select a tariff type");
-      return false;
-    }
-
-    if (!formData.hsCode.trim()) {
-      toast.error("Please enter an HSN code");
-      return false;
-    }
-
-    if (!/^\d{6,8}$/.test(formData.hsCode)) {
-      toast.error("HSN code must be 6-8 digits");
       return false;
     }
 
@@ -147,14 +114,16 @@ export function UpdateTariffModal({
       return false;
     }
 
-    if (!formData.expirationDate) {
-      toast.error("Please select an expiration date");
-      return false;
-    }
+    if (!noExpiration) {
+      if (!formData.expirationDate) {
+        toast.error("Please select an expiration date");
+        return false;
+      }
 
-    if (formData.expirationDate <= formData.effectiveDate) {
-      toast.error("Expiration date must be after effective date");
-      return false;
+      if (formData.expirationDate <= formData.effectiveDate) {
+        toast.error("Expiration date must be after effective date");
+        return false;
+      }
     }
 
     return true;
@@ -166,6 +135,14 @@ export function UpdateTariffModal({
   ) {
     setFormData((prev) => ({ ...prev, [field]: value }));
   }
+
+  const handleNoExpirationChange = (checked: boolean) => {
+    setNoExpiration(checked);
+    if (checked) {
+      // Clear expiration date when "No Expiration" is checked
+      setFormData((prev) => ({ ...prev, expirationDate: undefined }));
+    }
+  };
 
   const handleClose = (open: boolean) => {
     if (!open) {
@@ -185,16 +162,16 @@ export function UpdateTariffModal({
     }
 
     const updatePayload = {
-      tariff_id: tariff.tariff_id,    // Required for update
-      hsCode: formData.hsCode,
-      exportingFrom: formData.exportingFrom,
-      importingTo: formData.importingTo,
-      description: formData.description,
+      tariff_id: tariff.tariff_id, // Required for update
+      // hsCode: formData.hsCode,
+      // exportingFrom: formData.exportingFrom,
+      // importingTo: formData.importingTo,
+      // description: formData.description,
+      tariffType: formData.type,
       rate: formData.rate,
-      type: formData.type,
       flatFee: formData.flatFee,
       effectiveDate: formData.effectiveDate!,
-      expirationDate: formData.expirationDate!,
+      expirationDate: noExpiration ? undefined : formData.expirationDate,
     };
 
     mutate(updatePayload, {
@@ -213,169 +190,239 @@ export function UpdateTariffModal({
   if (!tariff) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Update Tariff - {tariff.hsCode}</DialogTitle>
-        </DialogHeader>
+<Dialog open={isOpen} onOpenChange={handleClose}>
+  <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+    <DialogHeader>
+      <DialogTitle className="text-2xl font-semibold text-gray-900">
+        Update Tariff
+      </DialogTitle>
+      <div className="text-sm text-gray-600 font-mono bg-gray-50 px-3 py-2 rounded-md mt-2">
+        HS Code: {tariff.hsCode}
+      </div>
+    </DialogHeader>
 
-        <div className="mt-2 flex flex-row justify-between">
-          <div>
-            <Select
-              value={formData.exportingFrom}
-              onValueChange={(val) => handleChange("exportingFrom", val)}
-            >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Exporting Country">
-                  {formData.exportingFrom
-                    ? formData.exportingFrom
-                    : "Exporting Country"}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {countries.map((country) => (
-                  <SelectItem key={country.isoCode} value={country.isoCode}>
-                    {country.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="self-center">
-            <ArrowRight />
-          </div>
-
-          <div>
-            <Select
-              value={formData.importingTo}
-              onValueChange={(val) => handleChange("importingTo", val)}
-            >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Importing Country">
-                  {formData.importingTo
-                    ? formData.importingTo
-                    : "Importing Country"}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {countries.map((country) => (
-                  <SelectItem key={country.isoCode} value={country.isoCode}>
-                    {country.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        <div className="mt-4">
-          <Input
-            placeholder="Tariff Description"
-            value={formData.description}
-            onChange={(e) => handleChange("description", e.target.value)}
-          />
-        </div>
-
-        <div className="mt-4 flex flex-row space-x-4">
-          <Input
-            placeholder="Tariff Rate (%)"
-            type="number"
-            value={formData.rate}
-            onChange={(e) =>
-              handleChange(
-                "rate",
-                e.target.value ? Number(e.target.value) : 0
-              )
-            }
-          />
-           <Input
-            placeholder="Flat Fee ($)"
-            type="number"
-            value={formData.flatFee}
-            onChange={(e) =>
-              handleChange(
-                "flatFee",
-                e.target.value ? Number(e.target.value) : 0
-              )
-            }
-          />
-          <Select
-            value={formData.type}
-            onValueChange={(val) => handleChange("type", val)}
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Tariff Type">
-                {formData.type ? formData.type : "Tariff Type"}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {typeOfTariffs.map((tariff) => (
-                <SelectItem key={tariff} value={tariff}>
-                  {tariff}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="mt-4">
-          <Input
-            placeholder="HSN Code"
-            value={formData.hsCode}
-            onChange={(e) => handleChange("hsCode", e.target.value)}
-            disabled
-          />
-        </div>
-
-        <div className="mt-4 flex flex-row justify-between">
-          {/* Effective Date */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline">
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {formData.effectiveDate
-                  ? format(formData.effectiveDate, "PPP")
-                  : "Effective Date"}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="p-0">
-              <Calendar
-                mode="single"
-                selected={formData.effectiveDate}
-                onSelect={(date) => handleChange("effectiveDate", date)}
-                initialFocus
+    <div className="space-y-4">
+      {/* Trade Route Section */}
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-3 border border-blue-100">
+        <h3 className="text-sm font-semibold text-gray-700 mb-2">Trade Route</h3>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="text-center">
+            <div className="text-xs text-gray-500 mb-2">Exporting from</div>
+            <div className="flex items-center justify-center space-x-2">
+              <ReactCountryFlag
+                countryCode={getCountryIsoCode(tariff.exportingFrom)}
+                svg
+                style={{ width: "2.5em", height: "2.5em", borderRadius: "4px" }}
               />
-            </PopoverContent>
-          </Popover>
+              <span className="font-medium text-gray-800">{tariff.exportingFrom}</span>
+            </div>
+          </div>
+          <div className="text-center">
+            <div className="text-xs text-gray-500 mb-2">Importing to</div>
+            <div className="flex items-center justify-center space-x-2">
+              <ReactCountryFlag
+                countryCode={getCountryIsoCode(tariff.importingTo)}
+                svg
+                style={{ width: "2.5em", height: "2.5em", borderRadius: "4px" }}
+              />
+              <span className="font-medium text-gray-800">{tariff.importingTo}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Product Information */}
+      <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+        <h3 className="text-sm font-semibold text-gray-700 mb-2">Product Information</h3>
+        <div className="space-y-2">
+          <div>
+            <span className="text-xs text-gray-500">Description:</span>
+            <p className="text-sm text-gray-800 mt-1">{tariff.description}</p>
+          </div>
+          <div>
+            <span className="text-xs text-gray-500">Tariff Type:</span>
+            <span className="inline-block ml-2 px-3 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+              {tariff.type}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Tariff Rate Section */}
+      <div className="bg-white rounded-lg p-3 border-2 border-orange-200">
+        <h3 className="text-sm font-semibold text-gray-700 mb-3">Tariff Rate Update</h3>
+        
+        {tariff.type === "Ad Valorem" ? (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-3 bg-orange-50 rounded-md">
+              <span className="text-sm text-gray-600">Current Rate:</span>
+              <span className="font-bold text-orange-600 text-lg">{tariff.rate}%</span>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                New Tariff Rate (%)
+              </label>
+              <Input
+                placeholder="Enter new tariff rate"
+                type="number"
+                value={formData.rate}
+                onChange={(e) =>
+                  handleChange(
+                    "rate",
+                    e.target.value ? Number(e.target.value) : 0
+                  )
+                }
+                className="w-full text-lg font-medium"
+                min="0"
+                step="0.01"
+              />
+            </div>
+          </div>
+        ) : tariff.type === "Flat Fee" ? (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-3 bg-green-50 rounded-md">
+              <span className="text-sm text-gray-600">Current Flat Fee:</span>
+              <span className="font-bold text-green-600 text-lg">${tariff.flatFee}</span>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                New Flat Fee ($)
+              </label>
+              <Input
+                placeholder="Enter new flat fee"
+                type="number"
+                value={formData.flatFee}
+                onChange={(e) =>
+                  handleChange(
+                    "flatFee",
+                    e.target.value ? Number(e.target.value) : 0
+                  )
+                }
+                className="w-full text-lg font-medium"
+                min="0"
+                step="0.01"
+              />
+            </div>
+          </div>
+        ) : (
+          <div className="p-4 bg-red-50 border border-red-200 rounded-md">
+            <span className="text-red-600 font-medium">Unknown tariff type</span>
+          </div>
+        )}
+      </div>
+
+      {/* Date Configuration */}
+      <div className="bg-white rounded-lg p-3 border border-gray-200">
+        <h3 className="text-sm font-semibold text-gray-700 mb-3">Date Configuration</h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Effective Date */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Effective Date
+            </label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start text-left font-normal h-10"
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {formData.effectiveDate
+                    ? format(formData.effectiveDate, "PPP")
+                    : "Select effective date"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="p-0 w-auto">
+                <Calendar
+                  mode="single"
+                  selected={formData.effectiveDate}
+                  onSelect={(date) => handleChange("effectiveDate", date)}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
 
           {/* Expiration Date */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline">
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {formData.expirationDate
-                  ? format(formData.expirationDate, "PPP")
-                  : "Expiration Date"}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="p-0">
-              <Calendar
-                mode="single"
-                selected={formData.expirationDate}
-                onSelect={(date) => handleChange("expirationDate", date)}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Expiration Date
+            </label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  disabled={noExpiration}
+                  className={`w-full justify-start text-left font-normal h-10 ${
+                    noExpiration ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {formData.expirationDate && !noExpiration
+                    ? format(formData.expirationDate, "PPP")
+                    : "Select expiration date"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="p-0 w-auto">
+                <Calendar
+                  mode="single"
+                  selected={formData.expirationDate}
+                  onSelect={(date) => handleChange("expirationDate", date)}
+                  initialFocus
+                  disabled={noExpiration}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
         </div>
 
-        <DialogFooter>
-          <Button disabled={isPending} onClick={handleUpdate}>
-            {isPending ? "Updating..." : "Update"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        {/* No Expiration Checkbox */}
+        <div className="mt-3 pt-3 border-t border-gray-100">
+          <div className="flex items-center space-x-3">
+            <Checkbox
+              id="no-expiration"
+              checked={noExpiration}
+              onCheckedChange={handleNoExpirationChange}
+              className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+            />
+            <Label 
+              htmlFor="no-expiration" 
+              className="text-sm font-medium text-gray-700 cursor-pointer"
+            >
+              This tariff has no expiration date
+            </Label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <DialogFooter className="pt-4 border-t border-gray-100">
+      <div className="flex space-x-3 w-full sm:w-auto">
+        <Button 
+          variant="outline" 
+          onClick={() => handleClose(false)}
+          className="flex-1 sm:flex-none"
+        >
+          Cancel
+        </Button>
+        <Button 
+          disabled={isPending} 
+          onClick={handleUpdate}
+          className="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
+        >
+          {isPending ? (
+            <>
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+              Updating...
+            </>
+          ) : (
+            "Update Tariff"
+          )}
+        </Button>
+      </div>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
   );
 }
