@@ -145,8 +145,13 @@ export function CreateTariffModal({ isOpen, onClose }: CreateTariffModalProps) {
     }
 
     const tariffPayload = {
-      ...formData,
-      effectiveDate: formData.effectiveDate!, // Non-null assertion since validated
+      exportingFrom: formData.exportingCountry,
+      importingTo: formData.importingCountry,
+      description: formData.description,
+      rate: formData.tariffRate,
+      type: formData.tariffType,
+      hsCode: formData.hsCode,
+      effectiveDate: formData.effectiveDate!,
       expirationDate: formData.expirationDate!,
     };
 
