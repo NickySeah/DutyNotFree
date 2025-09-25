@@ -1,14 +1,26 @@
-"use client"
+"use client";
 
 import type { TradeRate } from "@/types/trade";
 import { DataTable } from "./data-table";
-import { columns } from "./columns";
+import { createColumns } from "./columns";
 import Link from "next/dist/client/link";
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight } from "lucide-react";
 import { useTariffs } from "@/hooks/useTariffs";
+import { UpdateTariffModal } from "@/components/updateTariffModal";
+import { useState } from "react";
 
 export default function ProductPage() {
-  const { data: tariffs = [], isLoading, error } = useTariffs();
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [selectedTariff, setSelectedTariff] = useState<TradeRate | null>(null);
+
+  const handleModifyTariff = (tariff: TradeRate) => {
+    setSelectedTariff(tariff);
+    setIsUpdateModalOpen(true);
+  };
+
+  const columns = createColumns(handleModifyTariff);
+
+  // const { data: tariffs = [], isLoading, error } = useTariffs();
 
   // if(isLoading){
   //   return <div className="p-8 text-center">Loading tariffs...</div>;
@@ -142,6 +154,7 @@ export default function ProductPage() {
       expirationDate: new Date(),
     },
   ];
+
   return (
     <div>
       <div className="p-8 mx-auto text-center">
@@ -156,14 +169,24 @@ export default function ProductPage() {
       <div className="p-8 mx-auto text-center">
         <h1 className="text-2xl font-bold">Need help calculating tariffs?</h1>
         <p className="text-lg font-medium text-gray-500 mb-4">
-          Our calculator can help you determine the correct tariffs and fees
-          for your products.
+          Our calculator can help you determine the correct tariffs and fees for
+          your products.
         </p>
         <Link href="/calculator">
           Go to Calculator
           <ArrowRight className="inline-block ml-2" />
         </Link>
       </div>
+
+      {/* Update Tariff Modal */}
+      <UpdateTariffModal
+        isOpen={isUpdateModalOpen}
+        onClose={() => {
+          setIsUpdateModalOpen(false);
+          setSelectedTariff(null);
+        }}
+        tariff={selectedTariff}
+      />
     </div>
   );
 }

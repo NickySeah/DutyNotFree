@@ -21,9 +21,8 @@ import { DataTableColumnHeader } from "@/components/data-table-column-header";
 // You can use a Zod schema here if you want.
 import type { TradeRate } from "@/types/trade";
 
-export const columns: ColumnDef<TradeRate>[] = [
-// export const createColumns = (onModify: (tariff: TradeRate) => void): ColumnDef<TradeRate>[] => [
-  // ...existing columns...
+// export const columns: ColumnDef<TradeRate>[] = [
+export const createColumns = (onModify: (tariff: TradeRate) => void): ColumnDef<TradeRate>[] => [
   {
     accessorKey: "description",
     header: ({ column }) => {
@@ -80,7 +79,7 @@ export const columns: ColumnDef<TradeRate>[] = [
   },
   {
     accessorKey: "type",
-    header: () => <div className="text-right">Type</div>,
+    header: () => <div className="text-center">Type</div>,
     cell: ({ row }) => <div className="text-center">{row.getValue("type")}</div>,
   },
   {
@@ -112,7 +111,7 @@ export const columns: ColumnDef<TradeRate>[] = [
   },
   {
     accessorKey: "expirationDate",
-    header: () => <div className="text-right">Expiration Date</div>,
+    header: () => <div className="text-center">Expiration Date</div>,
     cell: ({ row }) => {
       const date = new Date(row.getValue("expirationDate"));
       return (
@@ -152,7 +151,7 @@ export const columns: ColumnDef<TradeRate>[] = [
             <DropdownMenuItem
               onClick={() => {
                 console.log("Modify Tariff Details clicked")
-                // onModify(tradeRate);
+                onModify(tradeRate);
               }}
             >
               Modify Tariff Details

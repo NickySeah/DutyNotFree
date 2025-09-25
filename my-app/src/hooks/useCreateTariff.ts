@@ -7,7 +7,7 @@ type TariffInput = {
     description: string;
     tariffRate: number;
     tariffType: string;
-    hsnCode: string;
+    hsCode: string;
     effectiveDate: Date;
     expirationDate: Date;
 }

@@ -27,7 +27,7 @@ export function DataTableColumnHeader<TData, TValue>({
   }
 
   return (
-    <div className={cn("flex items-center gap-2 justify-end", className)}>
+    <div className={cn("flex items-center gap-2 justify-center", className)}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
