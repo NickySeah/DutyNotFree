@@ -42,12 +42,13 @@ export function UpdateTariffModal({
   tariff,
 }: UpdateTariffModalProps) {
   const [formData, setFormData] = useState({
-    exportingCountry: "",
-    importingCountry: "",
+    exportingFrom: "", // changed from exportingCountry
+    importingTo: "", // changed from importingCountry
     description: "",
-    tariffRate: 0,
-    tariffType: "",
+    rate: 0, // changed from tariffRate
+    type: "", // changed from tariffType
     hsCode: "",
+    flatFee: 0, // added flatFee field
     effectiveDate: undefined as Date | undefined,
     expirationDate: undefined as Date | undefined,
   });
@@ -59,12 +60,13 @@ export function UpdateTariffModal({
     if (tariff && isOpen) {
       // Map the TradeRate properties to form data
       setFormData({
-        exportingCountry: tariff.exportingFrom || "",
-        importingCountry: tariff.importingTo || "",
+        exportingFrom: tariff.exportingFrom || "",
+        importingTo: tariff.importingTo || "",
         description: tariff.description || "",
-        tariffRate: tariff.rate || 0,
-        tariffType: tariff.type || "",
+        rate: tariff.rate || 0,
+        type: tariff.type || "",
         hsCode: tariff.hsCode || "",
+        flatFee: tariff.flatFee || 0,
         effectiveDate: tariff.effectiveDate
           ? new Date(tariff.effectiveDate)
           : undefined,
@@ -77,29 +79,30 @@ export function UpdateTariffModal({
 
   const resetFormData = () => {
     setFormData({
-      exportingCountry: "",
-      importingCountry: "",
+      exportingFrom: "",
+      importingTo: "",
       description: "",
-      tariffRate: 0,
-      tariffType: "",
+      rate: 0,
+      type: "",
       hsCode: "",
+      flatFee: 0,
       effectiveDate: undefined,
       expirationDate: undefined,
     });
   };
 
   const validateForm = () => {
-    if (!formData.exportingCountry) {
+    if (!formData.exportingFrom) {
       toast.error("Please select an exporting country");
       return false;
     }
 
-    if (!formData.importingCountry) {
+    if (!formData.importingTo) {
       toast.error("Please select an importing country");
       return false;
     }
 
-    if (formData.exportingCountry === formData.importingCountry) {
+    if (formData.exportingFrom === formData.importingTo) {
       toast.error("Exporting and importing countries cannot be the same");
       return false;
     }
@@ -109,17 +112,17 @@ export function UpdateTariffModal({
       return false;
     }
 
-    if (formData.tariffRate < 0) {
+    if (formData.rate < 0) {
       toast.error("Please enter a valid tariff rate greater or equals to 0");
       return false;
     }
 
-    if (formData.tariffRate > 100) {
+    if (formData.rate > 100) {
       toast.error("Tariff rate cannot exceed 100%");
       return false;
     }
 
-    if (!formData.tariffType) {
+    if (!formData.type) {
       toast.error("Please select a tariff type");
       return false;
     }
@@ -131,6 +134,11 @@ export function UpdateTariffModal({
 
     if (!/^\d{6,8}$/.test(formData.hsCode)) {
       toast.error("HSN code must be 6-8 digits");
+      return false;
+    }
+
+    if (formData.flatFee < 0) {
+      toast.error("Flat fee cannot be negative");
       return false;
     }
 
@@ -177,12 +185,14 @@ export function UpdateTariffModal({
     }
 
     const updatePayload = {
-      hsCode: tariff.hsCode, // Using hsCode as primary key instead of id
-      exportingCountry: formData.exportingCountry,
-      importingCountry: formData.importingCountry,
+      tariff_id: tariff.tariff_id,    // Required for update
+      hsCode: formData.hsCode,
+      exportingFrom: formData.exportingFrom,
+      importingTo: formData.importingTo,
       description: formData.description,
-      tariffRate: formData.tariffRate,
-      tariffType: formData.tariffType,
+      rate: formData.rate,
+      type: formData.type,
+      flatFee: formData.flatFee,
       effectiveDate: formData.effectiveDate!,
       expirationDate: formData.expirationDate!,
     };
@@ -212,13 +222,13 @@ export function UpdateTariffModal({
         <div className="mt-2 flex flex-row justify-between">
           <div>
             <Select
-              value={formData.exportingCountry}
-              onValueChange={(val) => handleChange("exportingCountry", val)}
+              value={formData.exportingFrom}
+              onValueChange={(val) => handleChange("exportingFrom", val)}
             >
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Exporting Country">
-                  {formData.exportingCountry
-                    ? formData.exportingCountry
+                  {formData.exportingFrom
+                    ? formData.exportingFrom
                     : "Exporting Country"}
                 </SelectValue>
               </SelectTrigger>
@@ -238,13 +248,13 @@ export function UpdateTariffModal({
 
           <div>
             <Select
-              value={formData.importingCountry}
-              onValueChange={(val) => handleChange("importingCountry", val)}
+              value={formData.importingTo}
+              onValueChange={(val) => handleChange("importingTo", val)}
             >
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Importing Country">
-                  {formData.importingCountry
-                    ? formData.importingCountry
+                  {formData.importingTo
+                    ? formData.importingTo
                     : "Importing Country"}
                 </SelectValue>
               </SelectTrigger>
@@ -271,21 +281,32 @@ export function UpdateTariffModal({
           <Input
             placeholder="Tariff Rate (%)"
             type="number"
-            value={formData.tariffRate}
+            value={formData.rate}
             onChange={(e) =>
               handleChange(
-                "tariffRate",
+                "rate",
+                e.target.value ? Number(e.target.value) : 0
+              )
+            }
+          />
+           <Input
+            placeholder="Flat Fee ($)"
+            type="number"
+            value={formData.flatFee}
+            onChange={(e) =>
+              handleChange(
+                "flatFee",
                 e.target.value ? Number(e.target.value) : 0
               )
             }
           />
           <Select
-            value={formData.tariffType}
-            onValueChange={(val) => handleChange("tariffType", val)}
+            value={formData.type}
+            onValueChange={(val) => handleChange("type", val)}
           >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Tariff Type">
-                {formData.tariffType ? formData.tariffType : "Tariff Type"}
+                {formData.type ? formData.type : "Tariff Type"}
               </SelectValue>
             </SelectTrigger>
             <SelectContent>

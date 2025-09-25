@@ -92,6 +92,15 @@ export const createColumns = (onModify: (tariff: TradeRate) => void): ColumnDef<
     ), //Cell rendering with percentage
   },
   {
+    accessorKey: "flatFee",
+    header: ({ column }) => {
+      return <DataTableColumnHeader column={column} title="Flat Fee" />;
+    },
+    cell: ({ row }) => (
+      <div className="text-center">${row.getValue("flatFee")}</div>
+    ),
+  },
+  {
     accessorKey: "effectiveDate",
     header: ({ column }) => {
       return <DataTableColumnHeader column={column} title="Effective Date" />;
