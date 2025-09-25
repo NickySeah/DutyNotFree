@@ -1,5 +1,7 @@
 package com.example.CSD.product;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import lombok.*;
 
 @Getter
@@ -11,9 +13,9 @@ import lombok.*;
 public class ProductUpdateRequest {
     private String name;
     private Boolean isPrivate;
-
-    private boolean nameProvided = false;           // Flags to indicate if a field was provided in the update request
-    private boolean privateProvided = false;
+ 
+    @JsonIgnore private boolean nameProvided = false;           // Flags to indicate if a field was provided in the update request
+    @JsonIgnore private boolean privateProvided = false;
 
     public void setName(String name) {
         this.name = name;

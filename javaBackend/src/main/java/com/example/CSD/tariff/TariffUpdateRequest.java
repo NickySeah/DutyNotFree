@@ -1,5 +1,7 @@
 package com.example.CSD.tariff;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import lombok.*;
 
 @Getter
@@ -14,10 +16,10 @@ public class TariffUpdateRequest {                      // Not an entity, just a
     private String effectiveDate;                       // YYYY-MM-DD format
     private String expirationDate;                      // YYYY-MM-DD format
 
-    private boolean standardRateProvided = false;       // Flags to indicate if a field was provided in the update request
-    private boolean flatFeeProvided = false;
-    private boolean effectiveDateProvided = false;
-    private boolean expirationDateProvided = false;
+    @JsonIgnore private boolean standardRateProvided = false;       // Flags to indicate if a field was provided in the update request
+    @JsonIgnore private boolean flatFeeProvided = false;
+    @JsonIgnore private boolean effectiveDateProvided = false;
+    @JsonIgnore private boolean expirationDateProvided = false;
 
     public void setStandardRate(Double standardRate) {
         this.standardRate = standardRate;
