@@ -49,7 +49,7 @@ export const createColumns = (onModify: (tariff: TradeRate) => void): ColumnDef<
       const countryCode = getCountryIsoCode(countryName);
       return (
         <div className="flex items-center justify-between w-40 min-w-40">
-          {countryName}
+          <span className="truncate pr-2">{countryName}</span>
           <ReactCountryFlag
             countryCode={countryCode}
             svg
@@ -67,7 +67,7 @@ export const createColumns = (onModify: (tariff: TradeRate) => void): ColumnDef<
       const countryCode = getCountryIsoCode(countryName);
       return (
         <div className="flex items-center justify-between w-40 min-w-40">
-          {countryName}
+          <span className="truncate pr-2">{countryName}</span>
           <ReactCountryFlag
             countryCode={countryCode}
             svg

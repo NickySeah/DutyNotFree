@@ -265,11 +265,11 @@ export function UpdateTariffModal({
               <Input
                 placeholder="Enter new tariff rate"
                 type="number"
-                value={formData.rate}
+                value={formData.rate === 0 ? "" : formData.rate}
                 onChange={(e) =>
                   handleChange(
                     "rate",
-                    e.target.value ? Number(e.target.value) : 0
+                    e.target.value === "" ? 0 : Number(e.target.value)
                   )
                 }
                 className="w-full text-lg font-medium"
@@ -291,16 +291,16 @@ export function UpdateTariffModal({
               <Input
                 placeholder="Enter new flat fee"
                 type="number"
-                value={formData.flatFee}
+                value={formData.flatFee === 0 ? "" : formData.flatFee}
                 onChange={(e) =>
                   handleChange(
                     "flatFee",
-                    e.target.value ? Number(e.target.value) : 0
+                    e.target.value === "" ? 0 : Number(e.target.value)
                   )
                 }
                 className="w-full text-lg font-medium"
                 min="0"
-                step="0.01"
+                step="1"
               />
             </div>
           </div>

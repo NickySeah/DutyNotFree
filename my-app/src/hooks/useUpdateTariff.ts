@@ -1,5 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import { tariffService } from '@/lib/axios';
+import { formatDateToYYYYMMDD } from '@/utils/dateUtils';
 
 type TariffUpdateInput = {
   tariff_id : number;
@@ -25,12 +26,12 @@ export function useUpdateTariff() {
         // dest_country: payload.importingTo,
         // description: payload.description,
         // tariff_type: payload.type,
-        standard_rate: tariffType === "Ad Valorem" ? payload.rate : null,
-        flat_fee: tariffType === "Flat Fee" ? payload.flatFee : null,
-        effective_date: payload.effectiveDate, // start_date
-        end_date: payload.expirationDate, //end_date (if its undefined, it would not be sent)
+        standardRate: tariffType === "Ad Valorem" ? payload.rate : null,
+        flatFee: tariffType === "Flat Fee" ? payload.flatFee : null,
+        effectiveDate: formatDateToYYYYMMDD(payload.effectiveDate), // Convert to YYYY-MM-DD
+        expirationDate: payload.expirationDate ? formatDateToYYYYMMDD(payload.expirationDate) : null, // Convert to YYYY-MM-DD or null
       };
-      const response = await tariffService.put(`/tariffs/${tariff_id}`, backendPayload);
+      const response = await tariffService.put(`${tariff_id}`, backendPayload);
       return response.data;
     },
   });

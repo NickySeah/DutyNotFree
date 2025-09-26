@@ -8,7 +8,6 @@ interface TariffApiResponse {
   hsCode: {
     code: string;
     description: string;
-    category: string;
   };
   originCountry: {
     code: string;
@@ -21,10 +20,10 @@ interface TariffApiResponse {
     alpha3: string;
   };
   tariffType: string;
-  standardRate: number;
+  standardRate: number | null;
   flatFee: number | null;
-  startDate: string;
-  endDate: string | null;
+  effectiveDate: string;
+  expirationDate: string | null;
 }
 
 export function useTariffs() {
@@ -42,8 +41,8 @@ export function useTariffs() {
                 type: item.tariffType,
                 rate: item.standardRate,
                 flatFee: item.flatFee || 0,
-                effectiveDate: item.startDate ? new Date(item.startDate) : null,
-                expirationDate: item.endDate ? new Date(item.endDate) : null,
+                effectiveDate: item.effectiveDate ? new Date(item.effectiveDate) : null,
+                expirationDate: item.expirationDate ? new Date(item.expirationDate) : null,
             }));
         },
     });

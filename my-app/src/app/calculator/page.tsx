@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import ProductCard from './ProductCard';
+import ProductCard from './productCard';
 import { Product, ProductCategory } from '@/types/calculator';
 import {
     Calculator,

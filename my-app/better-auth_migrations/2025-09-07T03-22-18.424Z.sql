@@ -1,3 +1,5 @@
+CREATE DATABASE passwordmanagerdnf;
+
 create table `user` (`id` varchar(36) not null primary key, `name` text not null, `email` varchar(255) not null unique, `emailVerified` boolean not null, `image` text, `createdAt` datetime default CURRENT_TIMESTAMP not null, `updatedAt` datetime default CURRENT_TIMESTAMP not null);
 
 create table `session` (`id` varchar(36) not null primary key, `expiresAt` datetime not null, `token` varchar(255) not null unique, `createdAt` datetime default CURRENT_TIMESTAMP not null, `updatedAt` datetime not null, `ipAddress` text, `userAgent` text, `userId` varchar(36) not null references `user` (`id`) on delete cascade);
@@ -5,3 +7,24 @@ create table `session` (`id` varchar(36) not null primary key, `expiresAt` datet
 create table `account` (`id` varchar(36) not null primary key, `accountId` text not null, `providerId` text not null, `userId` varchar(36) not null references `user` (`id`) on delete cascade, `accessToken` text, `refreshToken` text, `idToken` text, `accessTokenExpiresAt` datetime, `refreshTokenExpiresAt` datetime, `scope` text, `password` text, `createdAt` datetime default CURRENT_TIMESTAMP not null, `updatedAt` datetime not null);
 
 create table `verification` (`id` varchar(36) not null primary key, `identifier` text not null, `value` text not null, `expiresAt` datetime not null, `createdAt` datetime default CURRENT_TIMESTAMP not null, `updatedAt` datetime default CURRENT_TIMESTAMP not null);
+
+alter table `user` add column `role` text;
+
+alter table `user` add column `banned` boolean;
+
+alter table `user` add column `banReason` text;
+
+alter table `user` add column `banExpires` timestamp;
+
+alter table `session` add column `impersonatedBy` text;
+
+# Testing
+DROP DATABASE passwordmanagerdnf;
+
+SELECT * FROM session LIMIT 1000;
+
+SELECT * FROM account LIMIT 1000;
+
+SELECT * FROM user LIMIT 1000;
+
+UPDATE user SET role = 'admin' where id = 'RIPagFD8sVwQjTKFXXul4LEdaCpRFSlc'
