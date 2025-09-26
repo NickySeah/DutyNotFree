@@ -44,14 +44,17 @@ public class TariffController {
         return tariffService.listTariffs();
     }
 
-    @Operation(summary = "Search tariffs", description = "Search tariffs by optional origin, destination, HS code, and type")
+    @Operation(summary = "Search tariffs", description = "Search tariffs by origin, destination, HS code, type, and optionally filter by date")
     @GetMapping()       // optional request parameters
-    public List<Tariff> getTariff(@Parameter(description = "Country of origin")
-    @RequestParam(required=false) String origin, @Parameter(description = "Destination country")
-    @RequestParam(required=false) String dest, @Parameter(description = "HS code of the product")
-    @RequestParam(required=false) String hsCode, @Parameter(description = "Tariff type")
-    @RequestParam(required=false) String type) {
-        return tariffService.getTariff(origin, dest, hsCode, type);
+    public List<Tariff> getTariff(@Parameter(description = "Country of origin") @RequestParam(required=false) String origin, @Parameter(description = "Destination country") @RequestParam(required=false) String dest, @Parameter(description = "HS code of the product") @RequestParam(required=false) String hsCode, @Parameter(description = "Tariff type") @RequestParam(required=false) String type, @Parameter(description = "Date to filter active tariffs (YYYY-MM-DD)")
+    @RequestParam(required=false) String date) {
+        if (date == null) {                                                 // No date specified - No need consider effective & expiration date
+            return tariffService.getTariff(origin, dest, hsCode, type);
+        }
+        else {                                                              // Date specified - Need consider effective & expiration date
+            return tariffService.getActiveTariffs(origin, dest, hsCode, type, date);
+        }
+        
     }
 
     @Operation(summary = "Get tariff by ID", description = "Retrieve a tariff using its unique ID")
@@ -74,11 +77,7 @@ public class TariffController {
     @Operation(summary = "Update tariff by composite key", description = "Updates a tariff using origin, destination, HS code, and type")
     @ResponseStatus(HttpStatus.OK)
     @PutMapping()       // compulsory request parameters
-    public Tariff updateTariff(@Parameter(description = "Country of origin")
-    @RequestParam String origin, @Parameter(description = "Destination country")
-    @RequestParam String dest, @Parameter(description = "HS code of the product")
-    @RequestParam String hsCode, @Parameter(description = "Tariff type")
-    @RequestParam String type, @RequestBody TariffUpdateRequest request) {
+    public Tariff updateTariff(@RequestParam String origin, @RequestParam String dest, @RequestParam String hsCode, @RequestParam String type, @RequestBody TariffUpdateRequest request) {
         return tariffService.updateTariff(origin, dest, hsCode, type, request);
     }
 
@@ -92,10 +91,7 @@ public class TariffController {
 
     @Operation(summary = "Delete tariff by composite key", description = "Deletes a tariff using origin, destination, HS code, and type")
     @DeleteMapping()       // compulsory request parameters
-    public void deleteTariff(@Parameter(description = "Country of origin")
-    @RequestParam String origin, @Parameter(description = "Destination country") @RequestParam String dest, @Parameter(description = "HS code of the product")
-    @RequestParam String hsCode, @Parameter(description = "Tariff type")
-    @RequestParam String type) {
+    public void deleteTariff(@RequestParam String origin, @RequestParam String dest, @RequestParam String hsCode, @RequestParam String type) {
         tariffService.deleteTariff(origin, dest, hsCode, type);
     }
 

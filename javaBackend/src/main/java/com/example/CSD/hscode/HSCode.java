@@ -36,6 +36,8 @@ public class HSCode {
     @Schema(description = "Description of the HS code", example = "Portable automatic data processing machines")
     private String description;
 
+    @JsonIgnore private String uom;
+
     @OneToMany(mappedBy = "hsCode")
     @JsonIgnore  
     @Schema(hidden = true)

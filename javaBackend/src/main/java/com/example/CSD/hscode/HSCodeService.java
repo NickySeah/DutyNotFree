@@ -1,14 +1,6 @@
 package com.example.CSD.hscode;
 
 import java.util.*;
-// import java.io.IOException;
-// import java.io.InputStream;
-
-// import org.apache.poi.ss.usermodel.Workbook;
-// import org.apache.poi.ss.usermodel.Sheet;
-// import org.apache.poi.ss.usermodel.Row;
-// import org.apache.poi.ss.usermodel.Cell;
-// import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 import jakarta.transaction.Transactional;
@@ -25,12 +17,12 @@ public class HSCodeService {
         return hsCodes.findAll();
     }
 
-    public List<HSCode> getHSCode(String code) {
-        if (code == null) {
+    public List<HSCode> getHSCode(String code, String keyword) {
+        if (code == null && keyword == null) {
             return listHSCode();
         }
-
-        return hsCodes.findByFilters(code);
+    
+        return hsCodes.findByFilters(code, keyword);
     }
 
     public HSCode addHSCode(@RequestBody HSCode newHSCode) {
@@ -73,52 +65,4 @@ public class HSCodeService {
         }
         hsCodes.deleteByCode(code);
     }
-
-    // private void importHSCodesFromExcel(InputStream file) throws IOException {
-    //     List<HSCode> hsCodeList = new ArrayList<>();
-        
-    //     try (Workbook workbook = WorkbookFactory.create(file)) {
-    //         Sheet sheet = workbook.getSheetAt(0);
-            
-    //         for (Row row : sheet) {
-    //             if (row.getRowNum() == 0) continue;                 // Skip header row
-                
-    //             try {
-    //                 String code = getCellValue(row.getCell(1));
-    //                 code = code.substring(0, 6);                        // reduce to first 6 digits; these are used globally
-    
-    //                 String description = getCellValue(row.getCell(2));
-    
-    //                 HSCode hsCode = new HSCode();
-    //                 hsCode.setCode(code);
-    //                 hsCode.setDescription(description);
-    //                 hsCodeList.add(hsCode);
-    //             }
-    //             catch (Exception e) {
-    //                 System.out.println("Error: "+ e.getMessage());
-    //             }
-    //         }
-    //     }
-
-    //     // hsCodes.saveAll(hsCodeList);
-    //     System.out.println("Imported " + hsCodeList.size() + " HS codes");
-    // }
-
-    // private String getCellValue(Cell cell) {
-    //     if (cell == null) return null;
-        
-    //     switch (cell.getCellType()) {
-    //         case STRING:
-    //             return cell.getStringCellValue();
-    //         case NUMERIC:
-    //             // Handle numeric HS codes (remove .0 if present)
-    //             double num = cell.getNumericCellValue();
-    //             if (num == (int) num) {
-    //                 return String.valueOf((int) num);
-    //             }
-    //             return String.valueOf(num);
-    //         default:
-    //             return null;
-    //     }
-    // }
 }
