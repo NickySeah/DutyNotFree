@@ -17,6 +17,7 @@ public interface HSCodeRepository extends JpaRepository<HSCode, Long> {
     @Query("""
     SELECT h FROM HSCode h 
         WHERE (:code IS NULL OR :code = '' OR LOWER(h.code) = LOWER(:code))
+        AND (:description IS NULL OR :description = '' OR LOWER(h.description) LIKE LOWER(CONCAT('%', :description, '%')))
     """)
-    List<HSCode> findByFilters(@Param("code") String code);
+    List<HSCode> findByFilters(@Param("code") String code, @Param("description") String keyword);
 }

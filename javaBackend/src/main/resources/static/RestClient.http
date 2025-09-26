@@ -2,32 +2,35 @@
 GET http://localhost:8080/countries
 
 ###
-GET http://localhost:8080/countries?iso=666
+GET http://localhost:8080/countries?iso=702
 
-GET http://localhost:8080/countries?name=Singapore
-GET http://localhost:8080/countries?alpha3=JPN
+###
+GET http://localhost:8080/countries?name=China
+
+###
+GET http://localhost:8080/countries?alpha3=USA
 
 ###
 POST http://localhost:8080/countries
 Content-Type: application/json
 
 {
-    "code": "666",
-    "alpha3": "MLS",
-    "name": "Malaya"
+    "code": "000",
+    "alpha3": "MCK",
+    "name": "MCK CUNTRY"
 }
-
+ 
 ###
-PUT http://localhost:8080/countries?iso=666
+PUT http://localhost:8080/countries?iso=000
 Content-Type: application/json
 
 {
-    "alpha3": null,
-    "name": "Malaysia"
+    "alpha3": "MOC",
+    "name": "MOCK COUNTRY"
 }
 
 ###
-DELETE http://localhost:8080/countries?iso=123
+DELETE http://localhost:8080/countries?iso=000
 
 
 
@@ -36,22 +39,22 @@ DELETE http://localhost:8080/countries?iso=123
 GET http://localhost:8080/hscodes/all
 
 ###
-GET http://localhost:8080/hscodes?category=Animals
+GET http://localhost:8080/hscodes?code=01012100
 
 ###
-GET http://localhost:8080/hscodes?code=123456
+GET http://localhost:8080/hscodes?keyword=bovine
 
 ###
 POST http://localhost:8080/hscodes
 Content-Type: application/json
 
 {
-    "code": "9999999",
-    "description": "Mock HS Code 9a"
+    "code": "00000000",
+    "description": "Mock HS Code 1a"
 }
 
 ###
-PUT http://localhost:8080/hscodes?code=999999
+PUT http://localhost:8080/hscodes?code=00000000
 Content-Type: application/json
 
 {
@@ -59,8 +62,73 @@ Content-Type: application/json
 }
 
 ###
-DELETE http://localhost:8080/hscodes?code=123456
+DELETE http://localhost:8080/hscodes?code=00000000
 
+
+
+#=== Tariffs CRUD Operations ===#
+
+###
+GET http://localhost:8080/tariffs/all
+
+###
+GET http://localhost:8080/tariffs?origin=724
+
+###
+GET http://localhost:8080/tariffs/1
+
+// POST: Compulsory -> originCountry, destCountry, hsCode, tariffType, startDate
+//       Optional -> endDate, standardRate, flatFee (either standardRate or flatFee needs to be provided)  
+###
+POST http://localhost:8080/tariffs
+Content-Type: application/json
+
+{
+    "originCountry": "156",
+    "destCountry": "840",
+    "hsCode": "02023000",
+    "tariffType": "Mock ",
+    "flatFee": 100,
+    "effectiveDate": "2016-01-01"
+}
+
+###
+POST http://localhost:8080/tariffs
+Content-Type: application/json
+
+{
+    "originCountry": "840",
+    "destCountry": "156",
+    "hsCode": "02023000",
+    "tariffType": "Mock A",
+    "standardRate": 1.0,
+    "effectiveDate": "1999-01-01"
+    , "expirationDate": "2000-01-01"
+}
+
+###
+PUT http://localhost:8080/tariffs?origin=702&dest=724&hsCode=123456&type=Ad Valorem
+Content-Type: application/json
+
+{
+    "standardRate": 12,
+    "flatFee": null
+}
+
+###
+PUT http://localhost:8080/tariffs/2
+Content-Type: application/json
+
+{
+    "effectiveDate": null,
+    "expirationDate": "2015-01-01"
+}
+
+####
+DELETE http://localhost:8080/tariffs?hsCode=02023000&origin=840&dest=156&type=Mock A&effectiveDate=
+
+###
+DELETE http://localhost:8080/tariffs/6
 
 
 
@@ -115,68 +183,3 @@ DELETE http://localhost:8080/products/13
 
 
 
-
-#=== Tariffs CRUD Operations ===#
-# Format ?origin=<ISO>&dest=<ISO>&hsCode=<Code>&type=<Type> ==> all optional; can write in any order
-
-###
-GET http://localhost:8080/tariffs/all
-
-###
-GET http://localhost:8080/tariffs?origin=724
-
-###
-GET http://localhost:8080/tariffs/1
-
-// POST: Compulsory -> originCountry, destCountry, hsCode, tariffType, startDate
-//       Optional -> endDate, standardRate, flatFee (either standardRate or flatFee needs to be provided)  
-###
-POST http://localhost:8080/tariffs
-Content-Type: application/json
-
-{
-    "originCountry": "702",
-    "destCountry": "724",
-    "hsCode": "123456",
-    "tariffType": "Mock Y",
-    "flatFee": 100,
-    "startDate": "2020-01-01"
-}
-
-###
-POST http://localhost:8080/tariffs
-Content-Type: application/json
-
-{
-    "originCountry": "702",
-    "destCountry": "724",
-    "hsCode": "123456",
-    "tariffType": "Mock X",
-    "standardRate": 1.0,
-    "startDate": "2020-01-01",
-    "endDate": "2019-01-01"
-}
-
-###
-PUT http://localhost:8080/tariffs?origin=702&dest=724&hsCode=123456&type=Ad Valorem
-Content-Type: application/json
-
-{
-    "standardRate": 12,
-    "flatFee": null
-}
-
-###
-PUT http://localhost:8080/tariffs/1
-Content-Type: application/json
-
-{
-    "startDate": "2023-01-01",
-    "endDate": "2030-01-01"
-}
-
-####
-DELETE http://localhost:8080/tariffs?hsCode=123456&origin=702&dest=724&type=Mock Z
-
-###
-DELETE http://localhost:8080/tariffs/10

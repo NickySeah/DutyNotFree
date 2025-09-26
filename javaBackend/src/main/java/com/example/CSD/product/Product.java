@@ -28,7 +28,7 @@ public class Product {
     private String name;
 
     @NotBlank
-    private String userId; //TODO: change to string later
+    private String userId;
 
     private boolean isPrivate;
 }

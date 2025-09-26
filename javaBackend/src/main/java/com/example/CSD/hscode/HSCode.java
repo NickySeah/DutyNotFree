@@ -23,6 +23,8 @@ public class HSCode {
     @NotNull //@Size(max = 200)
     private String description;
 
+    @JsonIgnore private String uom;
+
     @OneToMany(mappedBy = "hsCode")
     @JsonIgnore  
     private Set<Product> products;

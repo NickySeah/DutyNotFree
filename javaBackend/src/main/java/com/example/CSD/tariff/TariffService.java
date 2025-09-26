@@ -3,7 +3,7 @@ package com.example.CSD.tariff;
 import java.util.*;
 import java.time.DateTimeException;
 import java.time.LocalDate;
-// import javax.swing.text.html.Option;
+
 import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 
@@ -24,23 +24,34 @@ public class TariffService {
 
     // Retrieve all tariffs in DB
     public List<Tariff> listTariffs() {
-        return tariffs.findAll();
+        return getTariff(null, null, null, null);
     }
 
     // Retrieve tariffs based on given condition(s)
     public List<Tariff> getTariff(String originCode, String destCode, String hsCode, String tariffType) {
-        // If no parameters provided, return all tariffs
-        if (originCode == null && destCode == null && hsCode == null && tariffType == null) {
-            return listTariffs();
-        }
-
-        // Othwerwise, filter based on provided parameters
         return tariffs.findByFilters(originCode, destCode, hsCode, tariffType);
     }
     
     // Retrieve tariff by its id
     public Tariff getTariffByID(Long id) {
         return tariffs.findById(id).orElseThrow(() -> new RuntimeException("No product with id "+id+" exist."));
+    }
+
+    // Retrieve active tariffs based on given condition(s) and date
+    public List<Tariff> getActiveTariffs(String originCode, String destCode, String hsCode, String tariffType, String date) {
+        LocalDate queryDate = validateDateStr(date, "Query");
+
+        if (queryDate == null) {
+            throw new RuntimeException("Please provide a valid date in the format YYYY-MM-DD.");
+        }
+
+        // If no parameters provided, return all active tariffs on that date
+        if (originCode == null && destCode == null && hsCode == null && tariffType == null) {
+            return tariffs.findActiveTariffs(queryDate);
+        }
+
+        // Othwerwise, filter based on provided parameters
+        return tariffs.findActiveTariffsByFilters(originCode, destCode, hsCode, tariffType, queryDate);
     }
 
     // TODO: what kind of exception to throw - custom TariffException or Runtime or IllegalArg or etc
@@ -79,16 +90,19 @@ public class TariffService {
         }
         
         // Start Date (compulsory) & End Date (optional)
-        LocalDate startDate = validateLocalDate(request.getEffectiveDate(), "Start");       // returns LocalDate or throws exception if invalid format      
-        LocalDate endDate = validateLocalDate(request.getExpirationDate(), "End");             // if empty/null, tariff is currently used        
+        LocalDate startDate = validateDateStr(request.getEffectiveDate(), "Effective");         // returns LocalDate or throws exception if invalid format      
+        LocalDate endDate = validateDateStr(request.getExpirationDate(), "Expiration");         // if empty/null, tariff is currently used        
         
-        if (endDate != null && startDate.isAfter(endDate)) {                            // (!) Start date is after end date 
-            throw new RuntimeException("Start date of the tariff cannot be after its end date. Please provide a valid start date.");
+        if (endDate != null && startDate.isAfter(endDate)) {                                    // (!) Start date is after end date 
+            throw new RuntimeException("Effective date cannot be after expiration date. Please provide a valid effective date.");
         }
 
         // (2) Check if a tariff with the same origin, dest, hsCode, tariff type exists
+        
         if (tariffs.existsByOriginCountry_CodeAndDestCountry_CodeAndHsCode_CodeAndTariffType(originCode, destCode, hsCodeValue, tariffType)){
-            throw new RuntimeException(String.format("A(n) '%s' tariff for %s (%s) between %s (origin) and %s (destination) already exists.", tariffType, hsCodeValue, hsCode.getDescription(), originCountry.getName(), destCountry.getName()));
+            // Find all existing tariffs with same origin, dest, hsCode & tariff type
+            List<Tariff> existingTariffs = tariffs.findByOriginCountry_CodeAndDestCountry_CodeAndHsCode_CodeAndTariffType(originCode, destCode, hsCodeValue, tariffType);
+            validateDates(existingTariffs,startDate, endDate);
         }
 
         // debug: to see see values
@@ -108,7 +122,7 @@ public class TariffService {
     }
 
     // Helper function to validate date string
-    private LocalDate validateLocalDate(String dateStr, String type) {
+    private LocalDate validateDateStr(String dateStr, String type) {
         if (dateStr != null && !dateStr.isEmpty()) {                                    // Date provided
             try {
                     return LocalDate.parse(dateStr);
@@ -121,10 +135,43 @@ public class TariffService {
         return null;                                                                    // No date provided
     }
 
+    private void validateDates(List<Tariff> existingTariffs, LocalDate startDate, LocalDate endDate) {
+        for (Tariff tariff : existingTariffs) {                                     // Check each tariff for date overlaps
+            LocalDate existingEffective = tariff.getEffectiveDate();
+            LocalDate existingExpiration = tariff.getExpirationDate();
+
+            boolean newEndsBeforeExisting = endDate != null && endDate.isBefore(existingEffective.plusDays(1));
+            boolean newStartsAfterExisting = existingExpiration != null && startDate.isAfter(existingExpiration.minusDays(1));
+
+            if (!newEndsBeforeExisting && !newStartsAfterExisting) {                // (!) Overlap found
+                String issue = "";
+
+                if (endDate != null && endDate.isAfter(existingEffective) && (existingExpiration == null || startDate.isBefore(existingExpiration))) {
+                    issue = "The new tariff's period overlaps with the existing tariff.";
+                } 
+                else if (existingExpiration != null && startDate.isBefore(existingExpiration)) {
+                    issue = "The new tariff starts before the existing tariff ends.";
+                } 
+                else if (existingExpiration == null) {
+                    issue = "The new tariff overlaps with an ongoing tariff.";
+                }
+                
+                throw new RuntimeException(
+                    issue + 
+                    String.format(" Existing: %s to %s. ", existingEffective, existingExpiration != null ? existingExpiration : "Ongoing") + 
+                    String.format(" New: %s to %s. ", startDate, endDate != null ? endDate : "Ongoing") +
+                    "Please adjust the dates to avoid overlap."
+                );
+            }
+        }
+    }
+
     // Updates only standardRate, flatFee, start & end date; ; Find tariff using country codes, hs code & tariff type
-    public Tariff updateTariff(String originCode, String destCode, String hsCodeValue, String tariffType, TariffUpdateRequest request) {
+    public Tariff updateTariff(String originCode, String destCode, String hsCodeValue, String tariffType, String effectiveDateStr, TariffUpdateRequest request) {
+        System.out.println("CALLING RIGHT METHOD");
         // (1) Retrieve queried tariff
-        Tariff existingTariff = tariffs.findByOriginCountry_CodeAndDestCountry_CodeAndHsCode_CodeAndTariffType(originCode, destCode, hsCodeValue, tariffType)
+        LocalDate effectiveDate = validateDateStr(effectiveDateStr, "Effective");
+        Tariff existingTariff = tariffs.findByOriginCountry_CodeAndDestCountry_CodeAndHsCode_CodeAndTariffTypeAndEffectiveDate(originCode, destCode, hsCodeValue, tariffType, effectiveDate)
         .orElseThrow(() -> new RuntimeException("Tariff not found."));
         
         // (2) Validate tariff request & update queried tariff
@@ -146,8 +193,8 @@ public class TariffService {
 
         // Start & End Dates
         if (request.isEffectiveDateProvided() || request.isExpirationDateProvided()) {
-            LocalDate finalStart = request.isEffectiveDateProvided() ? validateLocalDate(request.getEffectiveDate(), "Effective") : existingTariff.getEffectiveDate();
-            LocalDate finalEnd = request.isExpirationDateProvided() ? validateLocalDate(request.getExpirationDate(), "Expiration") : existingTariff.getExpirationDate();
+            LocalDate finalStart = request.isEffectiveDateProvided() ? validateDateStr(request.getEffectiveDate(), "Effective") : existingTariff.getEffectiveDate();
+            LocalDate finalEnd = request.isExpirationDateProvided() ? validateDateStr(request.getExpirationDate(), "Expiration") : existingTariff.getExpirationDate();
 
             if (finalStart == null) {
                 throw new RuntimeException("Cannot remove a tariff's effective date.");
@@ -155,6 +202,11 @@ public class TariffService {
             if (finalEnd != null && finalEnd.isBefore(finalStart)) {
                 throw new RuntimeException("Cannot have an start date ("+finalStart+") after its end date ("+finalEnd+").");
             }
+
+            // Check for date overlaps with other tariffs of same origin, dest, hsCode & type
+            List<Tariff> existingTariffs = tariffs.findByOriginCountry_CodeAndDestCountry_CodeAndHsCode_CodeAndTariffType(originCode, destCode, hsCodeValue, tariffType);
+            existingTariffs.remove(existingTariff);                             // Exclude checking against itself
+            validateDates(existingTariffs, finalStart, finalEnd);
 
             if (request.isEffectiveDateProvided()) {
                 existingTariff.setEffectiveDate(finalStart);
@@ -170,17 +222,21 @@ public class TariffService {
     // Update tariff; Find using tariff id
     public Tariff updateTariffById(Long id, TariffUpdateRequest request) {
         Tariff eT = getTariffByID(id);
-        return updateTariff(eT.getOriginCountry().getCode(), eT.getDestCountry().getCode(), eT.getHsCode().getCode(), eT.getTariffType(), request);
+        return updateTariff(eT.getOriginCountry().getCode(), eT.getDestCountry().getCode(), eT.getHsCode().getCode(), eT.getTariffType(), eT.getEffectiveDate().toString(), request);
     }
 
     // Delete tariff; Find tariff using country codes, hs code & tariff type
     @Transactional
-    public void deleteTariff(String originCode, String destCode, String hsCodeValue, String tariffType) {
+    public void deleteTariff(String originCode, String destCode, String hsCodeValue, String tariffType, String effectiveDateStr) {
+        LocalDate effectiveDate = validateDateStr(effectiveDateStr, "Effective");
+        if (effectiveDate == null) {
+            throw new RuntimeException("Please provide a valid effective date in the format YYYY-MM-DD.");
+        }
         if (!tariffs.existsByOriginCountry_CodeAndDestCountry_CodeAndHsCode_CodeAndTariffType(originCode, destCode, hsCodeValue, tariffType)){
             throw new RuntimeException(String.format("Tariff not found"));
         }
 
-        tariffs.deleteByOriginCountry_CodeAndDestCountry_CodeAndHsCode_CodeAndTariffType(originCode, destCode, hsCodeValue, tariffType);
+        tariffs.deleteByOriginCountry_CodeAndDestCountry_CodeAndHsCode_CodeAndTariffTypeAndEffectiveDate(originCode, destCode, hsCodeValue, tariffType, effectiveDate);
     }
 
     // Delete tariff; Find tariff using tariff id

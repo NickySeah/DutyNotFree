@@ -24,11 +24,9 @@ public class HSCodeController {
     }
 
     @GetMapping()
-    public List<HSCode> getHSCode(@RequestParam(required = false) String code) {
-        return hsCodeService.getHSCode(code);
+    public List<HSCode> getHSCode(@RequestParam(required = false) String code, @RequestParam(required = false) String keyword) {
+        return hsCodeService.getHSCode(code, keyword);
     } 
-
-    //TODO: future featuer: another GET method for description or part of description (_keyword_ in description)
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping()
