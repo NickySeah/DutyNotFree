@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "HS Code Controller", description = "Operations related to HS code management")
@@ -51,7 +53,13 @@ public class HSCodeController {
     } 
 
     //TODO: future featuer: another GET method for description or part of description (_keyword_ in description)
-
+    @Operation(
+    summary = "Create a new HS code",
+    description = "Adds a new HS code to the database with its description"
+)
+    @ApiResponses({
+        @ApiResponse(responseCode = "201", description = "HS code created successfully")
+    })
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping()
     public HSCode addHSCode(@RequestBody HSCode newHSCode) {

@@ -77,8 +77,8 @@ public class TariffController {
     @Operation(summary = "Update tariff by composite key", description = "Updates a tariff using origin, destination, HS code, and type")
     @ResponseStatus(HttpStatus.OK)
     @PutMapping()       // compulsory request parameters
-    public Tariff updateTariff(@RequestParam String origin, @RequestParam String dest, @RequestParam String hsCode, @RequestParam String type, @RequestBody TariffUpdateRequest request) {
-        return tariffService.updateTariff(origin, dest, hsCode, type, request);
+    public Tariff updateTariff(@RequestParam String origin, @RequestParam String dest, @RequestParam String hsCode, @RequestParam String type, @RequestParam String effectiveDateStr, @RequestBody TariffUpdateRequest request) {
+        return tariffService.updateTariff(origin, dest, hsCode, type, effectiveDateStr, request);
     }
 
     @Operation(summary = "Update tariff by ID", description = "Updates a tariff using its unique ID")
@@ -91,8 +91,8 @@ public class TariffController {
 
     @Operation(summary = "Delete tariff by composite key", description = "Deletes a tariff using origin, destination, HS code, and type")
     @DeleteMapping()       // compulsory request parameters
-    public void deleteTariff(@RequestParam String origin, @RequestParam String dest, @RequestParam String hsCode, @RequestParam String type) {
-        tariffService.deleteTariff(origin, dest, hsCode, type);
+    public void deleteTariff(@RequestParam String origin, @RequestParam String dest, @RequestParam String hsCode, @RequestParam String type, @RequestParam String effectiveDateStr) {
+        tariffService.deleteTariff(origin, dest, hsCode, type, effectiveDateStr);
     }
 
     @Operation(summary = "Delete tariff by ID", description = "Deletes a tariff using its unique ID")
