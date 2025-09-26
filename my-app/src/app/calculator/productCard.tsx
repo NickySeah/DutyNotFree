@@ -1,3 +1,6 @@
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Product } from '@/types/calculator';
 import { Move, X } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
@@ -22,7 +25,6 @@ const ProductCard = ({
         value: product.value,
         hsCode: product.hsCode,
         quantity: product.quantity,
-        weight: product.weight,
         tariffRate: product.tariffRate,
     });
 
@@ -32,7 +34,6 @@ const ProductCard = ({
             value: product.value,
             hsCode: product.hsCode,
             quantity: product.quantity,
-            weight: product.weight,
             tariffRate: product.tariffRate,
         });
     }, [product]);
@@ -56,8 +57,7 @@ const ProductCard = ({
         <div
             draggable
             onDragStart={(e) => handleDragStart(e, product)}
-            className={`bg-white p-4 rounded-lg border-2 border-dashed border-gray-200 cursor-move hover:border-blue-400 transition-colors ${draggedItem?.id === product.id ? 'opacity-50' : ''
-                } ${isConsolidated ? 'bg-green-50' : ''}`}
+            className={`bg-white p-4 rounded-lg border-2 border-dashed border-gray-200 cursor-move hover:border-blue-400 transition-colors ${draggedItem?.id === product.id ? 'opacity-50' : ''} ${isConsolidated ? 'bg-green-50' : ''}`}
         >
             <div className="flex justify-between items-start mb-3">
                 <div className="flex items-center gap-2">
@@ -72,7 +72,7 @@ const ProductCard = ({
                 </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 text-sm">
+            {/* <div className="grid grid-cols-2 gap-2 text-sm">
                 <div>
                     <span className="text-gray-600">Value:</span> ${(product.value || 0).toLocaleString()}
                 </div>
@@ -85,14 +85,15 @@ const ProductCard = ({
                 <div>
                     <span className="text-gray-600">Rate:</span> {product.tariffRate}%
                 </div>
-            </div>
+            </div> */}
 
             {!isConsolidated && (
                 <div className="mt-3 space-y-4">
-                    <label htmlFor={inputId('name')} className="block text-sm font-medium text-gray-700">
+                    {/* <div>
+                    <Label htmlFor={inputId('name')} className="block text-sm font-medium text-gray-700">
                         Product Name
-                    </label>
-                    <input
+                    </Label>
+                    <Input
                         id={inputId('name')}
                         type="text"
                         value={localState.name}
@@ -100,13 +101,45 @@ const ProductCard = ({
                         placeholder="Product name"
                         className="w-full px-2 py-1 text-sm border rounded"
                     />
+                    </div> */}
 
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label htmlFor={inputId('value')} className="block text-sm font-medium text-gray-700">
+                            <Label htmlFor={inputId('hsCode')} className="block text-sm font-medium text-gray-700">
+                                HS Code
+                            </Label>
+                            <Input
+                                id={inputId('hsCode')}
+                                type="text"
+                                value={localState.hsCode}
+                                placeholder="HS Code"
+                                className="w-full px-2 py-1 text-sm border rounded disabled"
+                                disabled
+                            />
+                        </div>
+                        <div>
+                            <Label htmlFor={inputId('tariffRate')} className="block text-sm font-medium text-gray-700">
+                                Rate %
+                            </Label>
+                            <Input
+                                id={inputId('tariffRate')}
+                                type="number"
+                                step="0.1"
+                                value={localState.tariffRate}
+                                onChange={e => handleChange('tariffRate', Number(e.target.value))}
+                                placeholder="Rate %"
+                                className="w-full px-2 py-1 text-sm border rounded"
+                                disabled
+                            />
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <Label htmlFor={inputId('value')} className="block text-sm font-medium text-gray-700">
                                 Value
-                            </label>
-                            <input
+                            </Label>
+                            <Input
                                 id={inputId('value')}
                                 type="number"
                                 value={localState.value}
@@ -116,26 +149,10 @@ const ProductCard = ({
                             />
                         </div>
                         <div>
-                            <label htmlFor={inputId('hsCode')} className="block text-sm font-medium text-gray-700">
-                                HS Code
-                            </label>
-                            <input
-                                id={inputId('hsCode')}
-                                type="text"
-                                value={localState.hsCode}
-                                onChange={e => handleChange('hsCode', e.target.value)}
-                                placeholder="HS Code"
-                                className="w-full px-2 py-1 text-sm border rounded"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-4">
-                        <div>
-                            <label htmlFor={inputId('quantity')} className="block text-sm font-medium text-gray-700">
+                            <Label htmlFor={inputId('quantity')} className="block text-sm font-medium text-gray-700">
                                 Quantity
-                            </label>
-                            <input
+                            </Label>
+                            <Input
                                 id={inputId('quantity')}
                                 type="number"
                                 value={localState.quantity}
@@ -144,41 +161,15 @@ const ProductCard = ({
                                 className="w-full px-2 py-1 text-sm border rounded"
                             />
                         </div>
-                        <div>
-                            <label htmlFor={inputId('weight')} className="block text-sm font-medium text-gray-700">
-                                Weight
-                            </label>
-                            <input
-                                id={inputId('weight')}
-                                type="number"
-                                value={localState.weight}
-                                onChange={e => handleChange('weight', Number(e.target.value))}
-                                placeholder="Weight"
-                                className="w-full px-2 py-1 text-sm border rounded"
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor={inputId('tariffRate')} className="block text-sm font-medium text-gray-700">
-                                Rate %
-                            </label>
-                            <input
-                                id={inputId('tariffRate')}
-                                type="number"
-                                step="0.1"
-                                value={localState.tariffRate}
-                                onChange={e => handleChange('tariffRate', Number(e.target.value))}
-                                placeholder="Rate %"
-                                className="w-full px-2 py-1 text-sm border rounded"
-                            />
-                        </div>
+
                     </div>
 
-                    <button
+                    <Button
                         onClick={saveChanges}
                         className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
                     >
                         Save
-                    </button>
+                    </Button>
                 </div>
             )}
         </div>

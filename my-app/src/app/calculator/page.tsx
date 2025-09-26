@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import ProductCard from './productCard';
+import ProductCard from './ProductCard';
 import { Product, ProductCategory } from '@/types/calculator';
 import {
     Calculator,
@@ -16,7 +16,16 @@ import {
     ArrowRight,
     Trash2
 } from 'lucide-react';
-
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectLabel,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
+import { Button } from '@/components/ui/button';
 
 const TariffCalculator = () => {
     const [products, setProducts] = useState<Product[]>([]);
@@ -34,6 +43,7 @@ const TariffCalculator = () => {
         totalCost: 0,
         effectiveRate: 0
     });
+    const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
 
     // Country-specific tariff data
@@ -71,19 +81,32 @@ const TariffCalculator = () => {
         { id: 8, name: 'Machinery', hsCode: '8419', baseRate: 2.2, category: 'Industrial' }
     ];
 
+    const sampleProductList: Product[] = [
+        // Initial sample product
+        { id: 1, name: 'Smartphone', hsCode: '8517', value: 300, quantity: 10, tariffRate: 5.5, category: 'Electronics' },
+        { id: 2, name: 'Jeans', hsCode: '6109', value: 50, quantity: 20, tariffRate: 8.2, category: 'Textiles' },
+        { id: 3, name: 'Car', hsCode: '8703', value: 20000, quantity: 2, tariffRate: 10.0, category: 'Automobiles' },
+        { id: 4, name: 'Laptop', hsCode: '8471', value: 1200, quantity: 5, tariffRate: 3.0, category: 'Electronics' },
+        { id: 5, name: 'T-Shirt', hsCode: '6109', value: 20, quantity: 50, tariffRate: 8.2, category: 'Textiles' },
+        { id: 6, name: 'Tablet', hsCode: '8471', value: 400, quantity: 15, tariffRate: 3.0, category: 'Electronics' },
+        { id: 7, name: 'Headphones', hsCode: '8518', value: 150, quantity: 25, tariffRate: 4.0, category: 'Electronics' },
+        { id: 8, name: 'Sneakers', hsCode: '6404', value: 80, quantity: 30, tariffRate: 6.5, category: 'Footwear' }
+    ];
+
 
     const addProduct = () => {
-        const newProduct = {
-            id: Date.now(),
-            name: '',
-            hsCode: '',
-            value: 0,
-            quantity: 1,
-            weight: 0,
-            tariffRate: 0,
-            category: 'Electronics'
-        };
-        setProducts([...products, newProduct]);
+        // const newProduct = {
+        //     id: Date.now(),
+        //     name: '',
+        //     hsCode: '',
+        //     value: 0,
+        //     quantity: 1,
+        //     tariffRate: 0,
+        //     category: 'Electronics'
+        // };
+        if (!selectedProduct) return;
+        setProducts([...products, { ...selectedProduct, id: Date.now() }]);
+        setSelectedProduct(null);
     };
 
 
@@ -142,7 +165,6 @@ const TariffCalculator = () => {
             hsCode: category.hsCode,
             value: Math.floor(Math.random() * 50000) + 10000,
             quantity: Math.floor(Math.random() * 100) + 10,
-            weight: Math.floor(Math.random() * 1000) + 100,
             tariffRate: category.baseRate,
             category: category.name
         };
@@ -267,33 +289,6 @@ const TariffCalculator = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Product Management */}
                     <div className="lg:col-span-2 space-y-6">
-
-                        {/* Quick Add Products */}
-                        <div className="bg-gray-50 p-4 rounded-lg">
-                            <h3 className="font-semibold mb-3">Quick Add Products:</h3>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                                {productCategories.slice(0, 8).map((category) => (
-                                    <button
-                                        key={category.id}
-                                        onClick={() => loadSampleProduct(category)}
-                                        className="text-xs px-3 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors"
-                                    >
-                                        {category.name}
-                                    </button>
-                                ))}
-                            </div>
-                            <div>
-                                <select name="hsCode" id="hsCode" className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500">
-                                    { /* List of HSCode from backend */}
-                                    <option value="">Select Category</option>
-                                    {productCategories.map((category) => (
-                                        <option key={category.id} value={category.hsCode}>{category.name} ({category.hsCode})</option>
-                                    ))}
-                                </select>
-                            </div>
-                        </div>
-
-
                         {/* Product List */}
                         <div
                             className="min-h-[300px] bg-blue-50 p-4 rounded-lg border-2 border-dashed border-blue-300"
@@ -305,13 +300,32 @@ const TariffCalculator = () => {
                                     <Package className="text-blue-600" size={18} />
                                     Products ({products.length})
                                 </h3>
-                                <button
-                                    onClick={addProduct}
-                                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                                >
+                                <div>
+                                    {/* Select product from product list */}
+                                    <Select onValueChange={(value) => {
+                                        const product = sampleProductList.find(prod => prod.id.toString() === value);
+                                        setSelectedProduct(product || null);
+                                    }} value={selectedProduct?.id.toString() || ''}>
+                                        <SelectTrigger className="w-[280px]">
+                                            <SelectValue placeholder="Select a product" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectGroup>
+                                                <SelectLabel>Products</SelectLabel>
+                                                {sampleProductList.map(product => (
+                                                    <SelectItem key={product.id} value={product.id.toString()}>
+                                                        {product.name}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectGroup>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <Button disabled={selectedProduct === null} onClick={addProduct}
+                                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
                                     <Plus size={16} />
                                     Add Product
-                                </button>
+                                </Button>
                             </div>
 
 
@@ -329,44 +343,6 @@ const TariffCalculator = () => {
                                             isConsolidated={false}
                                             updateProduct={updateProduct}
                                             removeProduct={removeProduct}
-                                            handleDragStart={handleDragStart}
-                                            draggedItem={draggedItem}
-                                        />
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-
-
-                        {/* Consolidated Shipment */}
-                        <div
-                            className="min-h-[200px] bg-green-50 p-4 rounded-lg border-2 border-dashed border-green-300"
-                            onDragOver={handleDragOver}
-                            onDrop={(e) => handleDrop(e, 'consolidated')}
-                        >
-                            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                                <Move className="text-green-600" size={18} />
-                                Consolidated Shipment ({consolidatedProducts.length})
-                                <span className="text-sm font-normal text-gray-600">
-                                    (Drag products here to consolidate)
-                                </span>
-                            </h3>
-
-
-                            {consolidatedProducts.length === 0 ? (
-                                <div className="text-center py-8 text-gray-500">
-                                    <Move size={48} className="mx-auto mb-4 opacity-50" />
-                                    <p>Drag products here to create a consolidated shipment for calculation.</p>
-                                </div>
-                            ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {consolidatedProducts.map((product) => (
-                                        <ProductCard
-                                            key={product.id}
-                                            product={product}
-                                            isConsolidated={true}
-                                            updateProduct={updateProduct}
-                                            removeProduct={removeFromConsolidated}
                                             handleDragStart={handleDragStart}
                                             draggedItem={draggedItem}
                                         />

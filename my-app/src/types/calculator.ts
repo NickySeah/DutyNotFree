@@ -4,7 +4,6 @@ export interface Product {
     hsCode: string;
     value: number;
     quantity: number;
-    weight: number;
     tariffRate: number;
     category: string;
 }
