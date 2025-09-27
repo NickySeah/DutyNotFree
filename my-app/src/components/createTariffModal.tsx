@@ -88,10 +88,13 @@ export function CreateTariffModal({ isOpen, onClose }: CreateTariffModalProps) {
   })) || [];
 
   // Form handlers
+  // Instead of having multiple useState calls, we can have a single state object for the form
+  // and a generic change handler that updates the relevant field based on input name or similar.
+  // This reduces boilerplate and makes it easier to manage form state.
   const handleChange = (field: keyof FormData, value: string | Date | undefined | number) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
-
+  
   const handleTariffTypeChange = (value: string) => {
     setFormData((prev) => ({
       ...prev,

@@ -79,6 +79,7 @@ export function UpdateTariffModal({isOpen,onClose,tariff,}: UpdateTariffModalPro
     }
   }, [tariff, isOpen]);
 
+  // Reset form data function
   const resetFormData = () => {
     setFormData({
       // exportingFrom: "",
@@ -92,7 +93,7 @@ export function UpdateTariffModal({isOpen,onClose,tariff,}: UpdateTariffModalPro
       expirationDate: undefined,
     });
   };
-
+  // Form validation function
   const validateForm = () => {
     if (formData.rate < 0) {
       toast.error("Please enter a valid tariff rate greater or equals to 0");
