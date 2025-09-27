@@ -357,7 +357,7 @@ const TariffCalculator = () => {
                             {products.length === 0 ? (
                                 <div className="text-center py-8 text-gray-500">
                                     <Package size={48} className="mx-auto mb-4 opacity-50" />
-                                    <p>No products added yet. Click &quot;Add Product&quot; or use quick add buttons above.</p>
+                                    <p>No products added yet. Click &quot;Add Product&quot;</p>
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -365,11 +365,8 @@ const TariffCalculator = () => {
                                         <ProductCard
                                             key={product.id}
                                             product={product}
-                                            isConsolidated={false}
                                             updateProduct={updateProduct}
                                             removeProduct={removeProduct}
-                                            handleDragStart={handleDragStart}
-                                            draggedItem={draggedItem}
                                         />
                                     ))}
                                 </div>
