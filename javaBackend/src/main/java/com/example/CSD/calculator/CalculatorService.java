@@ -31,14 +31,15 @@ public class CalculatorService {
         // 2. Apply each tariff in sequence
         double tariffTotal = 0.0;
         for (Tariff tariff : tariffs) {
-            if ("RATE".equalsIgnoreCase(tariff.getTariffType())) {
-                tariffTotal += originalValue * tariff.getRate(); // e.g. 5% = 0.05
-            } else if ("FEE".equalsIgnoreCase(tariff.getTariffType())) {
-                tariffTotal += originalValue + tariff.getFee();
-            } else {
-                throw new IllegalArgumentException("Unknown tariff type: " + tariff.getTariffType());
-            }
-        }
+    if ("RATE".equalsIgnoreCase(tariff.getTariffType()) && tariff.getStandardRate() != null) {
+        tariffTotal += originalValue * tariff.getStandardRate();
+    } else if ("FEE".equalsIgnoreCase(tariff.getTariffType()) && tariff.getFlatFee() != null) {
+        tariffTotal += originalValue + tariff.getFlatFee();
+    } else {
+        throw new IllegalArgumentException("Unknown tariff type or missing rate/fee: " + tariff.getTariffType());
+    }
+}
+
 
         // 3. Final cost = tariffs + base value
         return originalValue + tariffTotal;
