@@ -14,7 +14,8 @@ import {
     Move,
     Globe,
     ArrowRight,
-    Trash2
+    Trash2,
+    CalendarIcon
 } from 'lucide-react';
 import {
     Select,
@@ -26,6 +27,10 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { format } from 'date-fns';
+import { Label } from '@/components/ui/label';
 
 const TariffCalculator = () => {
     const [products, setProducts] = useState<Product[]>([]);
@@ -44,6 +49,7 @@ const TariffCalculator = () => {
         effectiveRate: 0
     });
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+    const [tariffDate, setTariffDate] = useState<Date | undefined>(undefined);
 
 
     // Country-specific tariff data
@@ -272,6 +278,25 @@ const TariffCalculator = () => {
                                     <option key={code} value={code}>{data.name}</option>
                                 ))}
                             </select>
+                        </div>
+                        {/* Input for selecting tariff date */}
+                        <div>
+                            <Label htmlFor="tariffDate" className="block text-sm font-medium text-gray-700 ml-6">Tariff Date</Label>
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        data-empty={!tariffDate}
+                                        className="data-[empty=true]:text-muted-foreground w-[280px] justify-start text-left font-normal"
+                                    >
+                                        <CalendarIcon />
+                                        {tariffDate ? format(tariffDate, "PPP") : <span>Pick a date</span>}
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0">
+                                    <Calendar mode="single" selected={tariffDate} onSelect={setTariffDate} />
+                                </PopoverContent>
+                            </Popover>
                         </div>
                         <div className="ml-4 text-sm text-gray-600">
                             {(() => {
