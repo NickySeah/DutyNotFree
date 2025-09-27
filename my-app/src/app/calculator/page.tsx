@@ -15,7 +15,8 @@ import {
     Globe,
     ArrowRight,
     Trash2,
-    CalendarIcon
+    CalendarIcon,
+    ArrowRightLeft
 } from 'lucide-react';
 import {
     Select,
@@ -255,29 +256,56 @@ const TariffCalculator = () => {
                     </div>
                     <div className="flex items-center gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">From</label>
-                            <select
+                            <Label className="block text-sm font-medium text-gray-700 mb-1">From</Label>
+                            <Select
                                 value={countries.origin}
-                                onChange={(e) => setCountries({ ...countries, origin: e.target.value })}
-                                className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                                onValueChange={(value) => setCountries({ ...countries, origin: value })}
                             >
-                                {Object.entries(countryData).map(([code, data]) => (
-                                    <option key={code} value={code}>{data.name}</option>
-                                ))}
-                            </select>
+                                <SelectTrigger className="w-[280px]">
+                                    <SelectValue placeholder="Select a country" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        <SelectLabel>Countries</SelectLabel>
+                                        {Object.entries(countryData).filter(([code]) => code !== countries.destination).map(([code, data]) => (
+                                            <SelectItem key={code} value={code}>
+                                                {data.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
                         </div>
-                        <ArrowRight className="text-gray-400 mt-6" size={20} />
+                        <div
+                            className="flex items-center justify-center mt-6 cursor-pointer group relative"
+                            onClick={() => setCountries(({ origin, destination }) => ({ origin: destination, destination: origin }))}
+                        >
+                            <ArrowRight
+                                className="text-gray-400 group-hover:hidden"
+                                size={20}
+                            />
+                            <ArrowRightLeft
+                                className="text-blue-500 hidden group-hover:inline"
+                                size={20}
+                            />
+                        </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">To</label>
-                            <select
-                                value={countries.destination}
-                                onChange={(e) => setCountries({ ...countries, destination: e.target.value })}
-                                className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-                            >
-                                {Object.entries(countryData).map(([code, data]) => (
-                                    <option key={code} value={code}>{data.name}</option>
-                                ))}
-                            </select>
+                            <Label className="block text-sm font-medium text-gray-700 mb-1">To</Label>
+                            <Select value={countries.destination} onValueChange={(value) => setCountries({ ...countries, destination: value })}>
+                                <SelectTrigger className="w-[280px]">
+                                    <SelectValue placeholder="Select a country" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        <SelectLabel>Countries</SelectLabel>
+                                        {Object.entries(countryData).filter(([code]) => code !== countries.origin).map(([code, data]) => (
+                                            <SelectItem key={code} value={code}>
+                                                {data.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
                         </div>
                         {/* Input for selecting tariff date */}
                         <div>
