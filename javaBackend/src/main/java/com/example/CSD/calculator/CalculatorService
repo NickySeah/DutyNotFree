@@ -1,0 +1,45 @@
+package com.example.CSD.tariff;
+
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+public class CalculatorService {
+
+    private final TariffRepository tariffRepository;
+
+    public CalculatorService(TariffRepository tariffRepository) {
+        this.tariffRepository = tariffRepository;
+    }
+
+    /**
+     * Calculate total cost for a product based on tariffs.
+     *
+     * Formula: (apply each tariff -> value*rate OR value+fee) + original value
+     */
+    public double calculateTariffedValue(
+            double originalValue,
+            String originCode,
+            String destCode,
+            String hsCode
+    ) {
+        // 1. Get all tariffs matching the product trade route & HS code
+        List<Tariff> tariffs = tariffRepository.findByFilters(originCode, destCode, hsCode, null);
+
+        // 2. Apply each tariff in sequence
+        double tariffTotal = 0.0;
+        for (Tariff tariff : tariffs) {
+            if ("RATE".equalsIgnoreCase(tariff.getTariffType())) {
+                tariffTotal += originalValue * tariff.getRate(); // e.g. 5% = 0.05
+            } else if ("FEE".equalsIgnoreCase(tariff.getTariffType())) {
+                tariffTotal += originalValue + tariff.getFee();
+            } else {
+                throw new IllegalArgumentException("Unknown tariff type: " + tariff.getTariffType());
+            }
+        }
+
+        // 3. Final cost = tariffs + base value
+        return originalValue + tariffTotal;
+    }
+}
