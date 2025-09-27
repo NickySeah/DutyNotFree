@@ -28,7 +28,7 @@ export default function HomePage() {
           <p className="text-xl mb-6 font-bold text-emerald-300 drop-shadow-md">
             Your onestop shop for tariff calculations
           </p>
-          {!isAuthenticated() ? (
+          {!isAuthenticated ? (
             <div>
               <div className="flex gap-4">
                 <Link href="/register">

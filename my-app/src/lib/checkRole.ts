@@ -3,26 +3,27 @@ import { useSession } from "@/lib/auth-client";
 export const useUserRole = () => {
   const { data: session, isPending } = useSession();
   
-  const isAdmin = () => session?.user?.role === "admin";
-  const isUser = () => session?.user?.role === "user";
+  // Return computed values instead of functions
+  const isAdmin = session?.user?.role === "admin";
+  const isUser = session?.user?.role === "user";
+  const isAuthenticated = !!session?.user;
+  
+  // Keep function versions if needed elsewhere
+  const checkIsAdmin = () => session?.user?.role === "admin";
+  const checkIsUser = () => session?.user?.role === "user";
   const hasRole = (role: string) => session?.user?.role === role;
-  const isAuthenticated = () => !!session?.user;
+  const checkIsAuthenticated = () => !!session?.user;
   
   return {
     session,
     isPending,
-    isAdmin,
-    isUser,
+    isAdmin,        // ✅ Boolean value
+    isUser,         // ✅ Boolean value
+    isAuthenticated, // ✅ Boolean value
+    checkIsAdmin,   // Function version if needed
+    checkIsUser,    // Function version if needed
     hasRole,
-    isAuthenticated,
+    checkIsAuthenticated,
     userRole: session?.user?.role,
   };
 };
-
-// Alternative: Non-hook version if you have session data available
-export const checkUserRole = (session: any) => ({
-  isAdmin: () => session?.user?.role === "admin",
-  isUser: () => session?.user?.role === "user", 
-  hasRole: (role: string) => session?.user?.role === role,
-  isAuthenticated: () => !!session?.user,
-});

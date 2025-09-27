@@ -2,6 +2,7 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal, ArrowUpDown } from "lucide-react";
+import { useUserRole } from "@/lib/checkRole";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -22,7 +23,17 @@ import { DataTableColumnHeader } from "@/components/data-table-column-header";
 import type { TradeRate } from "@/types/trade";
 
 // export const columns: ColumnDef<TradeRate>[] = [
-export const createColumns = (onModify: (tariff: TradeRate) => void): ColumnDef<TradeRate>[] => [
+
+// Parent component has the actual logic for modify and delete
+// Create Columns function need to call those functions
+// So we pass them as parameters to createColumns function
+export const createColumns = (
+  onModify: (tariff: TradeRate) => void, // this is the function : function type
+  onDelete: (tariff: TradeRate) => void
+): ColumnDef<TradeRate>[] => {
+  
+  const { isAdmin, isPending } = useUserRole();
+  return [
   {
     accessorKey: "description",
     header: ({ column }) => {
@@ -38,7 +49,7 @@ export const createColumns = (onModify: (tariff: TradeRate) => void): ColumnDef<
       return <DataTableColumnHeader column={column} title="HSN Code" />;
     },
     cell: ({ row }) => (
-      <div className="text-center">{row.getValue("hsCode") }</div>
+      <div className="text-center">{row.getValue("hsCode")}</div>
     ),
   },
   {
@@ -71,7 +82,7 @@ export const createColumns = (onModify: (tariff: TradeRate) => void): ColumnDef<
           <ReactCountryFlag
             countryCode={countryCode}
             svg
-            style={{ width: "3em", height: "3em"}}
+            style={{ width: "3em", height: "3em" }}
           />
         </div>
       );
@@ -80,7 +91,9 @@ export const createColumns = (onModify: (tariff: TradeRate) => void): ColumnDef<
   {
     accessorKey: "type",
     header: () => <div className="text-center">Type</div>,
-    cell: ({ row }) => <div className="text-center">{row.getValue("type")}</div>,
+    cell: ({ row }) => (
+      <div className="text-center">{row.getValue("type")}</div>
+    ),
   },
   {
     id: "tariffValue",
@@ -92,13 +105,10 @@ export const createColumns = (onModify: (tariff: TradeRate) => void): ColumnDef<
       const type = tradeRate.type;
       const rate = tradeRate.rate;
       const flatFee = tradeRate.flatFee;
-      
+
       return (
         <div className="text-center">
-          {type?.toLowerCase() === "ad valorem" 
-            ? `${rate}%` 
-            : `$${flatFee}`
-          }
+          {type?.toLowerCase() === "ad valorem" ? `${rate}%` : `$${flatFee}`}
         </div>
       );
     },
@@ -142,51 +152,61 @@ export const createColumns = (onModify: (tariff: TradeRate) => void): ColumnDef<
   {
     id: "isActive",
     header: ({ column }) => {
-      return <DataTableColumnHeader column={column} title="Status" className="text-center" />;
+      return (
+        <DataTableColumnHeader
+          column={column}
+          title="Status"
+          className="text-center"
+        />
+      );
     },
     cell: ({ row }) => {
       const tradeRate = row.original;
       const currentDate = new Date();
       const effectiveDate = tradeRate.effectiveDate;
       const expirationDate = tradeRate.expirationDate;
-      
+
       let isActive = false;
-      
+
       if (effectiveDate) {
         const isAfterEffective = currentDate >= new Date(effectiveDate);
-        const isBeforeExpiration = !expirationDate || currentDate <= new Date(expirationDate);
+        const isBeforeExpiration =
+          !expirationDate || currentDate <= new Date(expirationDate);
         isActive = isAfterEffective && isBeforeExpiration;
       }
-      
+
       return (
         <div className="text-center">
-          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-            isActive 
-              ? 'bg-green-100 text-green-800' 
-              : 'bg-red-100 text-red-800'
-          }`}>
-            {isActive ? 'Active' : 'Inactive'}
+          <span
+            className={`px-2 py-1 rounded-full text-xs font-medium ${
+              isActive
+                ? "bg-green-100 text-green-800"
+                : "bg-red-100 text-red-800"
+            }`}
+          >
+            {isActive ? "Active" : "Inactive"}
           </span>
         </div>
       );
     },
     sortingFn: (rowA, rowB) => {
       const currentDate = new Date();
-      
+
       const getIsActive = (row: any) => {
         const effectiveDate = row.original.effectiveDate;
         const expirationDate = row.original.expirationDate;
-        
+
         if (!effectiveDate) return false;
-        
+
         const isAfterEffective = currentDate >= new Date(effectiveDate);
-        const isBeforeExpiration = !expirationDate || currentDate <= new Date(expirationDate);
+        const isBeforeExpiration =
+          !expirationDate || currentDate <= new Date(expirationDate);
         return isAfterEffective && isBeforeExpiration;
       };
-      
+
       const aActive = getIsActive(rowA);
       const bActive = getIsActive(rowB);
-      
+
       // Active items first
       return bActive ? 1 : aActive ? -1 : 0;
     },
@@ -208,10 +228,16 @@ export const createColumns = (onModify: (tariff: TradeRate) => void): ColumnDef<
   //     );
   //   },
   // },
+
   {
     id: "actions",
     cell: ({ row }) => {
-      const tradeRate = row.original;
+      const tradeRate = row.original; // Access to this row of data
+
+      // Don't render actions while loading or if not admin
+      if (isPending || !isAdmin) {
+        return null;
+      }
 
       return (
         <DropdownMenu>
@@ -223,25 +249,38 @@ export const createColumns = (onModify: (tariff: TradeRate) => void): ColumnDef<
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
+
             <DropdownMenuItem
               onClick={() =>
                 navigator.clipboard.writeText(tradeRate.description)
               }
             >
-              Copy trade rate product description
+              Copy Description
             </DropdownMenuItem>
+
             <DropdownMenuSeparator />
+
             <DropdownMenuItem
               onClick={() => {
-                console.log("Modify Tariff Details clicked")
+                console.log("Modify Tariff Details clicked");
                 onModify(tradeRate);
               }}
             >
               Modify Tariff Details
+            </DropdownMenuItem>
+
+            <DropdownMenuItem
+              onClick={() => {
+                console.log("Delete Tariff clicked");
+                onDelete(tradeRate); // Call the delete function and pass the current tradeRate
+              }}
+            >
+              Delete Tariff
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );
     },
   },
-];
+]
+};

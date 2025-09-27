@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { tariffService } from "@/lib/axios";
 import { formatDateToYYYYMMDD } from "@/utils/dateUtils";
 
@@ -14,6 +14,7 @@ type TariffInput = {
 };
 
 export function useCreateTariff() {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (data: TariffInput) => {
       // Map frontend fields to backend expected fields
@@ -29,6 +30,10 @@ export function useCreateTariff() {
       };
       const response = await tariffService.post("", backendPayload);
       return response.data;
+    },
+    onSuccess: () => {
+      // Invalidate and refetch tariffs after successful creation
+      queryClient.invalidateQueries({ queryKey: ['tariffs'] });
     },
   });
 }

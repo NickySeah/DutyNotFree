@@ -40,8 +40,7 @@ export function DataTable<TData, TValue>({
   data,
 }: DataTableProps<TData, TValue>) {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const { isAdmin } = useUserRole();
-  const [mounted, setMounted] = useState(false);
+  const { isAdmin, isPending } = useUserRole();
 
   const globalFilter = (row: any, columnId: string, value: string) => {
     const description = String(row.getValue("description")).toLowerCase();
@@ -82,9 +81,6 @@ export function DataTable<TData, TValue>({
     },
   });
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   return (
     <div>
@@ -107,7 +103,7 @@ export function DataTable<TData, TValue>({
             Clear
           </Button>
         </div>
-        {mounted && isAdmin() && (
+        {!isPending && isAdmin && (
           <Button
             variant="default"
             onClick={() => {

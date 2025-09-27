@@ -36,13 +36,13 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     if (!isPending) {
-      if (!isAuthenticated()) {
+      if (!isAuthenticated) {
         toast.error("Please log in to admin account to access this page");
         router.push("/login");
         return;
       }
 
-      if (!isAdmin()) {
+      if (!isAdmin) {
         toast.error("Admin access required");
         router.push("/");
         return;
@@ -83,7 +83,7 @@ export default function AdminDashboardPage() {
   }
 
   // Don't render content if not admin
-  if (!isAuthenticated() || !isAdmin()) {
+  if (!isAuthenticated || !isAdmin) {
     return null;
   }
 

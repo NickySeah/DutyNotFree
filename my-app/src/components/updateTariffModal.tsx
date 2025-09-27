@@ -33,11 +33,9 @@ interface UpdateTariffModalProps {
   tariff: TradeRate | null;
 }
 
-export function UpdateTariffModal({
-  isOpen,
-  onClose,
-  tariff,
-}: UpdateTariffModalProps) {
+export function UpdateTariffModal({isOpen,onClose,tariff,}: UpdateTariffModalProps) {
+
+  // Form state
   const [formData, setFormData] = useState({
     // exportingFrom: "",
     // importingTo: "",
@@ -50,8 +48,10 @@ export function UpdateTariffModal({
     expirationDate: undefined as Date | undefined,
   });
 
+  // No Expiration state
   const [noExpiration, setNoExpiration] = useState(false);
 
+  // Mutation hook
   const { mutate, isPending } = useUpdateTariff();
 
   // Populate form data when tariff prop changes
@@ -129,10 +129,7 @@ export function UpdateTariffModal({
     return true;
   };
 
-  function handleChange(
-    field: keyof typeof formData,
-    value: string | Date | undefined | number
-  ) {
+  function handleChange(field: keyof typeof formData, value: string | Date | undefined | number) {
     setFormData((prev) => ({ ...prev, [field]: value }));
   }
 
@@ -162,7 +159,7 @@ export function UpdateTariffModal({
     }
 
     const updatePayload = {
-      tariff_id: tariff.tariff_id, // Required for update
+      tariff_id: tariff.tariff_id, // This one just take from the tariff prop
       // hsCode: formData.hsCode,
       // exportingFrom: formData.exportingFrom,
       // importingTo: formData.importingTo,
@@ -190,239 +187,269 @@ export function UpdateTariffModal({
   if (!tariff) return null;
 
   return (
-<Dialog open={isOpen} onOpenChange={handleClose}>
-  <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-    <DialogHeader>
-      <DialogTitle className="text-2xl font-semibold text-gray-900">
-        Update Tariff
-      </DialogTitle>
-      <div className="text-sm text-gray-600 font-mono bg-gray-50 px-3 py-2 rounded-md mt-2">
-        HS Code: {tariff.hsCode}
-      </div>
-    </DialogHeader>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-2xl font-semibold text-gray-900">
+            Update Tariff
+          </DialogTitle>
+          <div className="text-sm text-gray-600 font-mono bg-gray-50 px-3 py-2 rounded-md mt-2">
+            HS Code: {tariff.hsCode}
+          </div>
+        </DialogHeader>
 
-    <div className="space-y-4">
-      {/* Trade Route Section */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-3 border border-blue-100">
-        <h3 className="text-sm font-semibold text-gray-700 mb-2">Trade Route</h3>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="text-center">
-            <div className="text-xs text-gray-500 mb-2">Exporting from</div>
-            <div className="flex items-center justify-center space-x-2">
-              <ReactCountryFlag
-                countryCode={getCountryIsoCode(tariff.exportingFrom)}
-                svg
-                style={{ width: "2.5em", height: "2.5em", borderRadius: "4px" }}
-              />
-              <span className="font-medium text-gray-800">{tariff.exportingFrom}</span>
+        <div className="space-y-4">
+          {/* Trade Route Section */}
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-3 border border-blue-100">
+            <h3 className="text-sm font-semibold text-gray-700 mb-2">
+              Trade Route
+            </h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="text-center">
+                <div className="text-xs text-gray-500 mb-2">Exporting from</div>
+                <div className="flex items-center justify-center space-x-2">
+                  <ReactCountryFlag
+                    countryCode={getCountryIsoCode(tariff.exportingFrom)}
+                    svg
+                    style={{
+                      width: "2.5em",
+                      height: "2.5em",
+                      borderRadius: "4px",
+                    }}
+                  />
+                  <span className="font-medium text-gray-800">
+                    {tariff.exportingFrom}
+                  </span>
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-xs text-gray-500 mb-2">Importing to</div>
+                <div className="flex items-center justify-center space-x-2">
+                  <ReactCountryFlag
+                    countryCode={getCountryIsoCode(tariff.importingTo)}
+                    svg
+                    style={{
+                      width: "2.5em",
+                      height: "2.5em",
+                      borderRadius: "4px",
+                    }}
+                  />
+                  <span className="font-medium text-gray-800">
+                    {tariff.importingTo}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
-          <div className="text-center">
-            <div className="text-xs text-gray-500 mb-2">Importing to</div>
-            <div className="flex items-center justify-center space-x-2">
-              <ReactCountryFlag
-                countryCode={getCountryIsoCode(tariff.importingTo)}
-                svg
-                style={{ width: "2.5em", height: "2.5em", borderRadius: "4px" }}
-              />
-              <span className="font-medium text-gray-800">{tariff.importingTo}</span>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Product Information */}
-      <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
-        <h3 className="text-sm font-semibold text-gray-700 mb-2">Product Information</h3>
-        <div className="space-y-2">
-          <div>
-            <span className="text-xs text-gray-500">Description:</span>
-            <p className="text-sm text-gray-800 mt-1">{tariff.description}</p>
+          {/* Product Information */}
+          <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+            <h3 className="text-sm font-semibold text-gray-700 mb-2">
+              Product Information
+            </h3>
+            <div className="space-y-2">
+              <div>
+                <span className="text-xs text-gray-500">Description:</span>
+                <p className="text-sm text-gray-800 mt-1">
+                  {tariff.description}
+                </p>
+              </div>
+              <div>
+                <span className="text-xs text-gray-500">Tariff Type:</span>
+                <span className="inline-block ml-2 px-3 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+                  {tariff.type}
+                </span>
+              </div>
+            </div>
           </div>
-          <div>
-            <span className="text-xs text-gray-500">Tariff Type:</span>
-            <span className="inline-block ml-2 px-3 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
-              {tariff.type}
-            </span>
-          </div>
-        </div>
-      </div>
 
-      {/* Tariff Rate Section */}
-      <div className="bg-white rounded-lg p-3 border-2 border-orange-200">
-        <h3 className="text-sm font-semibold text-gray-700 mb-3">Tariff Rate Update</h3>
-        
-        {tariff.type === "Ad Valorem" ? (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between p-3 bg-orange-50 rounded-md">
-              <span className="text-sm text-gray-600">Current Rate:</span>
-              <span className="font-bold text-orange-600 text-lg">{tariff.rate}%</span>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                New Tariff Rate (%)
-              </label>
-              <Input
-                placeholder="Enter new tariff rate"
-                type="number"
-                value={formData.rate === 0 ? "" : formData.rate}
-                onChange={(e) =>
-                  handleChange(
-                    "rate",
-                    e.target.value === "" ? 0 : Number(e.target.value)
-                  )
-                }
-                className="w-full text-lg font-medium"
-                min="0"
-                step="0.01"
-              />
-            </div>
-          </div>
-        ) : tariff.type === "Flat Fee" ? (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between p-3 bg-green-50 rounded-md">
-              <span className="text-sm text-gray-600">Current Flat Fee:</span>
-              <span className="font-bold text-green-600 text-lg">${tariff.flatFee}</span>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                New Flat Fee ($)
-              </label>
-              <Input
-                placeholder="Enter new flat fee"
-                type="number"
-                value={formData.flatFee === 0 ? "" : formData.flatFee}
-                onChange={(e) =>
-                  handleChange(
-                    "flatFee",
-                    e.target.value === "" ? 0 : Number(e.target.value)
-                  )
-                }
-                className="w-full text-lg font-medium"
-                min="0"
-                step="1"
-              />
-            </div>
-          </div>
-        ) : (
-          <div className="p-4 bg-red-50 border border-red-200 rounded-md">
-            <span className="text-red-600 font-medium">Unknown tariff type</span>
-          </div>
-        )}
-      </div>
+          {/* Tariff Rate Section */}
+          <div className="bg-white rounded-lg p-3 border-2 border-orange-200">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3">
+              Tariff Rate Update
+            </h3>
 
-      {/* Date Configuration */}
-      <div className="bg-white rounded-lg p-3 border border-gray-200">
-        <h3 className="text-sm font-semibold text-gray-700 mb-3">Date Configuration</h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Effective Date */}
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
-              Effective Date
-            </label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  className="w-full justify-start text-left font-normal h-10"
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {formData.effectiveDate
-                    ? format(formData.effectiveDate, "PPP")
-                    : "Select effective date"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="p-0 w-auto">
-                <Calendar
-                  mode="single"
-                  selected={formData.effectiveDate}
-                  onSelect={(date) => handleChange("effectiveDate", date)}
-                  initialFocus
+            {tariff.type === "Ad Valorem" ? (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 bg-orange-50 rounded-md">
+                  <span className="text-sm text-gray-600">Current Rate:</span>
+                  <span className="font-bold text-orange-600 text-lg">
+                    {tariff.rate}%
+                  </span>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    New Tariff Rate (%)
+                  </label>
+                  <Input
+                    placeholder="Enter new tariff rate"
+                    type="number"
+                    value={formData.rate === 0 ? "" : formData.rate}
+                    onChange={(e) =>
+                      handleChange(
+                        "rate",
+                        e.target.value === "" ? 0 : Number(e.target.value)
+                      )
+                    }
+                    className="w-full text-lg font-medium"
+                    min="0"
+                    step="0.01"
+                  />
+                </div>
+              </div>
+            ) : tariff.type === "Flat Fee" ? (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 bg-green-50 rounded-md">
+                  <span className="text-sm text-gray-600">
+                    Current Flat Fee:
+                  </span>
+                  <span className="font-bold text-green-600 text-lg">
+                    ${tariff.flatFee}
+                  </span>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    New Flat Fee ($)
+                  </label>
+                  <Input
+                    placeholder="Enter new flat fee"
+                    type="number"
+                    value={formData.flatFee === 0 ? "" : formData.flatFee}
+                    onChange={(e) =>
+                      handleChange(
+                        "flatFee",
+                        e.target.value === "" ? 0 : Number(e.target.value)
+                      )
+                    }
+                    className="w-full text-lg font-medium"
+                    min="0"
+                    step="1"
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="p-4 bg-red-50 border border-red-200 rounded-md">
+                <span className="text-red-600 font-medium">
+                  Unknown tariff type
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Date Configuration */}
+          <div className="bg-white rounded-lg p-3 border border-gray-200">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3">
+              Date Configuration
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Effective Date */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Effective Date
+                </label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start text-left font-normal h-10"
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {formData.effectiveDate
+                        ? format(formData.effectiveDate, "PPP")
+                        : "Select effective date"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="p-0 w-auto">
+                    <Calendar
+                      mode="single"
+                      selected={formData.effectiveDate}
+                      onSelect={(date) => handleChange("effectiveDate", date)}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              {/* Expiration Date */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Expiration Date
+                </label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      disabled={noExpiration}
+                      className={`w-full justify-start text-left font-normal h-10 ${
+                        noExpiration ? "opacity-50 cursor-not-allowed" : ""
+                      }`}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {formData.expirationDate && !noExpiration
+                        ? format(formData.expirationDate, "PPP")
+                        : "Select expiration date"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="p-0 w-auto">
+                    <Calendar
+                      mode="single"
+                      selected={formData.expirationDate}
+                      onSelect={(date) => handleChange("expirationDate", date)}
+                      initialFocus
+                      disabled={noExpiration}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+
+            {/* No Expiration Checkbox */}
+            <div className="mt-3 pt-3 border-t border-gray-100">
+              <div className="flex items-center space-x-3">
+                <Checkbox
+                  id="no-expiration"
+                  checked={noExpiration}
+                  onCheckedChange={handleNoExpirationChange}
+                  className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
                 />
-              </PopoverContent>
-            </Popover>
-          </div>
-
-          {/* Expiration Date */}
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
-              Expiration Date
-            </label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  disabled={noExpiration}
-                  className={`w-full justify-start text-left font-normal h-10 ${
-                    noExpiration ? "opacity-50 cursor-not-allowed" : ""
-                  }`}
+                <Label
+                  htmlFor="no-expiration"
+                  className="text-sm font-medium text-gray-700 cursor-pointer"
                 >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {formData.expirationDate && !noExpiration
-                    ? format(formData.expirationDate, "PPP")
-                    : "Select expiration date"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="p-0 w-auto">
-                <Calendar
-                  mode="single"
-                  selected={formData.expirationDate}
-                  onSelect={(date) => handleChange("expirationDate", date)}
-                  initialFocus
-                  disabled={noExpiration}
-                />
-              </PopoverContent>
-            </Popover>
+                  This tariff has no expiration date
+                </Label>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* No Expiration Checkbox */}
-        <div className="mt-3 pt-3 border-t border-gray-100">
-          <div className="flex items-center space-x-3">
-            <Checkbox
-              id="no-expiration"
-              checked={noExpiration}
-              onCheckedChange={handleNoExpirationChange}
-              className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
-            />
-            <Label 
-              htmlFor="no-expiration" 
-              className="text-sm font-medium text-gray-700 cursor-pointer"
+        <DialogFooter className="pt-4 border-t border-gray-100">
+          <div className="flex space-x-3 w-full sm:w-auto">
+            <Button
+              variant="outline"
+              onClick={() => handleClose(false)}
+              className="flex-1 sm:flex-none"
             >
-              This tariff has no expiration date
-            </Label>
+              Cancel
+            </Button>
+            <Button
+              disabled={isPending}
+              onClick={handleUpdate}
+              className="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
+            >
+              {isPending ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                  Updating...
+                </>
+              ) : (
+                "Update Tariff"
+              )}
+            </Button>
           </div>
-        </div>
-      </div>
-    </div>
-
-    <DialogFooter className="pt-4 border-t border-gray-100">
-      <div className="flex space-x-3 w-full sm:w-auto">
-        <Button 
-          variant="outline" 
-          onClick={() => handleClose(false)}
-          className="flex-1 sm:flex-none"
-        >
-          Cancel
-        </Button>
-        <Button 
-          disabled={isPending} 
-          onClick={handleUpdate}
-          className="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
-        >
-          {isPending ? (
-            <>
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-              Updating...
-            </>
-          ) : (
-            "Update Tariff"
-          )}
-        </Button>
-      </div>
-    </DialogFooter>
-  </DialogContent>
-</Dialog>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
