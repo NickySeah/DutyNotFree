@@ -1,4 +1,4 @@
-package com.example.CSD.tariff;
+package com.example.CSD.calculator;
 
 import org.springframework.web.bind.annotation.*;
 

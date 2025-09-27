@@ -1,8 +1,9 @@
-package com.example.CSD.tariff;
-
-import org.springframework.stereotype.Service;
+package com.example.CSD.calculator;
 
 import java.util.List;
+import com.example.CSD.tariff.Tariff;
+import com.example.CSD.tariff.TariffRepository;
+import org.springframework.stereotype.Service;
 
 @Service
 public class CalculatorService {
