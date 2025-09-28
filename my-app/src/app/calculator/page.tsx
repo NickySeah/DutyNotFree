@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ProductCard from './productCard';
 import { Product, ProductCategory } from '@/types/calculator';
 import {
@@ -32,8 +32,10 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { Label } from '@/components/ui/label';
+import { toast } from "sonner";
 
 const TariffCalculator = () => {
+    const isMounted = useRef(false);
     const [products, setProducts] = useState<Product[]>([]);
     const [consolidatedProducts, setConsolidatedProducts] = useState<Product[]>([]);
     const [countries, setCountries] = useState({
@@ -180,6 +182,12 @@ const TariffCalculator = () => {
 
 
     const calculateTariffs = () => {
+
+        if (!tariffDate && isMounted.current) {
+            toast.warning("Please select a date before calculating");
+            return;
+        }
+
         const productsToCalculate = consolidatedProducts.length > 0 ? consolidatedProducts : products;
 
 
@@ -236,8 +244,11 @@ const TariffCalculator = () => {
 
 
     useEffect(() => {
+        if (!isMounted.current) {
+            isMounted.current = true;
+        }
         calculateTariffs();
-    }, [products, consolidatedProducts, countries]);
+    }, [products, consolidatedProducts, countries, tariffDate]);
 
 
     return (
@@ -245,7 +256,7 @@ const TariffCalculator = () => {
             <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
                 <div className="flex items-center gap-3 mb-6">
                     <Calculator className="text-blue-600" size={32} />
-                    <h1 className="text-3xl font-bold text-gray-800">Multi-Product Import/Export Calculator</h1>
+                    <h1 className="text-3xl font-bold text-gray-800">Tariff Calculator</h1>
                 </div>
 
                 {/* Country Selection */}
@@ -450,7 +461,7 @@ const TariffCalculator = () => {
 
 
                             <div className="mt-4 text-xs text-gray-600">
-                                Calculating: {consolidatedProducts.length > 0 ? `${consolidatedProducts.length} consolidated products` : `All ${products.length} products`}
+                                Calculating: All {products.length} products
                             </div>
                         </div>
 
