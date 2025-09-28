@@ -1,5 +1,7 @@
 package com.example.CSD.calculator;
 
+import java.time.DateTimeException;
+import java.time.LocalDate;
 import java.util.List;
 import com.example.CSD.tariff.Tariff;
 import com.example.CSD.tariff.TariffRepository;
@@ -23,23 +25,38 @@ public class CalculatorService {
             double originalValue,
             String originCode,
             String destCode,
-            String hsCode
+            String hsCode,
+            String dateStr
     ) {
-        // 1. Get all tariffs matching the product trade route & HS code
-        List<Tariff> tariffs = tariffRepository.findByFilters(originCode, destCode, hsCode, null);
+        // 1. Get all tariffs matching the trade route & HS code at a given date
+        LocalDate effectiveDate = null;
+        try {
+            effectiveDate =LocalDate.parse(dateStr);
+        }
+        catch (DateTimeException e) {                                               // (!) Given in invalid format   
+            throw new RuntimeException("Query date must be a valid date and in the format YYYY-MM-DD.");
+        }
+
+        List<Tariff> tariffs = tariffRepository.findActiveTariffsByFilters(originCode, destCode, hsCode, null, effectiveDate);
 
         // 2. Apply each tariff in sequence
         double tariffTotal = 0.0;
         for (Tariff tariff : tariffs) {
-    if ("RATE".equalsIgnoreCase(tariff.getTariffType()) && tariff.getStandardRate() != null) {
-        tariffTotal += originalValue * tariff.getStandardRate();
-    } else if ("FEE".equalsIgnoreCase(tariff.getTariffType()) && tariff.getFlatFee() != null) {
-        tariffTotal += originalValue + tariff.getFlatFee();
-    } else {
-        throw new IllegalArgumentException("Unknown tariff type or missing rate/fee: " + tariff.getTariffType());
-    }
-}
+            System.out.printf("Debug: from %s to %s for %s - %s: rate %s%% OR fee $%s - start %s to end %s\n",                  //TODO: to see what tariffs are applied via terminal
+                    tariff.getOriginCountry().getName(), tariff.getDestCountry().getName(), tariff.getHsCode().getDescription(),
+                    tariff.getTariffType(),
+                    tariff.getStandardRate() != null ? tariff.getStandardRate() : "N/A",
+                    tariff.getFlatFee() != null ? tariff.getFlatFee() : "N/A",
+                    tariff.getEffectiveDate(), tariff.getExpirationDate() != null ? tariff.getExpirationDate() : "N/A"
+            );
 
+            if (tariff.getStandardRate() != null) {
+                tariffTotal += originalValue * tariff.getStandardRate() / 100.0;
+            } 
+            else if (tariff.getFlatFee() != null) {
+                tariffTotal += originalValue + tariff.getFlatFee();
+            } 
+        }
 
         // 3. Final cost = tariffs + base value
         return originalValue + tariffTotal;

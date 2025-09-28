@@ -35,10 +35,11 @@ public class CalculatorController {
     })
     public double calculateTariffedValue(
             @RequestParam double value,
-            @RequestParam String originCode,
-            @RequestParam String destCode,
-            @RequestParam String hsCode
+            @RequestParam String origin,
+            @RequestParam String dest,
+            @RequestParam String hsCode,
+            @RequestParam String date
     ) {
-        return calculatorService.calculateTariffedValue(value, originCode, destCode, hsCode);
+        return calculatorService.calculateTariffedValue(value, origin, dest, hsCode, date);
     }
 }

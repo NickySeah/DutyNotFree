@@ -87,9 +87,9 @@ Content-Type: application/json
     "originCountry": "156",
     "destCountry": "840",
     "hsCode": "02023000",
-    "tariffType": "Mock ",
-    "flatFee": 100,
-    "effectiveDate": "2016-01-01"
+    "tariffType": "Mock B",
+    "flatFee": 200,
+    "effectiveDate": "2015-01-01"
 }
 
 ###
@@ -99,11 +99,11 @@ Content-Type: application/json
 {
     "originCountry": "840",
     "destCountry": "156",
-    "hsCode": "02023000",
+    "hsCode": "02061000",
     "tariffType": "Mock A",
     "standardRate": 1.0,
     "effectiveDate": "1999-01-01"
-    , "expirationDate": "2000-01-01"
+    //, "expirationDate": "2000-01-01"
 }
 
 ###
@@ -181,5 +181,5 @@ DELETE http://localhost:8080/products?hsCode=123456&name=MockProduct 3&userID=2
 DELETE http://localhost:8080/products/13
 
 
-
-
+###
+GET http://localhost:8080/calculator?value=1000&origin=840&dest=156&hsCode=02023000&date=2011-2-2 
