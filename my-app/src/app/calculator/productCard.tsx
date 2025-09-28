@@ -135,7 +135,7 @@ const ProductCard = ({
                             id={inputId('value')}
                             type="number"
                             value={localState.value}
-                            onChange={e => handleChange('value', Number(e.target.value))}
+                            onChange={e => handleChange('value', e.target.value === "" ? "" : Number(e.target.value))}
                             placeholder="Value"
                             className="w-full px-2 py-1 text-sm border rounded"
                         />
@@ -148,7 +148,7 @@ const ProductCard = ({
                             id={inputId('quantity')}
                             type="number"
                             value={localState.quantity}
-                            onChange={e => handleChange('quantity', Number(e.target.value))}
+                            onChange={e => handleChange('quantity', e.target.value === "" ? "" : Number(e.target.value))}
                             placeholder="Qty"
                             className="w-full px-2 py-1 text-sm border rounded"
                         />
