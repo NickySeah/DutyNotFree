@@ -1,11 +1,14 @@
 export interface Product {
     id: number;
+    is_private: boolean;
     name: string;
-    hsCode: string;
+    user_id: string;
+    hsCode: {
+        code: string;
+        description: string;
+    };
     value: number;
     quantity: number;
-    tariffRate: number;
-    category: string;
 }
 
 // Product category type

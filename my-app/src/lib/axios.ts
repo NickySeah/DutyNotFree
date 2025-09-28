@@ -22,3 +22,8 @@ export const countriesService = axios.create({
   baseURL: process.env.NEXT_PUBLIC_COUNTRIES_SERVICE_URL,
   withCredentials: true,
 });
+
+export const calculatorService = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_CALCULATOR_SERVICE_URL,
+  withCredentials: true,
+});

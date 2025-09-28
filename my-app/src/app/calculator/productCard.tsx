@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Product } from '@/types/calculator';
-import { Move, X } from 'lucide-react';
+import { Box, Move, X } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 
 const ProductCard = ({
@@ -16,30 +16,29 @@ const ProductCard = ({
 }) => {
     const [localState, setLocalState] = useState({
         name: product.name,
-        value: product.value,
+        value: 0,
         hsCode: product.hsCode,
-        quantity: product.quantity,
-        tariffRate: product.tariffRate,
+        quantity: 1
     });
 
     useEffect(() => {
         setLocalState({
             name: product.name,
-            value: product.value,
+            value: product.value || 0,
             hsCode: product.hsCode,
-            quantity: product.quantity,
-            tariffRate: product.tariffRate,
+            quantity: product.quantity || 1,
         });
     }, [product]);
 
-    const handleChange = (field: keyof Product, value: any) => {
+    const handleChange = (field: keyof Product, value: string | number) => {
         setLocalState(prev => ({ ...prev, [field]: value }));
     };
 
     const saveChanges = () => {
         Object.entries(localState).forEach(([field, value]) => {
+            if (field === "hsCode") return; // skip hsCode if not string/number
             if (product[field as keyof Product] !== value) {
-                updateProduct(product.id, field as keyof Product, value);
+                updateProduct(product.id, field as keyof Product, value as string | number);
             }
         });
     };
@@ -53,7 +52,7 @@ const ProductCard = ({
         >
             <div className="flex justify-between items-start mb-3">
                 <div className="flex items-center gap-2">
-                    <Move size={16} className="text-gray-400" />
+                    <Box size={16} className="text-gray-400" />
                     <h4 className="font-semibold text-gray-800">{product.name || 'Unnamed Product'}</h4>
                 </div>
                 <button
@@ -95,7 +94,7 @@ const ProductCard = ({
                     />
                     </div> */}
 
-                <div className="grid grid-cols-2 gap-4">
+                {/* <div className="grid grid-cols-2 gap-4">
                     <div>
                         <Label htmlFor={inputId('hsCode')} className="block text-sm font-medium text-gray-700">
                             HS Code
@@ -103,7 +102,7 @@ const ProductCard = ({
                         <Input
                             id={inputId('hsCode')}
                             type="text"
-                            value={localState.hsCode}
+                            value={localState.hsCode.code}
                             placeholder="HS Code"
                             className="w-full px-2 py-1 text-sm border rounded disabled"
                             disabled
@@ -124,6 +123,22 @@ const ProductCard = ({
                             disabled
                         />
                     </div>
+                </div> */}
+
+                <div className="grid grid-cols-1 gap-4">
+                    <div>
+                        <Label htmlFor={inputId('hsCode')} className="block text-sm font-medium text-gray-700">
+                            HS Code
+                        </Label>
+                        <Input
+                            id={inputId('hsCode')}
+                            type="text"
+                            value={localState.hsCode.code}
+                            placeholder="HS Code"
+                            className="w-full px-2 py-1 text-sm border rounded disabled"
+                            disabled
+                        />
+                    </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -138,6 +153,7 @@ const ProductCard = ({
                             onChange={e => handleChange('value', e.target.value === "" ? "" : Number(e.target.value))}
                             placeholder="Value"
                             className="w-full px-2 py-1 text-sm border rounded"
+                            min={0}
                         />
                     </div>
                     <div>
@@ -151,6 +167,7 @@ const ProductCard = ({
                             onChange={e => handleChange('quantity', e.target.value === "" ? "" : Number(e.target.value))}
                             placeholder="Qty"
                             className="w-full px-2 py-1 text-sm border rounded"
+                            min={1}
                         />
                     </div>
 
