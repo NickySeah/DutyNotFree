@@ -26,7 +26,7 @@ import { useUpdateTariff } from "@/hooks/useUpdateTariff";
 import type { TradeRate } from "@/types/trade";
 import { getCountryIsoCode } from "@/utils/countryUtils";
 import ReactCountryFlag from "react-country-flag";
-import { getBackendValueFromData, getTariffBackendValue } from "@/lib/testData";
+import { getBackendValueFromData} from "@/lib/testData";
 
 interface UpdateTariffModalProps {
   isOpen: boolean;

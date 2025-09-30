@@ -1,7 +1,5 @@
 package com.example.CSD.country;
 
-import java.util.Optional;
-
 import java.util.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -14,6 +12,7 @@ public interface CountryRepository extends JpaRepository<Country, Long> {
     boolean existsByCode(String code); // Custom query method
     Optional<Country> findByCode(String code);
     void deleteByCode(String code);
+    List<Country> findAllByOrderByNameAsc();
 
     @Query("""
     SELECT c FROM Country c 

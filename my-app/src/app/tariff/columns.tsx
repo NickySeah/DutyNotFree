@@ -177,12 +177,18 @@ export const createColumns = (
 
       let isActive = false;
 
-      if (effectiveDate) {
-        const isAfterEffective = currentDate >= new Date(effectiveDate);
-        const isBeforeExpiration =
-          !expirationDate || currentDate <= new Date(expirationDate);
-        isActive = isAfterEffective && isBeforeExpiration;
+    if (effectiveDate) {
+      const isAfterEffective = currentDate >= new Date(effectiveDate);
+      
+      let isBeforeExpiration = true;
+      if (expirationDate) {
+        const endOfExpirationDay = new Date(expirationDate);
+        endOfExpirationDay.setHours(23, 59, 59, 999); // Set to 23:59:59.999
+        isBeforeExpiration = currentDate <= endOfExpirationDay;
       }
+      
+      isActive = isAfterEffective && isBeforeExpiration;
+    }
 
       return (
         <div className="text-center">

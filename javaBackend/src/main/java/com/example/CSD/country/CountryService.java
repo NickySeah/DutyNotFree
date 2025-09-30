@@ -8,13 +8,13 @@ import jakarta.transaction.Transactional;
 @Service
 public class CountryService {
     private CountryRepository countries;
-    
+
     public CountryService(CountryRepository countries) {
-        this.countries = countries; 
+        this.countries = countries;
     }
 
     public List<Country> listCountries() {
-        return countries.findAll();
+        return countries.findAllByOrderByNameAsc();
     }
 
     public List<Country> getCountry(String iso, String name, String alpha3) {
@@ -34,7 +34,7 @@ public class CountryService {
         String iso = newCountry.getCode();
         String name = newCountry.getName();
         String alpha3 = newCountry.getAlpha3();
-        
+
         if (iso == null || iso.trim().length() != 3) {
             throw new RuntimeException("Invalid ISO code");
         }
@@ -50,24 +50,22 @@ public class CountryService {
 
     public Country updateCountry(String code, Country updatedCountry) {
         Country country = countries.findByCode(code)
-        .orElseThrow(() -> new RuntimeException("Country not found with iso code " + code));
-        
+                .orElseThrow(() -> new RuntimeException("Country not found with iso code " + code));
+
         String name = updatedCountry.getName();
         String alpha3 = updatedCountry.getAlpha3();
 
         if (name != null) {
             if (!name.isBlank()) {
                 country.setName(name);
-            }
-            else {
+            } else {
                 throw new RuntimeException("Country name cannot be empty");
             }
         }
         if (alpha3 != null) {
             if (alpha3.length() == 3) {
                 country.setAlpha3(alpha3);
-            }
-            else {
+            } else {
                 throw new RuntimeException("Alpha 3 code must be exactly 3 characters long");
             }
         }
