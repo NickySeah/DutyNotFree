@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { tariffService } from '@/lib/axios';
 import { formatDateToYYYYMMDD } from '@/utils/dateUtils';
+import { getBackendValueFromData } from '@/lib/testData';
 
 type TariffUpdateInput = {
   tariff_id : number;
@@ -9,8 +10,8 @@ type TariffUpdateInput = {
   // importingTo?: string;
   // description?: string;
   tariffType: string;
-  rate?: number;
-  flatFee?: number;
+  rate: number;
+  flatFee: number;
   effectiveDate: Date;
   expirationDate?: Date | null;
 };
@@ -19,7 +20,7 @@ export function useUpdateTariff() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (data: TariffUpdateInput) => {
-      const { tariff_id, tariffType, ...payload } = data;
+      const { tariff_id, ...payload } = data;
       // Map frontend fields to backend expected fields
       const backendPayload = {
         // hs_code: payload.hsCode,
@@ -27,8 +28,8 @@ export function useUpdateTariff() {
         // dest_country: payload.importingTo,
         // description: payload.description,
         // tariff_type: payload.type,
-        standardRate: tariffType === "Ad Valorem" ? payload.rate : null,
-        flatFee: tariffType === "Flat Fee" ? payload.flatFee : null,
+        standardRate: getBackendValueFromData(payload.tariffType, payload.rate, payload.flatFee) === "Ad Valorem" ? payload.rate : null,
+        flatFee: getBackendValueFromData(payload.tariffType, payload.rate, payload.flatFee) === "Flat Fee" ? payload.flatFee : null,
         effectiveDate: formatDateToYYYYMMDD(payload.effectiveDate), // Convert to YYYY-MM-DD
         expirationDate: payload.expirationDate ? formatDateToYYYYMMDD(payload.expirationDate) : null, // Convert to YYYY-MM-DD or null
       };

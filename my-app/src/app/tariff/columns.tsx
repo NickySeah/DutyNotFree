@@ -1,7 +1,7 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal, ArrowUpDown } from "lucide-react";
+import { MoreHorizontal } from "lucide-react";
 import { useUserRole } from "@/lib/checkRole";
 
 import { Button } from "@/components/ui/button";
@@ -34,15 +34,25 @@ export const createColumns = (
   
   const { isAdmin, isPending } = useUserRole();
   return [
-  {
-    accessorKey: "description",
-    header: ({ column }) => {
-      return <DataTableColumnHeader column={column} title="Description " />;
-    },
-    cell: ({ row }) => (
-      <div className="text-center">{row.getValue("description")}</div>
-    ),
+{
+  accessorKey: "description",
+  header: ({ column }) => {
+    return <DataTableColumnHeader column={column} title="Description " />;
   },
+  cell: ({ row }) => {
+    const description = row.getValue("description") as string;
+    return (
+      <div className="text-center max-w-xs">
+        <span 
+          className="block truncate cursor-help hover:bg-slate-100 px-2 py-1 rounded transition-colors" 
+          title={description}
+        >
+          {description}
+        </span>
+      </div>
+    );
+  },
+},
   {
     accessorKey: "hsCode",
     header: ({ column }) => {
@@ -101,14 +111,13 @@ export const createColumns = (
       return <DataTableColumnHeader column={column} title="Tariff Value" />;
     },
     cell: ({ row }) => {
-      const tradeRate = row.original; // Access the original data
-      const type = tradeRate.type;
+      const tradeRate = row.original;
       const rate = tradeRate.rate;
       const flatFee = tradeRate.flatFee;
 
       return (
         <div className="text-center">
-          {type?.toLowerCase() === "ad valorem" ? `${rate}%` : `$${flatFee}`}
+          {flatFee !== null && flatFee > 0 ? `$${flatFee}` : `${rate}%`}
         </div>
       );
     },

@@ -6,7 +6,7 @@ export interface TradeRate {
   importingTo: string;      // maps to dest_country in DB
   type: string;            // maps to tariff_type in DB
   rate: number;            // maps to standard_rate in DB
-  flatFee?: number;        // maps to flat_fee in DB
+  flatFee: number;        // maps to flat_fee in DB
   effectiveDate: Date | undefined;    // maps to effective_date in DB
   expirationDate: Date | undefined;   // maps to expiry_date in DB
 }

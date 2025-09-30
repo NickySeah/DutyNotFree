@@ -26,6 +26,7 @@ import { useUpdateTariff } from "@/hooks/useUpdateTariff";
 import type { TradeRate } from "@/types/trade";
 import { getCountryIsoCode } from "@/utils/countryUtils";
 import ReactCountryFlag from "react-country-flag";
+import { getBackendValueFromData, getTariffBackendValue } from "@/lib/testData";
 
 interface UpdateTariffModalProps {
   isOpen: boolean;
@@ -270,7 +271,7 @@ export function UpdateTariffModal({isOpen,onClose,tariff,}: UpdateTariffModalPro
               Tariff Rate Update
             </h3>
 
-            {tariff.type === "Ad Valorem" ? (
+            {getBackendValueFromData(tariff.type, tariff.rate, tariff.flatFee) === "Ad Valorem" ? (
               <div className="space-y-3">
                 <div className="flex items-center justify-between p-3 bg-orange-50 rounded-md">
                   <span className="text-sm text-gray-600">Current Rate:</span>
@@ -298,7 +299,7 @@ export function UpdateTariffModal({isOpen,onClose,tariff,}: UpdateTariffModalPro
                   />
                 </div>
               </div>
-            ) : tariff.type === "Flat Fee" ? (
+            ) : getBackendValueFromData(tariff.type, tariff.rate, tariff.flatFee) === "Flat Fee" ? (
               <div className="space-y-3">
                 <div className="flex items-center justify-between p-3 bg-green-50 rounded-md">
                   <span className="text-sm text-gray-600">

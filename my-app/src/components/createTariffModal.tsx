@@ -36,7 +36,7 @@ import { Combobox } from "@/components/ui/combobox";
 import { useCreateTariff } from "@/hooks/useCreateTariff";
 import { useHsCodes } from "@/hooks/useHsCodes";
 import { useCountries } from "@/hooks/useCountry";
-import { typeOfTariffs } from "@/lib/testData";
+import { typeOfTariffs, getTariffBackendValue, getTableDisplayName } from "@/lib/testData";
 
 // Types
 interface CreateTariffModalProps {
@@ -189,9 +189,9 @@ export function CreateTariffModal({ isOpen, onClose }: CreateTariffModalProps) {
       hsCode: formData.hsCode,
       exportingFrom: formData.exportingCountry,
       importingTo: formData.importingCountry,
-      type: formData.tariffType,
-      rate: formData.tariffType === "Ad Valorem" ? formData.rate : null,
-      flatFee: formData.tariffType === "Flat Fee" ? formData.flatFee : null,
+      type: getTableDisplayName(formData.tariffType), // Send display name instead of backend value
+      rate: getTariffBackendValue(formData.tariffType) === "Ad Valorem" ? formData.rate : null,
+      flatFee: getTariffBackendValue(formData.tariffType) === "Flat Fee" ? formData.flatFee : null,
       effectiveDate: formData.effectiveDate!,
       expirationDate: noExpiration ? undefined : formData.expirationDate!,
     };
@@ -274,7 +274,7 @@ export function CreateTariffModal({ isOpen, onClose }: CreateTariffModalProps) {
       </Label>
       <div className="flex gap-4">
         <div className="flex-1">
-          {formData.tariffType === "Ad Valorem" ? (
+          {getTariffBackendValue(formData.tariffType) === "Ad Valorem" ? (
             <Input
               placeholder="Tariff Rate (%)"
               type="number"
@@ -286,7 +286,7 @@ export function CreateTariffModal({ isOpen, onClose }: CreateTariffModalProps) {
               max="100"
               step="0.01"
             />
-          ) : formData.tariffType === "Flat Fee" ? (
+          ) : getTariffBackendValue(formData.tariffType) === "Flat Fee" ? (
             <Input
               placeholder="Flat Fee ($)"
               type="number"
@@ -313,8 +313,8 @@ export function CreateTariffModal({ isOpen, onClose }: CreateTariffModalProps) {
           </SelectTrigger>
           <SelectContent>
             {typeOfTariffs.map((tariff) => (
-              <SelectItem key={tariff} value={tariff}>
-                {tariff}
+              <SelectItem key={tariff.name} value={tariff.name}>
+                {tariff.name}
               </SelectItem>
             ))}
           </SelectContent>
