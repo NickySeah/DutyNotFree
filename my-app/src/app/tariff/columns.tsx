@@ -178,7 +178,9 @@ export const createColumns = (
       let isActive = false;
 
     if (effectiveDate) {
-      const isAfterEffective = currentDate >= new Date(effectiveDate);
+      const startOfEffectiveDay = new Date(effectiveDate);
+      startOfEffectiveDay.setHours(0, 0, 0, 0);       // Set to 00:00:00.000 
+      const isAfterEffective = currentDate >= startOfEffectiveDay;
       
       let isBeforeExpiration = true;
       if (expirationDate) {
