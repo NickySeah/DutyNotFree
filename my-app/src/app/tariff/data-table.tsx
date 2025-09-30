@@ -59,10 +59,10 @@ export function DataTable<TData, TValue>({
   };
 
   const [sorting, setSorting] = useState<SortingState>([
-    {
-      id: "effectiveDate",
-      desc: true, // Initialize with default sorting
-    },
+    // {
+    //   id: "effectiveDate",
+    //   desc: true, // Initialize with default sorting
+    // },
   ]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const table = useReactTable({
