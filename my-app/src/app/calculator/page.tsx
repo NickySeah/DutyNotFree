@@ -37,7 +37,6 @@ import { useCountries } from '@/hooks/useCountry';
 import { useProducts } from '@/hooks/useProducts';
 import { calculatorService, tariffService } from '@/lib/axios';
 import { formatDateToYYYYMMDD } from '@/utils/dateUtils';
-import { formatDateToYYYYMMDD } from '@/utils/dateUtils';
 
 const TariffCalculator = () => {
     const isMounted = useRef(false);
