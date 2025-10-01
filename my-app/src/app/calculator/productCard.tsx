@@ -8,11 +8,13 @@ import React, { useState, useEffect } from 'react';
 const ProductCard = ({
     product,
     updateProduct,
-    removeProduct
+    removeProduct,
+    tariffDetails
 }: {
     product: Product;
     updateProduct: (id: number, field: keyof Product, value: string | number) => void;
     removeProduct: (id: number) => void;
+    tariffDetails?: string;
 }) => {
     const [localState, setLocalState] = useState({
         name: product.name,
@@ -180,6 +182,14 @@ const ProductCard = ({
                     Save
                 </Button>
             </div>
+
+            {/* Tariff Details */}
+            {tariffDetails && (
+                <div className="mt-3 p-2 bg-gray-50 rounded text-xs">
+                    <div className="font-medium text-gray-700 mb-1">Applicable Tariffs:</div>
+                    <div className="text-gray-600">{tariffDetails}</div>
+                </div>
+            )}
         </div>
     );
 };

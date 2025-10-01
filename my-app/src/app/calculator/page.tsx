@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import ProductCard from './productCard';
-import { Product, ProductCategory } from '@/types/calculator';
+import { Product, TariffData } from '@/types/calculator';
 import {
     Calculator,
     Package,
@@ -35,7 +35,8 @@ import { Label } from '@/components/ui/label';
 import { toast } from "sonner";
 import { useCountries } from '@/hooks/useCountry';
 import { useProducts } from '@/hooks/useProducts';
-import { calculatorService } from '@/lib/axios';
+import { calculatorService, tariffService } from '@/lib/axios';
+import { formatDateToYYYYMMDD } from '@/utils/dateUtils';
 
 const TariffCalculator = () => {
     const isMounted = useRef(false);
@@ -53,6 +54,7 @@ const TariffCalculator = () => {
     });
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const [tariffDate, setTariffDate] = useState<Date | undefined>(undefined);
+    const [productTariffDetails, setProductTariffDetails] = useState<{ [productId: number]: string }>({});
 
     const { data: countryData, isLoading: countriesLoading } = useCountries();
     const { data: productsData, isLoading: productsLoading } = useProducts();
@@ -154,9 +156,26 @@ const TariffCalculator = () => {
         return countryMap.current[code]?.name || "N/A";
     };
 
+    const getTariffData = async (origin: string, destination: string, hsCode: string, date: string) => {
+        try {
+            const response = await tariffService.get("", {
+                params: {
+                    origin: origin,
+                    dest: destination,
+                    hsCode: hsCode,
+                    date: date
+                }
+            });
+            
+            return response.data as TariffData[];
+        } catch (error) {
+            console.error(`Error fetching tariff data for HS Code ${hsCode}:`, error);
+            throw error;
+        }
+    };
+
 
     const calculateTariffs = async () => {
-
         const warningToastId = "select-fields-warning";
 
         if ((!tariffDate || countries.origin === '' || countries.destination === '') && isMounted.current) {
@@ -165,6 +184,7 @@ const TariffCalculator = () => {
             });
             return;
         }
+
         if (products.length === 0) {
             setResults({
                 totalValue: 0,
@@ -176,67 +196,58 @@ const TariffCalculator = () => {
         }
 
         const productsToCalculate = products;
-
-
         let totalValue = 0;
         let totalTariff = 0;
-        // let totalVAT = 0;
-        // let totalAdditional = 0;
-
-
-        // const tradeKey = `${countries.origin}-${countries.destination}`;
-        // const tradeMultiplier = tradeAgreements[tradeKey] || tradeAgreements.default;
-        // const destinationVATRate = countryData[countries.destination as keyof typeof countryData]?.vatRate || 0;
-
+        
+        const newProductTariffDetails: { [productId: number]: string } = {};
 
         for (const product of productsToCalculate) {
-
             const finalProductValue = product.value * product.quantity;
             const origin = countries.origin;
             const destination = countries.destination;
             const hsCode = product.hsCode.code;
-            const date = tariffDate ? tariffDate.toISOString().split('T')[0] : '';
+            const date = tariffDate ? formatDateToYYYYMMDD(tariffDate) : '';
 
-            // call endpoint for each product
-            const response = await calculatorService.get("", {
-                params: {
-                    value: finalProductValue,
-                    origin: origin,
-                    dest: destination,
-                    hsCode: hsCode,
-                    date: date
+            try {
+                let tariffs: TariffData[] = [];
+                if (!(!origin || !destination || !hsCode || !date)) {
+                    tariffs = await getTariffData(origin, destination, hsCode, date);
                 }
-            });
+                else {
+                    newProductTariffDetails[product.id] = "N/A";
+                    totalValue += finalProductValue;
+                    continue;
+                }
+                
+                // Format tariffs for display
+                const formattedTariffs = formatTariffsForDisplay(tariffs);
+                newProductTariffDetails[product.id] = formattedTariffs;
 
-            // Apply trade agreement discount
-            // const tradeKey = `${countries.origin}-${countries.destination}`;
-            // const tradeMultiplier = tradeAgreements[tradeKey] || tradeAgreements.default;
-            // const adjustedTariffRate = tariffRate * tradeMultiplier;
-            // const tariffAmount = (productValue * adjustedTariffRate) / 100;
+                const response = await calculatorService.get("", {
+                    params: {
+                        value: finalProductValue,
+                        origin: origin,
+                        dest: destination,
+                        hsCode: hsCode,
+                        date: date
+                    }
+                });
 
-            const tariffAmount = response.data - finalProductValue;
+                const tariffAmount = response.data - finalProductValue;
+                totalValue += finalProductValue;
+                totalTariff += tariffAmount;
 
-            // VAT calculated on duty-paid value
-            // const dutyPaidValue = productValue + tariffAmount;
-            // const destinationVATRate = countryData[countries.destination as keyof typeof countryData]?.vatRate || 0;
-            // const vatAmount = (dutyPaidValue * destinationVATRate) / 100;
-
-
-            // Additional duties (anti-dumping, safeguard, etc.)
-            // const additionalAmount = (productValue * 1) / 100; // 1% example
-
-
-            totalValue += finalProductValue;
-            totalTariff += tariffAmount;
-            // totalVAT += vatAmount;
-            // totalAdditional += additionalAmount;
+            } catch (error) {
+                console.error(`Error calculating tariff for product ${product.name}:`, error);
+                newProductTariffDetails[product.id] = "Error loading tariff data";
+                totalValue += finalProductValue;
+            }
         }
 
+        setProductTariffDetails(newProductTariffDetails);
+
         const totalCost = totalValue + totalTariff;
-
-        // query effective rate from endpoint
         const effectiveRate = totalValue > 0 ? ((totalCost - totalValue) / totalValue) * 100 : 0;
-
 
         setResults({
             totalValue,
@@ -244,6 +255,28 @@ const TariffCalculator = () => {
             totalCost,
             effectiveRate
         });
+    };
+
+    const formatTariffsForDisplay = (tariffs: TariffData[]): string => {
+        if (!tariffs || tariffs.length === 0) {
+            return "No tariffs applicable";
+        }
+
+        const tariffStrings = tariffs.map(tariff => {
+            const rateInfo = tariff.standardRate !== null 
+                ? `${tariff.standardRate}% (Ad Valorem)`
+                : tariff.flatFee !== null 
+                ? `$${tariff.flatFee.toFixed(2)} (Specific)`
+                : "Rate not specified";
+
+            const expiryInfo = tariff.expirationDate 
+                ? ` (expires: ${new Date(tariff.expirationDate).toLocaleDateString()})`
+                : " (no expiry)";
+
+            return `${tariff.tariffType}: ${rateInfo}${expiryInfo}`;
+        });
+
+        return tariffStrings.join(" | ");
     };
 
 
@@ -437,6 +470,7 @@ const TariffCalculator = () => {
                                             product={product}
                                             updateProduct={updateProduct}
                                             removeProduct={removeProduct}
+                                            tariffDetails={productTariffDetails[product.id] || "Calculating..."}
                                         />
                                     ))}
                                 </div>
