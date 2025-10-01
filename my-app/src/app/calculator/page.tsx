@@ -36,6 +36,7 @@ import { toast } from "sonner";
 import { useCountries } from '@/hooks/useCountry';
 import { useProducts } from '@/hooks/useProducts';
 import { calculatorService } from '@/lib/axios';
+import { formatDateToYYYYMMDD } from '@/utils/dateUtils';
 
 const TariffCalculator = () => {
     const isMounted = useRef(false);
@@ -195,7 +196,7 @@ const TariffCalculator = () => {
             const origin = countries.origin;
             const destination = countries.destination;
             const hsCode = product.hsCode.code;
-            const date = tariffDate ? tariffDate.toISOString().split('T')[0] : '';
+            const date = tariffDate ? formatDateToYYYYMMDD(tariffDate) : '';
 
             // call endpoint for each product
             const response = await calculatorService.get("", {
