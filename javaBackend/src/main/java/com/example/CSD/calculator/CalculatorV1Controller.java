@@ -12,12 +12,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "Calculator Controller", description = "Calculates tariffed value based on origin, destination, HS code, and product value")
 @RestController
-@RequestMapping("/calculator")   // All endpoints start with /calculator
-public class CalculatorController {
+@RequestMapping("/api/v1/calculator")   // All endpoints start with /calculator
+public class CalculatorV1Controller {
 
     private final CalculatorService calculatorService;
 
-    public CalculatorController(CalculatorService calculatorService) {
+    public CalculatorV1Controller(CalculatorService calculatorService) {
         this.calculatorService = calculatorService;
     }
 

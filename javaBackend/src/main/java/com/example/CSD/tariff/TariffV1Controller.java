@@ -24,11 +24,11 @@ import jakarta.validation.Valid;
 // import com.example.CSD.tariff.TariffRepository;
 @Tag(name = "Tariff Controller", description = "Operations related to tariff management")
 @RestController
-@RequestMapping("/tariffs")        // url starts with /tariffs
-public class TariffController {
+@RequestMapping("/api/v1/tariffs")        // url starts with /tariffs
+public class TariffV1Controller {
     private TariffService tariffService;
 
-    public TariffController(TariffService ts) {
+    public TariffV1Controller(TariffService ts) {
         this.tariffService = ts;
     }
 

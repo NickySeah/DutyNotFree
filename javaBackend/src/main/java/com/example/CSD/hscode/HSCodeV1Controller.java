@@ -21,11 +21,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "HS Code Controller", description = "Operations related to HS code management")
 @RestController 
-@RequestMapping("/hscodes")        // url starts with /hscodes
-public class HSCodeController {
+@RequestMapping("/api/v1/hscodes")        // url starts with /hscodes
+public class HSCodeV1Controller {
     private HSCodeService hsCodeService;
 
-    public HSCodeController(HSCodeService hsCodeService) {
+    public HSCodeV1Controller(HSCodeService hsCodeService) {
         this.hsCodeService = hsCodeService;
     }
 

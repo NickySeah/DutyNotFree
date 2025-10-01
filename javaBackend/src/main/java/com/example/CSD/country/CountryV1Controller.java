@@ -21,11 +21,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "Country Controller", description = "Operations related to country management")
 @RestController
-@RequestMapping("/countries")        // url starts with /countries
-public class CountryController {
+@RequestMapping("/api/v1/countries")        // url starts with /countries
+public class CountryV1Controller {
     private CountryService countryService;
 
-    public CountryController(CountryService cs) {
+    public CountryV1Controller(CountryService cs) {
         this.countryService = cs;
     }
 

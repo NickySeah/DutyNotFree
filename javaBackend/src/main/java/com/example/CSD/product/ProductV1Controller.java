@@ -23,11 +23,11 @@ import jakarta.validation.Valid;
 
 @Tag(name = "Product Controller", description = "Operations related to managing products")
 @RestController
-@RequestMapping("/products")        // url starts with /products
-public class ProductController {
+@RequestMapping("/api/v1/products")        // url starts with /products
+public class ProductV1Controller {
     private ProductService productService;
 
-    public ProductController(ProductService ps) {
+    public ProductV1Controller(ProductService ps) {
         this.productService = ps;
     }
 
