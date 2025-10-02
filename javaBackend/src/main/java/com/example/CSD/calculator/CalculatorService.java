@@ -51,7 +51,7 @@ public class CalculatorService {
             );
 
             if (tariff.getStandardRate() != null) {
-                tariffTotal += tariff.getStandardRate() / 100.0;
+                tariffTotal += originalValue * tariff.getStandardRate() / 100;
             } 
             else if (tariff.getFlatFee() != null) {
                 tariffTotal += tariff.getFlatFee();
