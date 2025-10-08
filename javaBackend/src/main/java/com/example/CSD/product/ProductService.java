@@ -23,7 +23,7 @@ public class ProductService {
     }
     
     // Retrieve products based on given condition(s)
-    public List<Product> getProduct(Integer userID, String name, String hsCode) {
+    public List<Product> getProduct(String userID, String name, String hsCode) {
         // If no parameters provided, return all tariffs
         if (userID == null && name == null && hsCode == null) {
             return listProducts();

@@ -1,17 +1,17 @@
 ###
-GET http://localhost:8080/countries
+GET http://localhost:3001/api/v1/countries
 
 ###
-GET http://localhost:8080/countries?iso=702
+GET http://localhost:3001/api/v1/countries?iso=702
 
 ###
-GET http://localhost:8080/countries?name=China
+GET http://localhost:3001/api/v1/countries?name=China
 
 ###
-GET http://localhost:8080/countries?alpha3=USA
+GET http://localhost:3001/api/v1/countries?alpha3=USA
 
 ###
-POST http://localhost:8080/countries
+POST http://localhost:3001/api/v1/countries
 Content-Type: application/json
 
 {
@@ -21,7 +21,7 @@ Content-Type: application/json
 }
  
 ###
-PUT http://localhost:8080/countries?iso=000
+PUT http://localhost:3001/api/v1/countries?iso=000
 Content-Type: application/json
 
 {
@@ -30,22 +30,22 @@ Content-Type: application/json
 }
 
 ###
-DELETE http://localhost:8080/countries?iso=000
+DELETE http://localhost:3001/api/v1/countries?iso=000
 
 
 
 #=== HS Codes CRUD Operations ===#
 ###
-GET http://localhost:8080/hscodes/all
+GET http://localhost:3001/api/v1/hscodes/all
 
 ###
-GET http://localhost:8080/hscodes?code=01012100
+GET http://localhost:3001/api/v1/hscodes?code=01012100
 
 ###
-GET http://localhost:8080/hscodes?keyword=bovine
+GET http://localhost:3001/api/v1/hscodes?keyword=bovine
 
 ###
-POST http://localhost:8080/hscodes
+POST http://localhost:3001/api/v1/hscodes
 Content-Type: application/json
 
 {
@@ -54,7 +54,7 @@ Content-Type: application/json
 }
 
 ###
-PUT http://localhost:8080/hscodes?code=00000000
+PUT http://localhost:3001/api/v1/hscodes?code=00000000
 Content-Type: application/json
 
 {
@@ -62,25 +62,25 @@ Content-Type: application/json
 }
 
 ###
-DELETE http://localhost:8080/hscodes?code=00000000
+DELETE http://localhost:3001/api/v1/hscodes?code=00000000
 
 
 
 #=== Tariffs CRUD Operations ===#
 
 ###
-GET http://localhost:8080/tariffs/all
+GET http://localhost:3001/api/v1/tariffs/all
 
 ###
-GET http://localhost:8080/tariffs?origin=724
+GET http://localhost:3001/api/v1/tariffs?origin=724
 
 ###
-GET http://localhost:8080/tariffs/1
+GET http://localhost:3001/api/v1/tariffs/1
 
 // POST: Compulsory -> originCountry, destCountry, hsCode, tariffType, startDate
 //       Optional -> endDate, standardRate, flatFee (either standardRate or flatFee needs to be provided)  
 ###
-POST http://localhost:8080/tariffs
+POST http://localhost:3001/api/v1/tariffs
 Content-Type: application/json
 
 {
@@ -93,7 +93,7 @@ Content-Type: application/json
 }
 
 ###
-POST http://localhost:8080/tariffs
+POST http://localhost:3001/api/v1/tariffs
 Content-Type: application/json
 
 {
@@ -107,7 +107,7 @@ Content-Type: application/json
 }
 
 ###
-PUT http://localhost:8080/tariffs?origin=702&dest=724&hsCode=123456&type=Ad Valorem
+PUT http://localhost:3001/api/v1/tariffs?origin=702&dest=724&hsCode=123456&type=Ad Valorem
 Content-Type: application/json
 
 {
@@ -116,7 +116,7 @@ Content-Type: application/json
 }
 
 ###
-PUT http://localhost:8080/tariffs/2
+PUT http://localhost:3001/api/v1/tariffs/2
 Content-Type: application/json
 
 {
@@ -125,10 +125,10 @@ Content-Type: application/json
 }
 
 ####
-DELETE http://localhost:8080/tariffs?hsCode=02023000&origin=840&dest=156&type=Mock A&effectiveDate=
+DELETE http://localhost:3001/api/v1/tariffs?hsCode=02023000&origin=840&dest=156&type=Mock A&effectiveDate=
 
 ###
-DELETE http://localhost:8080/tariffs/6
+DELETE http://localhost:3001/api/v1/tariffs/6
 
 
 
@@ -137,36 +137,36 @@ DELETE http://localhost:8080/tariffs/6
 # Format ?userID=<uID>&name=<name>&hsCode=<Code> ==> all optional; can write in any order
 
 ###
-GET http://localhost:8080/products/all
+GET http://localhost:3001/api/v1/products/all
 
 ###
-GET http://localhost:8080/products?name=Blue Seahorse
+GET http://localhost:3001/api/v1/products?name=Blue Seahorse
 
 ###
-GET http://localhost:8080/products?userID=0&hsCode=123456
+GET http://localhost:3001/api/v1/products?userID=jYwFwleIaYY3q9jg97jFXMETq6SJBHmB
 
 ###
-POST http://localhost:8080/products 
+POST http://localhost:3001/api/v1/products
 Content-Type: application/json
 
 {
     "name": "MockProduct 4",
-    "hsCode": "123456", 
-    "userId": 3
-    ,"isPrivate": false
+    "hsCode": "22030011", 
+    "userId": "jYwFwleIaYY3q9jg97jFXMETq6SJBHmB"
+    ,"isPrivate": true
 }   
 
 ###
-PUT http://localhost:8080/products?hsCode=123456&name=MockProduct 4&userID=3
+PUT http://localhost:3001/api/v1/products?hsCode=22030011&name=MockProduct 4&userID=jYwFwleIaYY3q9jg97jFXMETq6SJBHmB
 Content-Type: application/json
 
 {
-    //"name": "MockProduct 3",
+    "name": "MockProduct 3",
     "private": true
 }   
 
 ###
-PUT http://localhost:8080/products/18
+PUT http://localhost:3001/api/v1/products/18
 Content-Type: application/json
 
 {
@@ -175,11 +175,11 @@ Content-Type: application/json
 }   
 
 ###
-DELETE http://localhost:8080/products?hsCode=123456&name=MockProduct 3&userID=2
+DELETE http://localhost:3001/api/v1/products?hsCode=22030011&name=MockProduct 3&userID=jYwFwleIaYY3q9jg97jFXMETq6SJBHmB
 
 ###
-DELETE http://localhost:8080/products/13
+DELETE http://localhost:3001/api/v1/products/13
 
 
 ###
-GET http://localhost:8080/calculator?value=1000&origin=840&dest=156&hsCode=02023000&date=2011-2-2 
+GET http://localhost:3001/api/v1/calculator?value=1000&origin=840&dest=156&hsCode=02023000&date=2011-2-2 
