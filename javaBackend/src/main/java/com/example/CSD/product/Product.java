@@ -44,10 +44,9 @@ public class Product {
     @Schema(description = "Name of the product", example = "Laptop")
     private String name;
 
-    @Column(length = 36)
     @NotBlank
     @Schema(description = "User ID who owns or created the product", example = "user42")
-    private String userId;
+    private String userId; //TODO: change to string later
 
     @Schema(description = "Indicates whether the product is private", example = "true")
     private boolean isPrivate;

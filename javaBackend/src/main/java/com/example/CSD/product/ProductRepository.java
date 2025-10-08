@@ -20,5 +20,5 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
         AND (:name IS NULL OR :name = '' OR LOWER(p.name) = LOWER(:name)) 
         AND (:hsCode IS NULL OR :hsCode = '' OR LOWER(p.hsCode.code) = LOWER(:hsCode)) 
     """)
-    List<Product> findByFilters(@Param("userId") String userID, @Param("name") String name, @Param("hsCode") String hsCode);
+    List<Product> findByFilters(@Param("userId") Integer userID, @Param("name") String name, @Param("hsCode") String hsCode);
 }

@@ -48,7 +48,7 @@ public class ProductV1Controller {
     public List<Product> getProduct(@Parameter(description = "HS code of the product")
     @RequestParam(required=false) String hsCode, @Parameter(description = "Name of the product")
     @RequestParam(required=false) String name, @Parameter(description = "User ID associated with the product")
-    @RequestParam(required = false) String userID) {
+    @RequestParam(required = false) Integer userID) {
         return productService.getProduct(userID, name, hsCode);
     }
         
