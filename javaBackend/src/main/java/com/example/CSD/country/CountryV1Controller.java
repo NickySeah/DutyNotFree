@@ -30,6 +30,7 @@ public class CountryV1Controller {
     }
 
     @Operation(summary = "Health check", description = "Returns a simple message to confirm the country microservice is running")
+    @GetMapping("/test")
     public String index() {
         return "Country microservice is running.";
     }
