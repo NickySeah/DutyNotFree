@@ -92,7 +92,7 @@ export default function ChooseRolePage() {
     setIsLoading(true);
     try {
       const response = await fetch("/api/set-role", {
-        method: "POST",
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
