@@ -2,7 +2,6 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal } from "lucide-react";
-import { useUserRole } from "@/lib/checkRole";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -29,10 +28,11 @@ import type { TradeRate } from "@/types/trade";
 // So we pass them as parameters to createColumns function
 export const createColumns = (
   onModify: (tariff: TradeRate) => void, // this is the function : function type
-  onDelete: (tariff: TradeRate) => void
+  onDelete: (tariff: TradeRate) => void,
+  isAdmin: boolean,
+  isPending: boolean,
 ): ColumnDef<TradeRate>[] => {
   
-  const { isAdmin, isPending } = useUserRole();
   return [
 {
   accessorKey: "description",

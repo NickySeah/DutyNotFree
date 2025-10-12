@@ -34,6 +34,7 @@
     "react-country-flag": "^3.1.0",
     "react-day-picker": "^9.10.0",
     "react-dom": "19.1.0",
+    "react-spinners": "^0.17.0",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.3.1",
     "world-countries": "^5.1.0"
