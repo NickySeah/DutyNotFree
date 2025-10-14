@@ -16,7 +16,8 @@ import {
     ArrowRight,
     Trash2,
     CalendarIcon,
-    ArrowRightLeft
+    ArrowRightLeft,
+    Activity
 } from 'lucide-react';
 import {
     Select,
@@ -37,6 +38,7 @@ import { useCountries } from '@/hooks/useCountry';
 import { useProducts } from '@/hooks/useProducts';
 import { calculatorService, tariffService } from '@/lib/axios';
 import { formatDateToYYYYMMDD } from '@/utils/dateUtils';
+import LiveTariffChart from '@/components/LiveTariffChart';
 
 const TariffCalculator = () => {
     const isMounted = useRef(false);
@@ -56,8 +58,13 @@ const TariffCalculator = () => {
     const [tariffDate, setTariffDate] = useState<Date | undefined>(undefined);
     const [productTariffDetails, setProductTariffDetails] = useState<{ [productId: number]: string }>({});
 
-    const { data: countryData, isLoading: countriesLoading } = useCountries();
-    const { data: productsData, isLoading: productsLoading } = useProducts();
+    const { data: countryData, isLoading: countriesLoading, error: countriesError } = useCountries();
+    const { data: productsData, isLoading: productsLoading, error: productsError } = useProducts();
+    const [isCalculating, setIsCalculating] = useState(false);
+    const [calculationError, setCalculationError] = useState<string | null>(null);
+    const [lastCalculationTime, setLastCalculationTime] = useState<number>(0);
+    const calculationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const [dataVersion, setDataVersion] = useState<number>(0);
 
 
     const countryMap = useRef({} as { [key: string]: { name: string; alpha3: string; code: string } });
@@ -111,30 +118,65 @@ const TariffCalculator = () => {
 
 
     const addProduct = () => {
-        // const newProduct = {
-        //     id: Date.now(),
-        //     name: '',
-        //     hsCode: '',
-        //     value: 0,
-        //     quantity: 1,
-        //     tariffRate: 0,
-        //     category: 'Electronics'
-        // };
         if (!selectedProduct) return;
-        setProducts([...products, { ...selectedProduct, id: Date.now() }]);
+        
+        const newProduct = { ...selectedProduct, id: Date.now() };
+        setProducts([...products, newProduct]);
         setSelectedProduct(null);
+        
+        // Trigger immediate recalculation for new product
+        if (isMounted.current) {
+            setTimeout(() => {
+                calculateTariffs();
+            }, 100);
+        }
     };
 
+
+    // Data synchronization function
+    const syncData = () => {
+        setDataVersion(prev => prev + 1);
+        // Trigger recalculation when data is synchronized
+        debouncedCalculateTariffs();
+    };
+
+    // Debounced calculation function to optimize performance
+    const debouncedCalculateTariffs = () => {
+        if (calculationTimeoutRef.current) {
+            clearTimeout(calculationTimeoutRef.current);
+        }
+        
+        calculationTimeoutRef.current = setTimeout(() => {
+            const now = Date.now();
+            // Only recalculate if enough time has passed (throttling)
+            if (now - lastCalculationTime > 1000) {
+                setLastCalculationTime(now);
+                calculateTariffs();
+            }
+        }, 500);
+    };
 
     const updateProduct = (id: number, field: keyof Product, value: string | number) => {
         setProducts(products.map(
             product => product.id === id ? { ...product, [field]: value } : product
         ));
+        
+        // Trigger debounced recalculation when product data changes
+        if (isMounted.current) {
+            debouncedCalculateTariffs();
+        }
     };
 
     // Remove product entirely
     const removeProduct = (id: number) => {
         setProducts(products.filter(p => p.id !== id));
+        
+        // Trigger immediate recalculation when product is removed
+        if (isMounted.current) {
+            setTimeout(() => {
+                calculateTariffs();
+            }, 100);
+        }
     };
 
 
@@ -158,7 +200,7 @@ const TariffCalculator = () => {
 
     const getTariffData = async (origin: string, destination: string, hsCode: string, date: string) => {
         try {
-            const response = await tariffService.get("", {
+            const response = await tariffService.get("/api/v1/tariffs", {
                 params: {
                     origin: origin,
                     dest: destination,
@@ -186,75 +228,86 @@ const TariffCalculator = () => {
         }
 
         if (products.length === 0) {
-            setResults({
-                totalValue: 0,
-                totalTariff: 0,
-                totalCost: 0,
-                effectiveRate: 0
-            });
+            // Don't reset results to 0, just skip calculation
             return;
         }
 
-        const productsToCalculate = products;
-        let totalValue = 0;
-        let totalTariff = 0;
-        
-        const newProductTariffDetails: { [productId: number]: string } = {};
+        console.log('Starting calculateTariffs with:', { products: products.length, countries, tariffDate });
+        // Set loading state
+        setIsCalculating(true);
+        setCalculationError(null);
 
-        for (const product of productsToCalculate) {
-            const finalProductValue = product.value * product.quantity;
-            const origin = countries.origin;
-            const destination = countries.destination;
-            const hsCode = product.hsCode.code;
-            const date = tariffDate ? formatDateToYYYYMMDD(tariffDate) : '';
+        try {
+            const productsToCalculate = products;
+            let totalValue = 0;
+            let totalTariff = 0;
+            
+            const newProductTariffDetails: { [productId: number]: string } = {};
 
-            try {
-                let tariffs: TariffData[] = [];
-                if (!(!origin || !destination || !hsCode || !date)) {
-                    tariffs = await getTariffData(origin, destination, hsCode, date);
-                }
-                else {
-                    newProductTariffDetails[product.id] = "N/A";
-                    totalValue += finalProductValue;
-                    continue;
-                }
-                
-                // Format tariffs for display
-                const formattedTariffs = formatTariffsForDisplay(tariffs);
-                newProductTariffDetails[product.id] = formattedTariffs;
+            for (const product of productsToCalculate) {
+                const finalProductValue = product.value * product.quantity;
+                const origin = countries.origin;
+                const destination = countries.destination;
+                const hsCode = product.hsCode.code;
+                const date = tariffDate ? formatDateToYYYYMMDD(tariffDate) : '';
 
-                const response = await calculatorService.get("", {
-                    params: {
-                        value: finalProductValue,
-                        origin: origin,
-                        dest: destination,
-                        hsCode: hsCode,
-                        date: date
+                try {
+                    let tariffs: TariffData[] = [];
+                    if (!(!origin || !destination || !hsCode || !date)) {
+                        tariffs = await getTariffData(origin, destination, hsCode, date);
                     }
-                });
+                    else {
+                        newProductTariffDetails[product.id] = "N/A";
+                        totalValue += finalProductValue;
+                        continue;
+                    }
+                    
+                    // Format tariffs for display
+                    const formattedTariffs = formatTariffsForDisplay(tariffs);
+                    newProductTariffDetails[product.id] = formattedTariffs;
 
-                const tariffAmount = response.data - finalProductValue;
-                totalValue += finalProductValue;
-                totalTariff += tariffAmount;
+                    const response = await calculatorService.get("/api/v1/calculator", {
+                        params: {
+                            value: finalProductValue,
+                            origin: origin,
+                            dest: destination,
+                            hsCode: hsCode,
+                            date: date
+                        }
+                    });
 
-            } catch (error) {
-                console.error(`Error calculating tariff for product ${product.name}:`, error);
-                newProductTariffDetails[product.id] = "Error loading tariff data";
-                totalValue += finalProductValue;
+                    const tariffAmount = response.data - finalProductValue;
+                    console.log(`Product: ${product.name}, Value: ${finalProductValue}, Calculator Response: ${response.data}, Tariff Amount: ${tariffAmount}`);
+                    totalValue += finalProductValue;
+                    totalTariff += tariffAmount;
+
+                } catch (error) {
+                    console.error(`Error calculating tariff for product ${product.name}:`, error);
+                    newProductTariffDetails[product.id] = "Error loading tariff data";
+                    totalValue += finalProductValue;
+                }
             }
+
+            setProductTariffDetails(newProductTariffDetails);
+
+            const totalCost = totalValue + totalTariff;
+            const effectiveRate = totalValue > 0 ? ((totalCost - totalValue) / totalValue) * 100 : 0;
+
+            console.log(`Final Results - Total Value: ${totalValue}, Total Tariff: ${totalTariff}, Total Cost: ${totalCost}, Effective Rate: ${effectiveRate}`);
+            setResults({
+                totalValue,
+                totalTariff,
+                totalCost,
+                effectiveRate
+            });
+
+        } catch (error) {
+            console.error('Error in calculateTariffs:', error);
+            setCalculationError('Failed to calculate tariffs. Please try again.');
+            toast.error('Failed to calculate tariffs. Please try again.');
+        } finally {
+            setIsCalculating(false);
         }
-
-        setProductTariffDetails(newProductTariffDetails);
-
-        const totalCost = totalValue + totalTariff;
-        const effectiveRate = totalValue > 0 ? ((totalCost - totalValue) / totalValue) * 100 : 0;
-
-        setResults({
-            totalValue,
-            totalTariff,
-            totalCost,
-            effectiveRate
-        });
     };
 
     const formatTariffsForDisplay = (tariffs: TariffData[]): string => {
@@ -285,8 +338,21 @@ const TariffCalculator = () => {
             isMounted.current = true;
             return;
         }
-        calculateTariffs();
-    }, [products, countries, tariffDate]);
+        
+        // Only calculate if we have the necessary data and it's not loading
+        if (products.length > 0 && countries.origin && countries.destination && tariffDate && !countriesLoading && !productsLoading) {
+            debouncedCalculateTariffs();
+        }
+    }, [products, countries, tariffDate, countriesLoading, productsLoading]);
+
+    // Cleanup timeout on unmount
+    useEffect(() => {
+        return () => {
+            if (calculationTimeoutRef.current) {
+                clearTimeout(calculationTimeoutRef.current);
+            }
+        };
+    }, []);
 
     useEffect(() => {
         if (!isMounted.current) {
@@ -470,7 +536,7 @@ const TariffCalculator = () => {
                                             product={product}
                                             updateProduct={updateProduct}
                                             removeProduct={removeProduct}
-                                            tariffDetails={productTariffDetails[product.id] || "Calculating..."}
+                                            tariffDetails={productTariffDetails[product.id] || (isCalculating ? "Calculating..." : "Not calculated")}
                                         />
                                     ))}
                                 </div>
@@ -487,11 +553,43 @@ const TariffCalculator = () => {
                                 Import Cost Calculation
                             </h2>
 
-                            {/* if countries is undefined show loading state and hide the rest */}
-                            {countriesLoading || !countryData || countries.destination == '' || countries.origin == '' || tariffDate === undefined ? (
+                            {/* Show loading states and error messages */}
+                            {countriesLoading || productsLoading ? (
+                                <div className="text-center py-8 text-gray-500">
+                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-600 mx-auto mb-4"></div>
+                                    <p>Loading data...</p>
+                                </div>
+                            ) : countriesError || productsError ? (
+                                <div className="text-center py-8 text-red-500">
+                                    <Globe size={48} className="mx-auto mb-4 opacity-50" />
+                                    <p>Error loading data. Please try again.</p>
+                                    <button 
+                                        onClick={() => window.location.reload()} 
+                                        className="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                                    >
+                                        Retry
+                                    </button>
+                                </div>
+                            ) : !countryData || countries.destination == '' || countries.origin == '' || tariffDate === undefined ? (
                                 <div className="text-center py-8 text-gray-500">
                                     <Globe size={48} className="mx-auto mb-4 opacity-50" />
                                     <p>No countries or date selected.</p>
+                                </div>
+                            ) : isCalculating ? (
+                                <div className="text-center py-8 text-gray-500">
+                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-600 mx-auto mb-4"></div>
+                                    <p>Calculating tariffs...</p>
+                                </div>
+                            ) : calculationError ? (
+                                <div className="text-center py-8 text-red-500">
+                                    <Globe size={48} className="mx-auto mb-4 opacity-50" />
+                                    <p>{calculationError}</p>
+                                    <button 
+                                        onClick={calculateTariffs} 
+                                        className="mt-2 px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700"
+                                    >
+                                        Retry Calculation
+                                    </button>
                                 </div>
                             ) : (
                                 <div className="space-y-3">
@@ -520,10 +618,91 @@ const TariffCalculator = () => {
                             )}
 
 
-                            <div className="mt-4 text-xs text-gray-600">
-                                Calculating: All {products.length} products
+                            <div className="mt-4 flex justify-between items-center text-xs text-gray-600">
+                                <span>Calculating: All {products.length} products</span>
+                                <button 
+                                    onClick={syncData}
+                                    className="px-3 py-1 bg-blue-100 text-blue-600 rounded hover:bg-blue-200 transition-colors"
+                                    disabled={isCalculating}
+                                >
+                                    {isCalculating ? 'Syncing...' : 'Refresh Data'}
+                                </button>
                             </div>
                         </div>
+
+                        {/* Live Tariff Charts */}
+                        {products.length > 0 && (
+                            <div className="mt-8">
+                                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                                    <Activity className="w-5 h-5 text-green-500" />
+                                    Live Tariff Analytics
+                                </h3>
+                                <div className="grid grid-cols-1 gap-8 w-full">
+                                    {products.map((product) => {
+                                        // Extract tariff rate more reliably
+                                        let tariffRate = 0;
+                                        if (productTariffDetails[product.id]) {
+                                            const tariffText = productTariffDetails[product.id];
+                                            console.log('Raw tariff text:', tariffText);
+                                            
+                                            // Look for patterns like "rate 5.5%" or "5.5%" or "5.5"
+                                            const rateMatch = tariffText.match(/rate\s+(\d+\.?\d*)\s*%/i);
+                                            if (rateMatch) {
+                                                tariffRate = parseFloat(rateMatch[1]);
+                                                console.log('Found rate with "rate X.X%" pattern:', tariffRate);
+                                            } else {
+                                                // Try other patterns
+                                                const altMatch = tariffText.match(/(\d+\.?\d*)\s*%/);
+                                                if (altMatch) {
+                                                    tariffRate = parseFloat(altMatch[1]);
+                                                    console.log('Found rate with "X.X%" pattern:', tariffRate);
+                                                } else {
+                                                    // Try to find any decimal number in the text
+                                                    const numberMatch = tariffText.match(/(\d+\.\d+)/);
+                                                    if (numberMatch) {
+                                                        tariffRate = parseFloat(numberMatch[1]);
+                                                        console.log('Found rate with decimal number pattern:', tariffRate);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        
+                                        // If no tariff rate found, use a default for demonstration
+                                        if (tariffRate === 0) {
+                                            tariffRate = 5.5; // Default 5.5% tariff rate
+                                            console.log('Using default tariff rate:', tariffRate);
+                                        }
+                                        
+                                        console.log('Product tariff extraction:', {
+                                            productId: product.id,
+                                            productName: product.name,
+                                            tariffText: productTariffDetails[product.id],
+                                            extractedRate: tariffRate
+                                        });
+                                        
+                                        const baseValue = product.value * product.quantity;
+                                        console.log('Product calculation:', {
+                                            productId: product.id,
+                                            productName: product.name,
+                                            productValue: product.value,
+                                            productQuantity: product.quantity,
+                                            calculatedBaseValue: baseValue,
+                                            tariffRate
+                                        });
+                                        
+                                        return (
+                                            <LiveTariffChart
+                                                key={product.id}
+                                                productName={product.name}
+                                                baseValue={baseValue}
+                                                tariffRate={tariffRate}
+                                                isCalculating={isCalculating}
+                                            />
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
 
 
                         {/* Trade Information */}

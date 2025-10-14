@@ -46,6 +46,12 @@ export default function Navbar() {
           <Link href="/calculator" className="text-lg font-semibold text-white">
             Calculator
           </Link>
+          <Link href="/dashboard" className="text-lg font-semibold text-white">
+            Analytics
+          </Link>
+          <Link href="/api-docs" className="text-lg font-semibold text-white">
+            API Docs
+          </Link>
         </div>
         {isPending ? (
           <div className="w-20 h-10 bg-gray-700 animate-pulse rounded"></div>
