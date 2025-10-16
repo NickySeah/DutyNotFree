@@ -1,6 +1,6 @@
 package com.example.CSD.bloc;
 
-import java.util.List;
+import java.util.*;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -41,12 +41,15 @@ public class BlocV1Controller {
         return blocService.listBlocs();
     }
 
-    @Operation(summary = "Search blocs", description = "Search blocs by optional name, or code")
+    @Operation(summary = "Search blocs", description = "Search blocs by optional name, code, or country code(s)")
     @GetMapping()
     public List<Bloc> getBloc(
-        @Parameter(description = "Name of the bloc") @RequestParam(required=false) String name, 
-        @Parameter(description = "Code of the bloc") @RequestParam(required=false) String code) {
-        return blocService.getBloc(name, code);
+        @Parameter(description = "Part of name of the bloc") @RequestParam(required=false) String keyword, 
+        @Parameter(description = "Exact name of the bloc") @RequestParam(required=false) String name, 
+        @Parameter(description = "Code of the bloc") @RequestParam(required=false) String code,
+        @Parameter(description = "ISO codes of countries to find") @RequestParam(required=false) Set<String> country
+    ) {
+        return blocService.getBloc(keyword, name, code, country);
     }
 
     @Operation(summary = "Create a new bloc", description = "Adds a new bloc to the database")
@@ -55,17 +58,17 @@ public class BlocV1Controller {
     })
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping()
-    public Bloc addBloc(@RequestBody BlocCreateRequest bloc){
-        return blocService.addBloc(bloc);
+    public Bloc addBloc(@RequestBody BlocCreateRequest request){
+        return blocService.addBloc(request);
     }
 
-    @Operation(summary = "Update members of bloc", description = "Updates an existing bloc using its acronym/code")
+    @Operation(summary = "Update members of a bloc", description = "Updates an existing bloc")
     @PutMapping()
-    public Bloc updateBloc(@Parameter(description = "Code of the bloc to update") @RequestParam String code, @RequestBody BlocUpdateRequest updatedBloc) {
-        return blocService.updateBloc(code, updatedBloc);
+    public Bloc updateBloc(@Parameter(description = "Code of the bloc to update") @RequestParam String code, @RequestBody BlocUpdateRequest request) {
+        return blocService.updateBloc(code, request);
     }
 
-    @Operation(summary = "Delete bloc by code", description = "Deletes a bloc using its acronym/code")
+    @Operation(summary = "Delete bloc by code", description = "Deletes a bloc using its code")
     @DeleteMapping()
     public void deleteBloc(@Parameter(description = "Code of the counbloctry to delete") @RequestParam String code) {
         blocService.deleteBloc(code);

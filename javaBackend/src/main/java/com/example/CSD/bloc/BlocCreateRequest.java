@@ -18,16 +18,16 @@ import lombok.ToString;
 @NoArgsConstructor
 @EqualsAndHashCode
 @Schema(description = "Request payload for creating a new bloc")
-public class BlocCreateRequest {  // Not an entity, just a data carrier   //TODO: if want to change JSON field names, use @JsonProperty("field_name")
+public class BlocCreateRequest {  // Not an entity, just a data carrier
     @NotBlank(message = "Bloc must have a code")
-    @Schema(description = "Updated name of the product", example = "ASEAN")
-    private String code;  // Full bloc code
+    @Schema(description = "Acronym or code of the bloc", example = "ASEAN")
+    private String code;                    // Bloc acronym/code
     
     @NotBlank(message = "Bloc must have a name")
-    @Schema(description = "Updated name of the product", example = "Association of Southeast Asian Nations")
-    private String name;  // Full bloc name
+    @Schema(description = "Full name of the bloc", example = "Association of Southeast Asian Nations")
+    private String name;                    // Full bloc name
 
     @NotBlank(message = "Bloc must have at least two member countries")
-    @Schema(description = "ISO codes of countries that are members", example = "[096, 116, 360]")
-    private Set<String> memberCodes;
+    @Schema(description = "ISO codes of bloc's member countries", example = "[096, 116, 360]")
+    private Set<String> memberCodes;        // ISO codes of bloc's members (countries)
 }

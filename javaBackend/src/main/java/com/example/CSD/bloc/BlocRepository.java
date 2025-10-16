@@ -18,7 +18,8 @@ public interface BlocRepository extends JpaRepository<Bloc, Long> {
     @Query("""
     SELECT b FROM Bloc b 
         WHERE (:name IS NULL OR :name = '' OR LOWER(b.name) = LOWER(:name)) 
-        AND (:code IS NULL OR :code = '' OR LOWER(b.code) = LOWER(:code)) 
+        AND (:code IS NULL OR :code = '' OR LOWER(b.code) = LOWER(:code))
+        AND (:keyword IS NULL OR :keyword = '' OR LOWER(b.name) LIKE LOWER(CONCAT('%', :keyword, '%')))
     """)
-    List<Bloc> findByFilters(@Param("name") String name, @Param("code") String code);
+    List<Bloc> findByFilters(@Param("keyword") String keyword, @Param("name") String name, @Param("code") String code);
 }

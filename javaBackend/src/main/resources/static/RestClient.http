@@ -5,7 +5,7 @@ GET http://localhost:3001/api/v1/countries
 GET http://localhost:3001/api/v1/countries?iso=702
 
 ###
-GET http://localhost:3001/api/v1/countries?name=China
+GET http://localhost:3001/api/v1/countries?name=MCK Cuntry
 
 ###
 GET http://localhost:3001/api/v1/countries?alpha3=USA
@@ -42,7 +42,7 @@ GET http://localhost:3001/api/v1/hscodes/all
 GET http://localhost:3001/api/v1/hscodes?code=01012100
 
 ###
-GET http://localhost:3001/api/v1/hscodes?keyword=bovine
+GET http://localhost:3001/api/v1/hscodes?keyword=rice
 
 ###
 POST http://localhost:3001/api/v1/hscodes
@@ -198,6 +198,19 @@ GET http://localhost:3001/api/v1/blocs/all
 GET http://localhost:3001/api/v1/blocs?code=ASEAN
 
 ###
+GET http://localhost:3001/api/v1/blocs?name=Association of Southeast Asian Nations
+
+###
+GET http://localhost:3001/api/v1/blocs?keyword=Southeast
+
+# For country=_&country=_ etc, means bloc must have all these countries, not any of them
+###
+GET http://localhost:3001/api/v1/blocs?country=458&country=702
+
+###
+GET http://localhost:3001/api/v1/blocs?country=372&country=702
+
+###
 POST http://localhost:3001/api/v1/blocs
 Content-Type: application/json
 
@@ -235,3 +248,120 @@ Content-Type: application/json
 
 ###
 DELETE http://localhost:3001/api/v1/blocs?code=ASEAN
+
+
+
+
+#=== FTA CRUD Operations ===#
+###
+GET http://localhost:3001/api/v1/ftas/all
+
+###
+GET http://localhost:3001/api/v1/ftas
+
+###
+GET http://localhost:3001/api/v1/ftas?type=bilateral
+
+###
+GET http://localhost:3001/api/v1/ftas?partyA=840
+
+###
+GET http://localhost:3001/api/v1/ftas?partyA=ASEAN
+
+// partyA=<code1>&partyB=<code2> same as partyA=<code2>&partyB=<code1>
+###
+GET http://localhost:3001/api/v1/ftas?partyA=840&partyB=702
+
+###
+GET http://localhost:3001/api/v1/ftas?partyA=840&partyB=ASEAN
+
+###
+GET http://localhost:3001/api/v1/ftas?date=2010-01-01
+
+###
+POST http://localhost:3001/api/v1/ftas
+Content-Type: application/json
+
+{
+  "partyA": "702",
+  "partyB": "840",
+  "effectiveDate": "2004-01-01",
+  //"expirationDate": "2030-12-31",
+  "defaultRate": 0.0,
+  "excludedHsCodes": [
+    "24031919",  
+    "22030011",  
+    "22041000",  
+    "22086000",  
+    "30031090"   
+  ]
+}
+
+###
+POST http://localhost:3001/api/v1/ftas
+Content-Type: application/json
+
+{
+  "partyA": "ASEAN",
+  "partyB": "840",
+  "effectiveDate": "2004-01-01",
+  "expirationDate": "2010-12-31",
+  "defaultRate": 10.0,
+  "excludedHsCodes": [
+    "87032221",
+    "87112012",
+    "10062090"   
+  ]
+}
+
+// Below should swap order so partyA=ASEAN and partB=840 to match existing FTA above
+###
+POST http://localhost:3001/api/v1/ftas
+Content-Type: application/json
+
+{
+  "partyA": "840",
+  "partyB": "ASEAN",
+  "effectiveDate": "2011-01-01",
+  //"expirationDate": "2010-12-31",
+  "defaultRate": 0.0,
+  "excludedHsCodes": [
+    "87032221",
+    "87112012"
+  ]
+}
+
+###
+POST http://localhost:3001/api/v1/ftas
+Content-Type: application/json
+
+{
+  "partyA": "840",
+  "partyB": "156",
+  "effectiveDate": "2011-01-01",
+  //"expirationDate": "2010-12-31",
+  "defaultRate": 100.0
+  //,"excludedHsCodes": [  ]
+}
+
+###
+GET http://localhost:3001/api/v1/ftas?partyA=840&partyB=156
+
+###
+PUT http://localhost:3001/api/v1/ftas/6
+Content-Type: application/json
+
+{
+  //"effectiveDate": "1999-01-01",
+  //"expirationDate": "2010-12-31",
+  //"defaultRate": 200.0,
+  "excludeHSCodes": [
+    "87032221"
+    ]
+  //"includeHSCodes": [
+  //  "87032221"
+  //  ]
+}
+
+###
+DELETE http://localhost:3001/api/v1/ftas/4

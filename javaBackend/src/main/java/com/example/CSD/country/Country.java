@@ -5,16 +5,18 @@ import java.util.Set;
 
 import com.example.CSD.bloc.Bloc;
 import com.example.CSD.tariff.Tariff;
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.example.CSD.tradeParty.TradeParty;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -27,8 +29,8 @@ import lombok.ToString;
 @Setter
 // @ToString
 // @EqualsAndHashCode
-@ToString(exclude = {"originTariffs", "destTariffs", "blocs"})
-@EqualsAndHashCode(exclude = {"originTariffs", "destTariffs", "blocs"})
+@ToString(exclude = {"originTariffs", "destTariffs", "blocs","tradeParty"})
+@EqualsAndHashCode(exclude = {"originTariffs", "destTariffs", "blocs","tradeParty"})
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
@@ -36,29 +38,35 @@ import lombok.ToString;
 public class Country {
     @Id
     @Schema(description = "3-digit ISO country code", example = "702")
-    @Column(columnDefinition = "CHAR(3)") // Exactly 3 characters
-    private String code;  // 3-digit country code
+    @Column(columnDefinition = "CHAR(3)")                   // Exactly 3 characters
+    private String code;                                    // 3-digit country code
 
     @NotNull
     @Schema(description = "Full name of the country", example = "Singapore")
-    private String name;  // Full country name
+    private String name;                                    // Full country name
 
-    @NotNull @Column(columnDefinition = "CHAR(3)") // Exactly 3 characters
+    @NotNull @Column(columnDefinition = "CHAR(3)")          // Exactly 3 characters
     @Schema(description = "Alpha-3 code of the country", example = "SGP")
-    private String alpha3; 
+    private String alpha3;                                  // 3-character country code 
 
     @OneToMany(mappedBy = "originCountry")
     @JsonIgnore
     @Schema(hidden = true)
-    private Set<Tariff> originTariffs;
+    private Set<Tariff> originTariffs;                      // one country can have any number of tariff lines as origin country
 
     @OneToMany(mappedBy = "destCountry")
     @JsonIgnore
     @Schema(hidden = true)
-    private Set<Tariff> destTariffs;
+    private Set<Tariff> destTariffs;                        // one country can have any number of tariff lines as destination country
 
-    @ManyToMany(mappedBy = "memberCountries")
+    @ManyToMany(mappedBy = "memberCountries")               
     @JsonIgnore
     @Schema(hidden = true)
-    private Set<Bloc> blocs = new HashSet<>();
+    private Set<Bloc> blocs;                                // one country can belong to any number of blocs 
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "trade_party_id", insertable = false, updatable = false)
+    @JsonIgnore
+    @Schema(hidden = true)
+    private TradeParty tradeParty;                          // for usage in FTA as party A & party B
 }

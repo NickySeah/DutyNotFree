@@ -16,8 +16,8 @@ import lombok.ToString;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode
-@Schema(description = "Request payload for creating a new bloc")
-public class BlocUpdateRequest {  // Not an entity, just a data carrier   //TODO: if want to change JSON field names, use @JsonProperty("field_name")
+@Schema(description = "Request payload for updating an existing bloc")
+public class BlocUpdateRequest {  // Not an entity, just a data carrier
     @Schema(description = "ISO codes of countries that are added as members", example = "[096, 116]")
     private Set<String> addMemberCodes;
 

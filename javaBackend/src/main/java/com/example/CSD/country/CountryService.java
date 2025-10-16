@@ -50,7 +50,7 @@ public class CountryService {
 
     public Country updateCountry(String code, Country updatedCountry) {
         Country country = countries.findByCode(code)
-                .orElseThrow(() -> new RuntimeException("Country not found with iso code " + code));
+                .orElseThrow(() -> new RuntimeException("No country found with iso code " + code));
 
         String name = updatedCountry.getName();
         String alpha3 = updatedCountry.getAlpha3();
@@ -76,7 +76,7 @@ public class CountryService {
     public void deleteCountry(String code) {
         // Check if country exists before attempting to delete
         if (!countries.existsByCode(code)) {
-            throw new RuntimeException("Country not found with code " + code);
+            throw new RuntimeException("No country found with code " + code);
         }
         countries.deleteByCode(code);
     }
