@@ -1,29 +1,52 @@
 // lib/axios.ts
-import axios from "axios";
+import axios, { AxiosInstance } from 'axios';
 
-export const tariffService = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_TARIFF_SERVICE_URL,
-  withCredentials: true,
-});
+// This is a simple in-memory cache for our JWT.
+let jwtToken: string | null = null;
 
-export const productService = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_PRODUCT_SERVICE_URL,//Replace URL
-  withCredentials: true,
-});
+// This is our factory function. It takes a baseURL and returns a
+// fully configured Axios instance with the JWT interceptor attached.
+const createAuthenticatedApiInstance = (baseURL: string): AxiosInstance => {
+  const api = axios.create({
+    baseURL,
+  });
 
+  // Attach the interceptor to this new instance
+  api.interceptors.request.use(
+    async (config) => {
+      // If we don't have a token yet, fetch one.
+      if (!jwtToken) {
+        try {
+          const response = await fetch('/api/auth/token');
+          if (response.ok) {
+            const data = await response.json();
+            jwtToken = data.token; // Cache the token
+          }
+        } catch (error) {
+          console.error('Error fetching auth token:', error);
+          jwtToken = null;
+        }
+      }
 
-export const hsCodeService = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_HS_CODE_SERVICE_URL,
-  withCredentials: true,
-});
+      // If we have a token, add it to the Authorization header.
+      if (jwtToken) {
+        config.headers.Authorization = `Bearer ${jwtToken}`;
+      }
 
+      return config;
+    },
+    (error) => {
+      return Promise.reject(error);
+    }
+  );
 
-export const countriesService = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_COUNTRIES_SERVICE_URL,
-  withCredentials: true,
-});
+  return api;
+};
 
-export const calculatorService = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_CALCULATOR_SERVICE_URL,
-  withCredentials: true,
-});
+// Now, use the factory function to create and export each of your services.
+// The '!' tells TypeScript that we are sure the environment variable will exist.
+export const tariffService = createAuthenticatedApiInstance(process.env.NEXT_PUBLIC_TARIFF_SERVICE_URL!);
+export const productService = createAuthenticatedApiInstance(process.env.NEXT_PUBLIC_PRODUCT_SERVICE_URL!);
+export const hsCodeService = createAuthenticatedApiInstance(process.env.NEXT_PUBLIC_HS_CODE_SERVICE_URL!);
+export const countriesService = createAuthenticatedApiInstance(process.env.NEXT_PUBLIC_COUNTRIES_SERVICE_URL!);
+export const calculatorService = createAuthenticatedApiInstance(process.env.NEXT_PUBLIC_CALCULATOR_SERVICE_URL!);
