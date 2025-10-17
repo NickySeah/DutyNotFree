@@ -3,36 +3,32 @@ import { useUserRole } from "@/lib/checkRole";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import {
-  Table,
-  TableHeader,
-  TableRow,
-  TableHead,
-  TableBody,
-  TableCell,
-} from "@/components/ui/table";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
-import { authClient } from "@/lib/auth-client";
 
-interface UserWithRole {
-  id: string;
-  name: string;
-  email: string;
-  role: string | undefined; // Allow undefined role
-  createdAt: Date; // This is a Date object, not string
-  emailVerified: number; // This is 0 or 1, not boolean
-  image?: string;
-  banned?: number;
-  banExpires?: null | Date;
-  banReason?: null | string;
-}
+import { Skeleton } from "@/components/ui/skeleton";
+import { authClient } from "@/lib/auth-client";
+import DeleteUserModal from "@/components/deleteUserModal";
+
+import { DataTable } from "./data-table";
+import { createColumns } from "./columns";
+
+import type { UserInformation } from "@/types/user";
 
 export default function AdminDashboardPage() {
   const { isAdmin, isPending, isAuthenticated } = useUserRole();
   const router = useRouter();
   const [userData, setUserData] = useState<any>(null);
   const [loadingUsers, setLoadingUsers] = useState(true);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<UserInformation | null>(null);
+
+  // This function will be passed to createColumns
+  const handleDeleteUser = (user: UserInformation) => {
+    console.log("Deleting user:", user);
+    setSelectedUser(user);
+    setIsDeleteModalOpen(true);
+  }
+
+  const columns = createColumns(handleDeleteUser);
 
   useEffect(() => {
     if (!isPending) {
@@ -97,39 +93,19 @@ export default function AdminDashboardPage() {
         {loadingUsers ? (
           <Skeleton className="h-10 w-full" />
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Created At</TableHead>
-                <TableHead>Email Verified</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {userData.users.map((user : UserWithRole) => (
-                <TableRow key={user.id}>
-                  <TableCell>{user.name || "N/A"}</TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>{user.role}</TableCell>
-                  <TableCell>{user.createdAt.toString()}</TableCell>
-                  <TableCell>{user.emailVerified ? "Yes" : "No"}</TableCell>
-                  <TableCell>
-                    <Button variant="outline" size="sm">
-                      Edit
-                    </Button>
-                    <Button variant="destructive" size="sm">
-                      Delete
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <div className="container mx-auto py-10">
+            <DataTable columns={columns} data={userData.users} />
+          </div>
         )}
       </div>
+      <DeleteUserModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setSelectedUser(null);
+        }}
+        user={selectedUser}
+      />
     </div>
   );
 }
