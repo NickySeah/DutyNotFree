@@ -7,14 +7,14 @@ import {
     Calculator,
     Package,
     DollarSign,
-    Percent,
+    // Percent,
     Info,
     Plus,
-    X,
-    Move,
+    // X,
+    // Move,
     Globe,
     ArrowRight,
-    Trash2,
+    // Trash2,
     CalendarIcon,
     ArrowRightLeft
 } from 'lucide-react';
@@ -45,7 +45,7 @@ const TariffCalculator = () => {
         origin: '',
         destination: ''
     });
-    const [draggedItem, setDraggedItem] = useState<Product | null>(null);
+    // const [draggedItem, setDraggedItem] = useState<Product | null>(null);
     const [results, setResults] = useState({
         totalValue: 0,
         totalTariff: 0,
@@ -57,7 +57,10 @@ const TariffCalculator = () => {
     const [productTariffDetails, setProductTariffDetails] = useState<{ [productId: number]: string }>({});
 
     const { data: countryData, isLoading: countriesLoading } = useCountries();
-    const { data: productsData, isLoading: productsLoading } = useProducts();
+    const { 
+        data: productsData, 
+        // isLoading: productsLoading
+     } = useProducts();
 
 
     const countryMap = useRef({} as { [key: string]: { name: string; alpha3: string; code: string } });
@@ -76,13 +79,13 @@ const TariffCalculator = () => {
 
 
     // Trade agreement multipliers
-    const tradeAgreements: { [key: string]: number } = {
-        'US-EU': 0.85,
-        'US-UK': 0.9,
-        'EU-UK': 0.95,
-        'US-CA': 0.7,
-        'default': 1.0
-    };
+    // const tradeAgreements: { [key: string]: number } = {
+    //     'US-EU': 0.85,
+    //     'US-UK': 0.9,
+    //     'EU-UK': 0.95,
+    //     'US-CA': 0.7,
+    //     'default': 1.0
+    // };
 
 
     // Product categories with HS codes and tariff rates
