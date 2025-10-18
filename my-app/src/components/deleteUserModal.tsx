@@ -1,4 +1,5 @@
 import { toast } from "sonner";
+import { useDeleteUser } from "@/hooks/useDeleteUser";
 import type { UserInformation } from "@/types/user";
 import { authClient } from "@/lib/auth-client";
 import {
@@ -8,7 +9,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
 
 interface DeleteUserModalProps {
   isOpen: boolean;
@@ -21,42 +21,58 @@ export default function deleteUserModal({
   onClose,
   user,
 }: DeleteUserModalProps) {
-  const [isLoading, setIsLoading] = useState(false);
+  const { mutate, isPending: isLoading } = useDeleteUser();
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (!user?.id) {
       toast.error("No user Id found for deletion");
       return;
     }
 
-    setIsLoading(true);
-    // Implement user deletion logic here
-    try {
-      // 2. Call the method and pass the actual user.id
-      const { data: deletedUser, error } = await authClient.admin.removeUser({
-        userId: user.id,
-      });
-
-      if (error) {
-        // Handle API error
-        console.error("Deletion error:", error);
-        toast.error(
-          `Failed to delete user: ${error.message || "Unknown error"}`
-        );
-      } else {
-        // Handle success
-        toast.success(`User ${user.name} has been permanently removed.`);
-        console.log("User successfully deleted:", deletedUser);
-        onClose(); // Close the modal on success
+    mutate(
+      { userId: user.id, userName: user.name },
+      {
+        onSuccess: () => {
+          onClose();
+        },
       }
-    } catch (e) {
-      // Handle network or unexpected errors
-      console.error("Unexpected deletion error:", e);
-      toast.error("An unexpected error occurred during deletion.");
-    } finally {
-      setIsLoading(false);
-    }
+    );
   };
+
+  // const handleDelete = async () => {
+  //   if (!user?.id) {
+  //     toast.error("No user Id found for deletion");
+  //     return;
+  //   }
+
+  //   setIsLoading(true);
+  //   // Implement user deletion logic here
+  //   try {
+  //     // 2. Call the method and pass the actual user.id
+  //     const { data: deletedUser, error } = await authClient.admin.removeUser({
+  //       userId: user.id,
+  //     });
+
+  //     if (error) {
+  //       // Handle API error
+  //       console.error("Deletion error:", error);
+  //       toast.error(
+  //         `Failed to delete user: ${error.message || "Unknown error"}`
+  //       );
+  //     } else {
+  //       // Handle success
+  //       toast.success(`User ${user.name} has been permanently removed.`);
+  //       console.log("User successfully deleted:", deletedUser);
+  //       onClose(); // Close the modal on success
+  //     }
+  //   } catch (e) {
+  //     // Handle network or unexpected errors
+  //     console.error("Unexpected deletion error:", e);
+  //     toast.error("An unexpected error occurred during deletion.");
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
   if (!user) return null;
 

@@ -20,6 +20,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+import { useUpdateUser } from "@/hooks/useUpdateUser";
+
 interface UpdateUserModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -34,8 +36,7 @@ export default function UpdateUserModal({
   onClose,
   user,
 }: UpdateUserModalProps) {
-
-  const [isLoading, setIsLoading] = useState(false);
+  const { mutate, isPending: isLoading } = useUpdateUser();
 
   const [formData, setFormData] = useState({
     name: user?.name || "",
@@ -110,9 +111,8 @@ export default function UpdateUserModal({
     setFormData((prev) => ({ ...prev, role: value }));
   }
 
-  // Update Logic
-  const handleUpdate = async () => {
-
+  // New Update Logic using the custom hook
+  const handleUpdate = () => {
     if (!validateFormData()) {
       return;
     }
@@ -122,39 +122,67 @@ export default function UpdateUserModal({
       return;
     }
 
-    setIsLoading(true);
-    // Implement user update logic here
-    try {
-      const { data: updatedUser, error } = await authClient.admin.updateUser({
-        userId: user.id,
-        // Add other user fields to update here
-        data: {
-          name: formData.name,
-          email: formData.email,
-          role: formData.role,
-        },
-      });
-
-      if (error) {
-        // Handle API error
-        console.error("Update error:", error);
-        toast.error(
-          `Failed to update user: ${error.message || "Unknown error"}`
-        );
-      } else {
-        // Handle success
-        toast.success(`User ${formData.name} has been successfully updated.`);
-        console.log("User successfully updated:", updatedUser);
+    // Call the mutate function from the custom hook
+    mutate({
+      userId: user.id,
+      data: {
+        name: formData.name,
+        email: formData.email,
+        role: formData.role,
+      },
+    },
+    {      
+      onSuccess: () => {
         onClose(); // Close the modal on success
       }
-    } catch (e) {
-      // Handle network or unexpected errors
-      console.error("Unexpected update error:", e);
-      toast.error("An unexpected error occurred during update.");
-    } finally {
-      setIsLoading(false);
-    }
+    });
   };
+
+  // Update Logic
+  // const handleUpdate = async () => {
+
+  //   if (!validateFormData()) {
+  //     return;
+  //   }
+
+  //   if (!user?.id) {
+  //     toast.error("No user Id found for update");
+  //     return;
+  //   }
+
+  //   setIsLoading(true);
+  //   // Implement user update logic here
+  //   try {
+  //     const { data: updatedUser, error } = await authClient.admin.updateUser({
+  //       userId: user.id,
+  //       // Add other user fields to update here
+  //       data: {
+  //         name: formData.name,
+  //         email: formData.email,
+  //         role: formData.role,
+  //       },
+  //     });
+
+  //     if (error) {
+  //       // Handle API error
+  //       console.error("Update error:", error);
+  //       toast.error(
+  //         `Failed to update user: ${error.message || "Unknown error"}`
+  //       );
+  //     } else {
+  //       // Handle success
+  //       toast.success(`User ${formData.name} has been successfully updated.`);
+  //       console.log("User successfully updated:", updatedUser);
+  //       onClose(); // Close the modal on success
+  //     }
+  //   } catch (e) {
+  //     // Handle network or unexpected errors
+  //     console.error("Unexpected update error:", e);
+  //     toast.error("An unexpected error occurred during update.");
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
   if (!user) return null;
 
@@ -199,7 +227,7 @@ export default function UpdateUserModal({
             <Select
               value={formData.role}
               onValueChange={handleRoleChange}
-              disabled={isLoading || user?.role === 'admin'}
+              disabled={isLoading || user?.role === "admin"}
             >
               <SelectTrigger className="col-span-3">
                 <SelectValue placeholder="Select a role" />
@@ -219,10 +247,7 @@ export default function UpdateUserModal({
           <Button variant="outline" onClick={onClose} disabled={isLoading}>
             Cancel
           </Button>
-          <Button
-            onClick={handleUpdate}
-            disabled={isLoading}
-          >
+          <Button onClick={handleUpdate} disabled={isLoading}>
             {isLoading ? "Updating..." : "Update User"}
           </Button>
         </DialogFooter>
