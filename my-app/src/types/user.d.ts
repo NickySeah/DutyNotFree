@@ -9,4 +9,5 @@ export interface UserInformation {
   banned?: number;
   banExpires?: null | Date;
   banReason?: null | string;
+  providerId?: string; // Add this new optional field
 }

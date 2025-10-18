@@ -6,6 +6,7 @@ import { Button } from "./ui/button";
 import { useEffect, useState } from "react";
 // import { LoaderCircle } from "lucide-react";
 import { useUserRole } from "@/lib/checkRole";
+import { redirect, RedirectType } from 'next/navigation'
 
 export default function Navbar() {
   const { isAdmin, isAuthenticated, isPending } = useUserRole();
@@ -14,6 +15,11 @@ export default function Navbar() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  const handleSignOut = async () => {
+    await signOut();
+    redirect('/', RedirectType.replace);
+  }
 
   if (!mounted) {
     return (
@@ -67,7 +73,7 @@ export default function Navbar() {
         {isPending ? (
           <div className="w-20 h-10 bg-gray-700 animate-pulse rounded"></div>
         ) : isAuthenticated ? (
-          <Button variant={"destructive"} onClick={() => signOut()}>
+          <Button variant={"destructive"} onClick={handleSignOut}>
             {" "}
             Sign Out{" "}
           </Button>

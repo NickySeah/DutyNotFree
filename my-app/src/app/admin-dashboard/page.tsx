@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { authClient } from "@/lib/auth-client";
 import DeleteUserModal from "@/components/deleteUserModal";
+import UpdateUserModal from "@/components/updateUserModal";
 
 import { DataTable } from "./data-table";
 import { createColumns } from "./columns";
@@ -19,6 +20,7 @@ export default function AdminDashboardPage() {
   const [userData, setUserData] = useState<any>(null);
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserInformation | null>(null);
 
   // This function will be passed to createColumns
@@ -28,7 +30,13 @@ export default function AdminDashboardPage() {
     setIsDeleteModalOpen(true);
   }
 
-  const columns = createColumns(handleDeleteUser);
+  const handleUpdateUser = (user: UserInformation) => {
+    console.log("Updating user:", user);
+    setSelectedUser(user);
+    setIsUpdateModalOpen(true);
+  };
+
+  const columns = createColumns(handleUpdateUser, handleDeleteUser);
 
   useEffect(() => {
     if (!isPending) {
@@ -56,8 +64,30 @@ export default function AdminDashboardPage() {
         if (error) {
           throw new Error(error.message);
         }
-        console.log("Fetched users:", data?.users);
-        setUserData(data);
+
+        // 2. For each user, create a promise to fetch their providerId
+        const usersWithProviderPromises = data.users.map(async (user) => {
+          try {
+            const response = await fetch(
+              `/api/user/provider?userId=${user.id}`
+            );
+            if (!response.ok) {
+              // If the endpoint returns an error, assign a default value
+              return { ...user, providerId: "Error" };
+            }
+            const { providerId } = await response.json();
+            return { ...user, providerId }; // Add the providerId to the user object
+          } catch (e) {
+            console.error(`Failed to fetch providerId for user ${user.id}`, e);
+            return { ...user, providerId: "Error" };
+          }
+        });
+
+        // 3. Wait for all fetch requests to complete
+        const usersWithProviderId = await Promise.all(usersWithProviderPromises);
+
+        console.log("Fetched users:", usersWithProviderId);
+        setUserData({ users: usersWithProviderId });
       } catch (err) {
         console.error("Error fetching users:", err);
         toast.error("Error fetching users");
@@ -98,6 +128,14 @@ export default function AdminDashboardPage() {
           </div>
         )}
       </div>
+      <UpdateUserModal
+        isOpen={isUpdateModalOpen}
+        onClose={() => {
+          setIsUpdateModalOpen(false);
+          setSelectedUser(null);
+        }}
+        user={selectedUser}
+      />
       <DeleteUserModal
         isOpen={isDeleteModalOpen}
         onClose={() => {

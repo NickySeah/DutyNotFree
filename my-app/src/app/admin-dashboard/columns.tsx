@@ -17,6 +17,7 @@ import type { UserInformation } from "@/types/user";
 
 // export const columns: ColumnDef<UserInformation>[] = [
 export const createColumns = (
+  handleUpdateUser: (user: UserInformation) => void, // function type
   handleDeleteUser: (user: UserInformation) => void, // function type
 ): ColumnDef<UserInformation>[] => [
   {
@@ -30,6 +31,10 @@ export const createColumns = (
   {
     accessorKey: "role",
     header: "Role",
+  },
+  {
+    accessorKey : "providerId",
+    header: "Provider ID",
   },
   {
     accessorKey: "emailVerified",
@@ -60,7 +65,14 @@ export const createColumns = (
               Copy User ID
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Update User</DropdownMenuItem>
+            
+            <DropdownMenuItem
+            onClick={() => {
+              console.log("Update User Clicked");
+              handleUpdateUser(user);
+            }}
+            >Update User</DropdownMenuItem>
+
             {user.role !== "admin" && (
               <DropdownMenuItem
               onClick={() => {
