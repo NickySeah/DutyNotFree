@@ -236,9 +236,8 @@ const TariffCalculator = () => {
                     }
                 });
 
-                const tariffAmount = response.data - finalProductValue;
                 totalValue += finalProductValue;
-                totalTariff += tariffAmount;
+                totalTariff += response.data - finalProductValue;
 
             } catch (error) {
                 console.error(`Error calculating tariff for product ${product.name}:`, error);
