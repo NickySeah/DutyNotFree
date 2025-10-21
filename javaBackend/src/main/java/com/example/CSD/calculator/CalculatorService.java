@@ -1,19 +1,28 @@
 package com.example.CSD.calculator;
 
-import java.time.DateTimeException;
-import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
+
+import com.example.CSD.fta.FTA;
+import com.example.CSD.fta.FTAService;
 import com.example.CSD.tariff.Tariff;
-import com.example.CSD.tariff.TariffRepository;
+import com.example.CSD.tariff.TariffService;
+import com.example.CSD.hscode.HSCode;
+import com.example.CSD.hscode.HSCodeService;
+
 import org.springframework.stereotype.Service;
 
 @Service
 public class CalculatorService {
 
-    private final TariffRepository tariffRepository;
+    private final TariffService ts;
+    private final FTAService fs;
+    private final HSCodeService hs;
 
-    public CalculatorService(TariffRepository tariffRepository) {
-        this.tariffRepository = tariffRepository;
+    public CalculatorService(TariffService ts, FTAService fs, HSCodeService hs) {
+        this.ts = ts;
+        this.fs = fs;
+        this.hs = hs;
     }
 
     /**
@@ -28,37 +37,42 @@ public class CalculatorService {
             String hsCode,
             String dateStr
     ) {
-        // 1. Get all tariffs matching the trade route & HS code at a given date
-        LocalDate effectiveDate = null;
-        try {
-            effectiveDate =LocalDate.parse(dateStr);
+        // Case 1: FTA
+        List<FTA> ftas = fs.getActiveFTA(null,originCode,destCode,dateStr);     // Get all FTA between both countries
+        HSCode queryHsCode = hs.getHSCode(hsCode, null).get(0);     
+        boolean hasFTA = false;                                                 // Track if an applicable FTA exists 
+        double lowestRate = -1;                                                 // Track lowest FTA rate if multple applicable FTAs exist
+        for (FTA fta : ftas) {                                                  // For each FTA
+            Set<HSCode> excludedHsCodes = fta.getExcludedHsCodes();                 // Retrieve the HSCodes excluded from this FTA
+            if (excludedHsCodes.contains(queryHsCode)) {continue;}                  // (1) query HS Code is excluded, skip this FTA
+
+            double curRate = fta.getDefaultRate();                                  // (2) query HS Code is included, consider this FTA
+            if (lowestRate==-1) {                                                       // First applicable FTA
+                lowestRate = curRate;
+                hasFTA = true;
+            }
+            else if (lowestRate > curRate) {                                            // Another applicable FTA that is lower
+                lowestRate = curRate;
+            }
         }
-        catch (DateTimeException e) {                                               // (!) Given in invalid format   
-            throw new RuntimeException("Query date must be a valid date and in the format YYYY-MM-DD.");
+
+        if (hasFTA) {                                                           // If applicable FTA exists
+            double ftaCost = originalValue * (lowestRate/100);                      // Calculate additional cost under FTA
+            return originalValue + ftaCost;                                         // Return final cost
         }
 
-        List<Tariff> tariffs = tariffRepository.findActiveTariffsByFilters(originCode, destCode, hsCode, null, effectiveDate);
-
-        // 2. Apply each tariff in sequence
-        double tariffTotal = 0.0;
-        for (Tariff tariff : tariffs) {
-            System.out.printf("Debug: from %s to %s for %s - %s: rate %s%% OR fee $%s - start %s to end %s\n",                  //TODO: to see what tariffs are applied via terminal
-                    tariff.getOriginCountry().getName(), tariff.getDestCountry().getName(), tariff.getHsCode().getDescription(),
-                    tariff.getTariffType(),
-                    tariff.getStandardRate() != null ? tariff.getStandardRate() : "N/A",
-                    tariff.getFlatFee() != null ? tariff.getFlatFee() : "N/A",
-                    tariff.getEffectiveDate(), tariff.getExpirationDate() != null ? tariff.getExpirationDate() : "N/A"
-            );
-
-            if (tariff.getStandardRate() != null) {
+        // Case 2: Tariff   (No FTA exists)
+        List<Tariff> tariffs = ts.getActiveTariffs(originCode, destCode, hsCode, null, dateStr);    // Get all tariff lines between both countries
+        double tariffTotal = 0.0;                                                                   // Track total tariff cost
+        for (Tariff tariff : tariffs) {                                                             // For each tariff line
+            if (tariff.getStandardRate() != null) {                                                     // (1) tariff uses ad valorem rate
                 tariffTotal += originalValue * tariff.getStandardRate() / 100;
             } 
-            else if (tariff.getFlatFee() != null) {
+            else if (tariff.getFlatFee() != null) {                                                     // (2) tariff uses flat tariff fee
                 tariffTotal += tariff.getFlatFee();
             } 
         }
 
-        // 3. Final cost = tariffs + base value
-        return originalValue + tariffTotal;
+        return originalValue + tariffTotal;                                                         // Returns final cost = tariffs + base value
     }
 }

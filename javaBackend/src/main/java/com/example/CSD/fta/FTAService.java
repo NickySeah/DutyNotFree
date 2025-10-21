@@ -7,19 +7,15 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 // import javax.swing.text.html.Option;
 import org.apache.commons.lang3.EnumUtils;
 import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 
-import com.example.CSD.bloc.Bloc;
-import com.example.CSD.country.Country;
 import com.example.CSD.fta.FTA.FTAType;
 import com.example.CSD.hscode.HSCode;
 import com.example.CSD.hscode.HSCodeRepository;
-import com.example.CSD.tariff.Tariff;
 import com.example.CSD.tradeParty.TradeParty;
 import com.example.CSD.tradeParty.TradeParty.PartyType;
 import com.example.CSD.tradeParty.TradePartyRepository;
@@ -60,40 +56,43 @@ public class FTAService {
         // Filer out those w/o partyA and/or partyB
         if (tPartyA != null || tPartyB != null) {
             Iterator<FTA> iter = results.iterator();
-            while (iter.hasNext()) {                                    // Check all bloc to find bloc(s) that contain all specified countries
+            while (iter.hasNext()) {                                                // Check all bloc to find bloc(s) that contain all specified countries
                 FTA f = iter.next();
-                TradeParty existingPA = f.getPartyA();                      // Get both parties in current FTA
+                TradeParty existingPA = f.getPartyA();                              // Get both parties in current FTA
                 TradeParty existingPB = f.getPartyB();
                 boolean AisBloc = existingPA.getType() == PartyType.BLOC;
                 boolean BisBloc = existingPB.getType() == PartyType.BLOC;
                 boolean matchA = true;
                 boolean matchB = true;
 
-                if (tPartyA != null) {                                          // Check if given party matches either party    // TODO: make a helper if used elsewhere
+                if (tPartyA != null) {                                                  // Check if query partyA matches either party    // TODO: make a helper if used elsewhere
                     boolean targetAisCountry = tPartyA.getType() == PartyType.COUNTRY;
-                    matchA = existingPA.equals(tPartyA);
+                    matchA = existingPA.equals(tPartyA) || existingPB.equals(tPartyA);
 
-                    if (AisBloc && targetAisCountry) {
-                        matchA = matchA || existingPA.getBloc().getMemberCountries().contains(tPartyA.getCountry()); 
-                    }
-                    else if (BisBloc && targetAisCountry){
-                        matchA = matchA ||  existingPA.getBloc().getMemberCountries().contains(tPartyA.getCountry()); 
+                    if (!matchA && targetAisCountry) {
+                        if (AisBloc && existingPA.getBloc().getMemberCountries().contains(tPartyA.getCountry())) {
+                            matchA = true;
+                        } 
+                        else if (BisBloc && existingPB.getBloc().getMemberCountries().contains(tPartyA.getCountry())) {
+                            matchA = true;
+                        }
                     }
                 }
-                if (tPartyB != null) {                    
+                if (tPartyB != null) {
                     boolean targetBisCountry = tPartyB.getType() == PartyType.COUNTRY;
-                    matchB = existingPA.equals(tPartyA);
-                    
-                    if (AisBloc && targetBisCountry) {
-                        matchB = matchB || existingPA.getBloc().getMemberCountries().contains(tPartyB.getCountry()); 
-                    }
-                    
-                    if (BisBloc && targetBisCountry){
-                        matchB = matchB || existingPA.getBloc().getMemberCountries().contains(tPartyB.getCountry()); 
+                    matchB = existingPA.equals(tPartyB) || existingPB.equals(tPartyB);
+
+                    if (!matchB && targetBisCountry) {
+                        if (AisBloc && existingPA.getBloc().getMemberCountries().contains(tPartyB.getCountry())) {
+                            matchB = true;
+                        } 
+                        else if (BisBloc && existingPB.getBloc().getMemberCountries().contains(tPartyB.getCountry())) {
+                            matchB = true;
+                        }
                     }
                 }
 
-                if (!matchA && !matchB) {
+                if (!matchA || !matchB) {
                     iter.remove();
                 }
             }
@@ -217,9 +216,7 @@ public class FTAService {
 
         // (2) Validate FTA request
         // Default Rate
-        System.out.println("\n\n HELLO? \n\n");
         if (request.isDefaultRateProvided()) {
-            System.out.println("\n\n HELLO?? \n\n");
             Double finalRate = request.getDefaultRate();
             System.out.println("\n\n"+finalRate+"\n\n");
             if (finalRate < 0) {

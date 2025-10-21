@@ -1,7 +1,6 @@
 package com.example.CSD.fta;
 
 import java.util.List;
-import java.util.Set;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -80,7 +79,7 @@ public class FTAV1Controller {
     @Operation(summary = "Update FTA by id", description = "Updates an existing FTA using its id")
     @PutMapping("/{id}")
     public FTA updateFTA(@Parameter(description = "Id of the FTA to delete") @PathVariable Long id, @RequestBody FTAUpdateRequest request) {
-        return FTAService.updateFTA(id, request);                                           // TODO: FUCK #2
+        return FTAService.updateFTA(id, request);
     }
 
     @Operation(summary = "Delete FTA by id", description = "Deletes a FTA using its id")
