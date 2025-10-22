@@ -2,7 +2,10 @@ package com.example.CSD.calculator;
 
 import java.time.DateTimeException;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import com.example.CSD.tariff.Tariff;
 import com.example.CSD.tariff.TariffRepository;
 import org.springframework.stereotype.Service;
@@ -21,7 +24,7 @@ public class CalculatorService {
      *
      * Formula: (apply each tariff -> value*rate OR value+fee) + original value
      */
-    public double calculateTariffedValue(
+    public Map<String, Object> calculateTariffedValue(
             double originalValue,
             String originCode,
             String destCode,
@@ -59,6 +62,10 @@ public class CalculatorService {
         }
 
         // 3. Final cost = tariffs + base value
-        return originalValue + tariffTotal;
+        Map<String, Object> result = new HashMap<>();
+        result.put("appliedTariffs", tariffs);
+        result.put("tariffTotal", tariffTotal);
+        result.put("finalValue", originalValue + tariffTotal);
+        return result;
     }
 }
