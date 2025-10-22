@@ -1,7 +1,6 @@
 import { toast } from "sonner";
 import { useDeleteUser } from "@/hooks/useDeleteUser";
 import type { UserInformation } from "@/types/user";
-import { authClient } from "@/lib/auth-client";
 import {
   Dialog,
   DialogContent,
@@ -16,7 +15,7 @@ interface DeleteUserModalProps {
   user: UserInformation | null;
 }
 
-export default function deleteUserModal({
+export default function DeleteUserModal({
   isOpen,
   onClose,
   user,

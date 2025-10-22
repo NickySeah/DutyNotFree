@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/utils/auth"; // Make sure this path is correct
+import { auth } from "@/utils/auth";
+import { RowDataPacket } from "mysql2";
+
+interface AccountRow extends RowDataPacket {
+  providerId: string;
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -31,31 +36,25 @@ export async function GET(request: NextRequest) {
       throw new Error("Database connection is not available");
     }
 
-    // 4. Query the 'account' table for the providerId
-    // Note: The result structure might vary based on your DB adapter (e.g., `result[0]`, `result.rows`)
-    // This example assumes a structure like { rows: [...] }
-    const result: any = await db.execute(
+    // 4. Query with proper mysql2 typing
+    const [rows] = await db.execute<AccountRow[]>(
       "SELECT providerId FROM account WHERE userId = ? LIMIT 1",
       [userId]
     );
 
-    const rows = result[0]; // Adjust based on your DB adapter
-
-    // **Corrected Logic:** If no account is found, it's an error.
+    // 5. Check if account exists
     if (!rows || rows.length === 0) {
-      console.log(
-        `No account found for user ID ${userId}`
-      );
+      console.log(`No account found for user ID ${userId}`);
       return NextResponse.json(
         { error: `Account not found for user ID ${userId}` },
-        { status: 404 } // Use 404 Not Found to indicate the resource is missing
+        { status: 404 }
       );
     }
-    const firstRow = rows[0];
-    const providerId = firstRow.providerId;
 
-    // 5. Return the providerId
-    return NextResponse.json({ providerId: providerId });
+    const providerId = rows[0].providerId; // Type-safe access
+
+    // 6. Return the providerId
+    return NextResponse.json({ providerId });
   } catch (error) {
     console.error("Error fetching providerId:", error);
     return NextResponse.json(

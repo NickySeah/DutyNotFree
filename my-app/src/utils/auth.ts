@@ -48,7 +48,7 @@ export const auth = betterAuth({
   },
     emailVerification: {
       autoSignInAfterVerification: true,
-      sendVerificationEmail: async ( { user, url, token }, request) => {
+      sendVerificationEmail: async ( { user, url }) => {
         url += `choose-role`; // Scuff way to set callbackURL per email
         await sendEmail( url, user as Session );
       },

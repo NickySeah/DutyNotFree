@@ -1,6 +1,6 @@
 "use client";
 
-import { ColumnDef } from "@tanstack/react-table";
+import { ColumnDef, Row } from "@tanstack/react-table";
 import { MoreHorizontal } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -209,7 +209,7 @@ export const createColumns = (
     sortingFn: (rowA, rowB) => {
       const currentDate = new Date();
 
-      const getIsActive = (row: any) => {
+      const getIsActive = (row: Row<TradeRate>) => {
         const effectiveDate = row.original.effectiveDate;
         const expirationDate = row.original.expirationDate;
 

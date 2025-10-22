@@ -9,6 +9,7 @@ import {
   getPaginationRowModel,
   ColumnFiltersState,
   getFilteredRowModel,
+  Row,
 } from "@tanstack/react-table";
 
 import { Button } from "@/components/ui/button";
@@ -37,7 +38,7 @@ export function DataTable<TData, TValue>({
     []
   );
 
-  const globalFilter = (row: any, columnId: string, value: string) => {
+  const globalFilter = (row: Row<TData>, columnId: string, value: string) => {
     const email = String(row.getValue("email")).toLowerCase();
     const name = String(row.getValue("name")).toLowerCase();
 

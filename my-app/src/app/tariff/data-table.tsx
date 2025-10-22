@@ -15,6 +15,7 @@ import {
   getSortedRowModel,
   getCoreRowModel,
   useReactTable,
+  Row
 } from "@tanstack/react-table";
 
 import { useUserRole } from "@/lib/checkRole";
@@ -42,7 +43,7 @@ export function DataTable<TData, TValue>({
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const { isAdmin, isPending } = useUserRole();
 
-  const globalFilter = (row: any, columnId: string, value: string) => {
+  const globalFilter = (row: Row<TData>, columnId: string, value: string) => {
     const description = String(row.getValue("description")).toLowerCase();
     const hsCode = String(row.getValue("hsCode")).toLowerCase();
     const exportingFrom = String(row.getValue("exportingFrom")).toLowerCase();

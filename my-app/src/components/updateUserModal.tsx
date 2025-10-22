@@ -1,6 +1,5 @@
 import { toast } from "sonner";
 import type { UserInformation } from "@/types/user";
-import { authClient } from "@/lib/auth-client";
 import { useEffect, useState } from "react";
 import {
   Dialog,

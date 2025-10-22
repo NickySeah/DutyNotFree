@@ -34,7 +34,7 @@ export const VerificationEmailTemplate = ({
             </a>
         </div>
         <p style={paragraph}>
-          If the button above doesn't work, you can also copy and paste this
+          If the button above doesn&apos;t work, you can also copy and paste this
           link into your browser:
         </p>
         <a href={url} style={reportLink} target="_blank" rel="noopener noreferrer">

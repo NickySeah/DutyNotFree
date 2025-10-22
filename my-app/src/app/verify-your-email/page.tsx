@@ -83,9 +83,17 @@ export default function VerifyEmailPage() {
       setCountdown(120);
       setIsTimerActive(true);
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Resend failed:", error);
-      setFeedbackMessage(error.message || "An unknown error occurred.");
+      
+      let errorMessage = "An unknown error occurred.";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      
+      setFeedbackMessage(errorMessage);
       setStatus("error");
     }
   };
@@ -142,7 +150,7 @@ export default function VerifyEmailPage() {
         </CardHeader>
         <CardContent>
           <p className="text-center text-sm text-muted-foreground">
-            Click the link in the email to complete registration. If you don't
+            Click the link in the email to complete registration. If you don&apos;t
             see it, check your spam folder.
           </p>
         </CardContent>
