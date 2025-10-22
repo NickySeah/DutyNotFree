@@ -4,10 +4,12 @@ import { toast } from "sonner";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { redirect, RedirectType } from "next/navigation";
+import { useState } from "react"; // Add this import
+import { Loader2 } from "lucide-react"; // Add this import for loading icon
 
 export default function RegisterPage() {
-  const router = useRouter();
+  const [loading, setLoading] = useState(false); // Add loading state
 
   const handleEmailPasswordRegister = async (
     name: string,
@@ -21,10 +23,19 @@ export default function RegisterPage() {
         password,
       },
       {
+        onRequest: () => {
+          setLoading(true); // Start loading when request begins
+        },
+        onResponse: () => {
+          setLoading(false); // Stop loading when response is received
+        },
         onSuccess: () => {
           toast.success("Registration successful!");
           // Use replace instead of push to remove register from history
-          router.replace("/choose-role");
+          redirect(
+            `/verify-your-email?email=${encodeURIComponent(email)}`,
+            RedirectType.replace
+          );
         },
         onError: (ctx) => {
           toast.error(ctx.error.message);
@@ -51,6 +62,7 @@ export default function RegisterPage() {
 
     await handleEmailPasswordRegister(name, email, password);
   };
+
   return (
     <div>
       <div className="flex flex-row border-2 m-8 rounded-4xl shadow-lg overflow-hidden">
@@ -71,6 +83,7 @@ export default function RegisterPage() {
                   type="text"
                   id="name"
                   name="name"
+                  disabled={loading} // Disable input when loading
                 />
               </div>
             </div>
@@ -84,6 +97,7 @@ export default function RegisterPage() {
                   type="email"
                   id="email"
                   name="email"
+                  disabled={loading} // Disable input when loading
                 />
               </div>
             </div>
@@ -97,6 +111,7 @@ export default function RegisterPage() {
                   type="password"
                   id="password"
                   name="password"
+                  disabled={loading} // Disable input when loading
                 />
               </div>
             </div>
@@ -110,12 +125,24 @@ export default function RegisterPage() {
                   type="password"
                   id="confirm-password"
                   name="confirm-password"
+                  disabled={loading} // Disable input when loading
                 />
               </div>
             </div>
 
-            <Button type="submit" className="w-full mt-8 mb-8">
-              Register
+            <Button
+              type="submit"
+              className="w-full mt-8 mb-8"
+              disabled={loading} // Disable button when loading
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Registering...
+                </>
+              ) : (
+                "Register"
+              )}
             </Button>
           </form>
           <div className="flex justify-center w-full border-t py-4">

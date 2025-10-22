@@ -3,6 +3,8 @@ import { createPool } from "mysql2/promise";
 import { nextCookies } from "better-auth/next-js";
 import { admin } from "better-auth/plugins";
 import { jwt } from "better-auth/plugins";
+import { sendEmail } from "../email/send-email";
+import { Session } from "../lib/auth-client";
 
 export const auth = betterAuth({
   plugins: [
@@ -36,11 +38,19 @@ export const auth = betterAuth({
   }),
   emailAndPassword: {
     enabled: true,
+    requireEmailVerification: true,
   },
   socialProviders: {
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID as string,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
     },
+  },
+    emailVerification: {
+      autoSignInAfterVerification: true,
+      sendVerificationEmail: async ( { user, url, token }, request) => {
+        url += `choose-role`; // Scuff way to set callbackURL per email
+        await sendEmail( url, user as Session );
+      },
   },
 });

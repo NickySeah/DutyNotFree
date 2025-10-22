@@ -19,7 +19,7 @@ export function middleware(request: NextRequest) {
 
   // No session - can only access landing, register, login
   if (!sessionCookie) {
-    const allowedRoutes = ["/", "/login", "/register"];
+    const allowedRoutes = ["/", "/login", "/register", "/verify-your-email", "/verify-your-email/success"];
     if (!allowedRoutes.includes(pathname)) {
       return NextResponse.redirect(new URL("/login", request.url));
     }

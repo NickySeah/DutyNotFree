@@ -6,9 +6,10 @@ import Link from "next/link";
 // import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
-import { authClient } from "@/lib/auth-client";
+import { authClient, sendVerificationEmail } from "@/lib/auth-client";
 import { toast } from "sonner";
-import { Loader2, Key } from "lucide-react";
+import { Loader2 } from "lucide-react";
+// import { redirect, RedirectType } from "next/navigation";
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
@@ -17,8 +18,9 @@ export default function LoginPage() {
     e.preventDefault();
     const formData = new FormData(e.target as HTMLFormElement);
     const email = formData.get("email");
-    if (!email) return toast.error("Email is required");
     const password = formData.get("password");
+
+    if (!email) return toast.error("Email is required");
     if (!password) return toast.error("Password is required");
 
     await authClient.signIn.email(
@@ -35,6 +37,38 @@ export default function LoginPage() {
         },
         onSuccess: (ctx) => {
           window.location.href = "/tariff";
+        },
+        onError: async (ctx) => {
+          // Check for the specific error code for an unverified email.
+          const isNotVerified =
+            (ctx.error as any)?.code === "EMAIL_NOT_VERIFIED";
+
+          if (isNotVerified) {
+            try {
+              // Automatically send verification email
+              await sendVerificationEmail({
+                email: email as string,
+                // callbackURL: `/verify-your-email/success`,
+              });
+
+              // Redirect to verification page
+              // redirect(
+              //   `/verify-your-email?email=${encodeURIComponent(email as string)}`,
+              //   RedirectType.replace
+              // );
+              window.location.href = `/verify-your-email?email=${encodeURIComponent(
+                email as string
+              )}`;
+            } catch (verifyError: any) {
+              console.error("Failed to send verification email:", verifyError);
+              toast.error(
+                "Failed to send verification email. Please try again."
+              );
+            }
+          } else {
+            // Handle all other login errors
+            toast.error(ctx.error.message);
+          }
         },
       }
     );
@@ -122,6 +156,9 @@ export default function LoginPage() {
                   },
                   onSuccess: (ctx) => {
                     window.location.href = "/tariff";
+                  },
+                  onError: (ctx) => {
+                    toast.error(ctx.error.message);
                   },
                 }
               );

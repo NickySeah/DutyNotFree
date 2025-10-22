@@ -18,5 +18,8 @@ export const {
     signIn,
     signOut,
     signUp,
-    useSession
+    useSession,
+    sendVerificationEmail,
 } = authClient;
+
+export type Session = typeof authClient.$Infer.Session.user;
