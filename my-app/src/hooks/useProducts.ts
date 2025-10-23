@@ -16,7 +16,7 @@ export function useProducts() {
     return useQuery({
         queryKey: ['products'],
         queryFn: async (): Promise<Product[]> => {
-            const response = await productService.get('/all');
+            const response = await productService.get('/api/v1/products/all');
             return response.data;
         },
     });

@@ -30,7 +30,7 @@ export function useTariffs() {
     return useQuery({
         queryKey: ['tariffs'],
         queryFn: async (): Promise<TradeRate[]> => {
-            const response = await tariffService.get('/all');
+            const response = await tariffService.get('/api/v1/tariffs/all');
             // Map API response to TradeRate interface
             return response.data.map((item: TariffApiResponse) => ({
                 tariff_id: item.id,

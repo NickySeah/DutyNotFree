@@ -11,7 +11,7 @@ export function useCountries() {
   return useQuery({
     queryKey: ['countries'],
     queryFn: async (): Promise<Country[]> => {
-      const response = await countriesService.get('/all');
+      const response = await countriesService.get('/api/v1/countries/all');
       return response.data;
     },
   });

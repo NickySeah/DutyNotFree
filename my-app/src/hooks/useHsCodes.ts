@@ -10,7 +10,7 @@ export function useHsCodes() {
   return useQuery({
     queryKey: ['hsCodes'],
     queryFn: async (): Promise<HsCode[]> => {
-      const response = await hsCodeService.get('/all');
+      const response = await hsCodeService.get('/api/v1/hscodes/all');
       return response.data;
     },
   });
