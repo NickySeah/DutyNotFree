@@ -1,5 +1,7 @@
 package com.example.CSD.calculator;
 
+import java.util.Map;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -33,7 +35,7 @@ public class CalculatorV1Controller {
 @   ApiResponses({
         @ApiResponse(responseCode = "200", description = "Calculation successful")
     })
-    public double calculateTariffedValue(
+    public Map<String, Object> calculateTariffedValue(
             @RequestParam double value,
             @RequestParam String origin,
             @RequestParam String dest,

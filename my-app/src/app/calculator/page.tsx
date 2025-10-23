@@ -7,17 +7,15 @@ import {
     Calculator,
     Package,
     DollarSign,
-    Percent,
     Info,
     Plus,
-    X,
-    Move,
     Globe,
     ArrowRight,
-    Trash2,
     CalendarIcon,
     ArrowRightLeft,
     Activity
+    ChevronDown,
+    ChevronUp
 } from 'lucide-react';
 import {
     Select,
@@ -40,6 +38,44 @@ import { calculatorService, tariffService } from '@/lib/axios';
 import { formatDateToYYYYMMDD } from '@/utils/dateUtils';
 import LiveTariffChart from '@/components/LiveTariffChart';
 
+// Add these interfaces to your types file or at the top of the component
+interface AppliedTariff {
+    id: number;
+    hsCode: {
+        code: string;
+        description: string;
+    };
+    originCountry: {
+        code: string;
+        name: string;
+        alpha3: string;
+    };
+    destCountry: {
+        code: string;
+        name: string;
+        alpha3: string;
+    };
+    tariffType: string;
+    standardRate: number | null;
+    flatFee: number | null;
+    effectiveDate: string;
+    expirationDate: string | null;
+}
+
+interface CalculationResponse {
+    tariffTotal: number;
+    finalValue: number;
+    appliedTariffs: AppliedTariff[];
+}
+
+interface ProductBreakdown {
+    product: Product;
+    originalValue: number;
+    tariffAmount: number;
+    finalValue: number;
+    appliedTariffs: AppliedTariff[];
+}
+
 const TariffCalculator = () => {
     const isMounted = useRef(false);
     const [products, setProducts] = useState<Product[]>([]);
@@ -47,7 +83,6 @@ const TariffCalculator = () => {
         origin: '',
         destination: ''
     });
-    const [draggedItem, setDraggedItem] = useState<Product | null>(null);
     const [results, setResults] = useState({
         totalValue: 0,
         totalTariff: 0,
@@ -57,6 +92,8 @@ const TariffCalculator = () => {
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const [tariffDate, setTariffDate] = useState<Date | undefined>(undefined);
     const [productTariffDetails, setProductTariffDetails] = useState<{ [productId: number]: string }>({});
+    const [productBreakdowns, setProductBreakdowns] = useState<ProductBreakdown[]>([]);
+    const [showBreakdown, setShowBreakdown] = useState(false);
 
     const { data: countryData, isLoading: countriesLoading, error: countriesError } = useCountries();
     const { data: productsData, isLoading: productsLoading, error: productsError } = useProducts();
@@ -66,56 +103,10 @@ const TariffCalculator = () => {
     const calculationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const [dataVersion, setDataVersion] = useState<number>(0);
 
+    const { data: countryData, isLoading: countriesLoading } = useCountries();
+    const { data: productsData } = useProducts();
 
     const countryMap = useRef({} as { [key: string]: { name: string; alpha3: string; code: string } });
-
-    // Country-specific tariff data
-    // const countryData = {
-    //     'US': { name: 'United States', vatRate: 0, currency: 'USD' },
-    //     'EU': { name: 'European Union', vatRate: 20, currency: 'EUR' },
-    //     'UK': { name: 'United Kingdom', vatRate: 20, currency: 'GBP' },
-    //     'CN': { name: 'China', vatRate: 13, currency: 'CNY' },
-    //     'JP': { name: 'Japan', vatRate: 10, currency: 'JPY' },
-    //     'CA': { name: 'Canada', vatRate: 5, currency: 'CAD' },
-    //     'AU': { name: 'Australia', vatRate: 10, currency: 'AUD' },
-    //     'IN': { name: 'India', vatRate: 18, currency: 'INR' }
-    // };
-
-
-    // Trade agreement multipliers
-    const tradeAgreements: { [key: string]: number } = {
-        'US-EU': 0.85,
-        'US-UK': 0.9,
-        'EU-UK': 0.95,
-        'US-CA': 0.7,
-        'default': 1.0
-    };
-
-
-    // Product categories with HS codes and tariff rates
-    // const productCategories: ProductCategory[] = [
-    //     { id: 1, name: 'Electronics', hsCode: '8517', baseRate: 5.5, category: 'Technology' },
-    //     { id: 2, name: 'Textiles', hsCode: '6109', baseRate: 8.2, category: 'Clothing' },
-    //     { id: 3, name: 'Automobiles', hsCode: '8703', baseRate: 10.0, category: 'Automotive' },
-    //     { id: 4, name: 'Agricultural Products', hsCode: '0801', baseRate: 2.3, category: 'Food' },
-    //     { id: 5, name: 'Steel Products', hsCode: '7208', baseRate: 15.0, category: 'Materials' },
-    //     { id: 6, name: 'Chemicals', hsCode: '2902', baseRate: 3.7, category: 'Industrial' },
-    //     { id: 7, name: 'Pharmaceuticals', hsCode: '3004', baseRate: 0.0, category: 'Medical' },
-    //     { id: 8, name: 'Machinery', hsCode: '8419', baseRate: 2.2, category: 'Industrial' }
-    // ];
-
-    // const sampleProductList: Product[] = [
-    //     // Initial sample product
-    //     { id: 1, name: 'Smartphone', hsCode: '8517', value: 300, quantity: 10, tariffRate: 5.5, category: 'Electronics' },
-    //     { id: 2, name: 'Jeans', hsCode: '6109', value: 50, quantity: 20, tariffRate: 8.2, category: 'Textiles' },
-    //     { id: 3, name: 'Car', hsCode: '8703', value: 20000, quantity: 2, tariffRate: 10.0, category: 'Automobiles' },
-    //     { id: 4, name: 'Laptop', hsCode: '8471', value: 1200, quantity: 5, tariffRate: 3.0, category: 'Electronics' },
-    //     { id: 5, name: 'T-Shirt', hsCode: '6109', value: 20, quantity: 50, tariffRate: 8.2, category: 'Textiles' },
-    //     { id: 6, name: 'Tablet', hsCode: '8471', value: 400, quantity: 15, tariffRate: 3.0, category: 'Electronics' },
-    //     { id: 7, name: 'Headphones', hsCode: '8518', value: 150, quantity: 25, tariffRate: 4.0, category: 'Electronics' },
-    //     { id: 8, name: 'Sneakers', hsCode: '6404', value: 80, quantity: 30, tariffRate: 6.5, category: 'Footwear' }
-    // ];
-
 
     const addProduct = () => {
         if (!selectedProduct) return;
@@ -167,7 +158,6 @@ const TariffCalculator = () => {
         }
     };
 
-    // Remove product entirely
     const removeProduct = (id: number) => {
         setProducts(products.filter(p => p.id !== id));
         
@@ -178,21 +168,6 @@ const TariffCalculator = () => {
             }, 100);
         }
     };
-
-
-    // const loadSampleProduct = (category: ProductCategory) => {
-    //     const product = {
-    //         id: Date.now(),
-    //         name: category.name,
-    //         hsCode: category.hsCode,
-    //         value: Math.floor(Math.random() * 50000) + 10000,
-    //         quantity: Math.floor(Math.random() * 100) + 10,
-    //         tariffRate: category.baseRate,
-    //         category: category.name
-    //     };
-    //     setProducts([...products, product]);
-    // };
-
 
     const getCountry = (code: string) => {
         return countryMap.current[code]?.name || "N/A";
@@ -215,7 +190,6 @@ const TariffCalculator = () => {
             throw error;
         }
     };
-
 
     const calculateTariffs = async () => {
         const warningToastId = "select-fields-warning";
@@ -286,9 +260,96 @@ const TariffCalculator = () => {
                     newProductTariffDetails[product.id] = "Error loading tariff data";
                     totalValue += finalProductValue;
                 }
+            setResults({
+                totalValue: 0,
+                totalTariff: 0,
+                totalCost: 0,
+                effectiveRate: 0
+            });
+            setProductBreakdowns([]);
+            return;
+        }
+
+        const productsToCalculate = products;
+        let totalValue = 0;
+        let totalTariff = 0;
+        const newProductBreakdowns: ProductBreakdown[] = [];
+        
+        const newProductTariffDetails: { [productId: number]: string } = {};
+
+        for (const product of productsToCalculate) {
+            const finalProductValue = product.value * product.quantity;
+            const origin = countries.origin;
+            const destination = countries.destination;
+            const hsCode = product.hsCode.code;
+            const date = tariffDate ? formatDateToYYYYMMDD(tariffDate) : '';
+
+            try {
+                let tariffs: TariffData[] = [];
+                if (!(!origin || !destination || !hsCode || !date)) {
+                    tariffs = await getTariffData(origin, destination, hsCode, date);
+                }
+                else {
+                    newProductTariffDetails[product.id] = "N/A";
+                    totalValue += finalProductValue;
+                    
+                    // Add breakdown with no tariffs
+                    newProductBreakdowns.push({
+                        product,
+                        originalValue: finalProductValue,
+                        tariffAmount: 0,
+                        finalValue: finalProductValue,
+                        appliedTariffs: []
+                    });
+                    continue;
+                }
+                
+                // Format tariffs for display
+                const formattedTariffs = formatTariffsForDisplay(tariffs);
+                newProductTariffDetails[product.id] = formattedTariffs;
+
+                const response = await calculatorService.get("", {
+                    params: {
+                        value: finalProductValue,
+                        origin: origin,
+                        dest: destination,
+                        hsCode: hsCode,
+                        date: date
+                    }
+                });
+
+                const calculationResult = response.data as CalculationResponse;
+                
+                totalValue += finalProductValue;
+                totalTariff += calculationResult.tariffTotal;
+
+                // Add detailed breakdown for this product
+                newProductBreakdowns.push({
+                    product,
+                    originalValue: finalProductValue,
+                    tariffAmount: calculationResult.tariffTotal,
+                    finalValue: calculationResult.finalValue,
+                    appliedTariffs: calculationResult.appliedTariffs
+                });
+
+            } catch (error) {
+                console.error(`Error calculating tariff for product ${product.name}:`, error);
+                newProductTariffDetails[product.id] = "Error loading tariff data";
+                totalValue += finalProductValue;
+                
+                // Add breakdown with error state
+                newProductBreakdowns.push({
+                    product,
+                    originalValue: finalProductValue,
+                    tariffAmount: 0,
+                    finalValue: finalProductValue,
+                    appliedTariffs: []
+                });
             }
 
             setProductTariffDetails(newProductTariffDetails);
+        setProductTariffDetails(newProductTariffDetails);
+        setProductBreakdowns(newProductBreakdowns);
 
             const totalCost = totalValue + totalTariff;
             const effectiveRate = totalValue > 0 ? ((totalCost - totalValue) / totalValue) * 100 : 0;
@@ -332,6 +393,62 @@ const TariffCalculator = () => {
         return tariffStrings.join(" | ");
     };
 
+    // Component for detailed breakdown
+    const ProductBreakdownCard = ({ breakdown }: { breakdown: ProductBreakdown }) => (
+        <div className="bg-white border rounded-lg p-4 mb-3">
+            <div className="flex justify-between items-start mb-3">
+                <div>
+                    <h4 className="font-semibold text-gray-800">{breakdown.product.name}</h4>
+                    <p className="text-sm text-gray-600">
+                        HS Code: {breakdown.product.hsCode.code} | Qty: {breakdown.product.quantity}
+                    </p>
+                </div>
+                <div className="text-right">
+                    <div className="font-semibold">US$ {breakdown.finalValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
+                    <div className="text-sm text-gray-600">Final Value</div>
+                </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4 mb-3">
+                <div className="bg-blue-50 p-3 rounded">
+                    <div className="text-sm text-gray-600">Original Value</div>
+                    <div className="font-semibold">US$ {breakdown.originalValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
+                </div>
+                <div className="bg-red-50 p-3 rounded">
+                    <div className="text-sm text-gray-600">Tariff Amount</div>
+                    <div className="font-semibold text-red-600">US$ {breakdown.tariffAmount.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
+                </div>
+            </div>
+
+            {breakdown.appliedTariffs.length > 0 && (
+                <div className="border-t pt-3">
+                    <h5 className="font-medium text-gray-700 mb-2">Applied Tariffs:</h5>
+                    <div className="space-y-2">
+                        {breakdown.appliedTariffs.map((tariff, index) => (
+                            <div key={index} className="bg-gray-50 p-2 rounded text-sm">
+                                <div className="flex justify-between items-center">
+                                    <span className="font-medium">{tariff.tariffType}</span>
+                                    <span className="text-blue-600">
+                                        {tariff.standardRate !== null 
+                                            ? `${tariff.standardRate}% (Ad Valorem)`
+                                            : tariff.flatFee !== null 
+                                            ? `US$ ${tariff.flatFee.toFixed(2)} (Specific)`
+                                            : "Rate not specified"
+                                        }
+                                    </span>
+                                </div>
+                                {tariff.expirationDate && (
+                                    <div className="text-gray-500 text-xs mt-1">
+                                        Expires: {new Date(tariff.expirationDate).toLocaleDateString()}
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
 
     useEffect(() => {
         if (!isMounted.current) {
@@ -379,14 +496,6 @@ const TariffCalculator = () => {
                     <div className="flex items-center gap-4">
                         <div>
                             <Label className="block text-sm font-medium text-gray-700 mb-1">From</Label>
-                            {/* <Combobox
-                                value={countries.origin}
-                                onValueChange={(value) => setCountries({ ...countries, origin: value })}
-                                options={countryData ? Object.entries(countryData).filter(([code]) => code !== countries.destination).map(([code, data]) => ({ value: code, label: data.name })) : []}
-                                placeholder="Select a country"
-                                emptyMessage='No countries found.'
-                                loading={countriesLoading}
-                            /> */}
                             <Select
                                 value={countries.origin}
                                 onValueChange={(value) => setCountries({ ...countries, origin: value })}
@@ -421,15 +530,6 @@ const TariffCalculator = () => {
                         </div>
                         <div>
                             <Label className="block text-sm font-medium text-gray-700 mb-1">To</Label>
-                            {/* <Combobox
-                                value={countries.destination}
-                                onValueChange={(value) => setCountries({ ...countries, destination: value })}
-                                options={countryData ? Object.entries(countryData).filter(([code]) => code !== countries.origin).map(([code, data]) => ({ value: code, label: data.name })) : []}
-                                placeholder="Select a country"
-                                emptyMessage='No countries found.'
-                                loading={countriesLoading}
-                            /> */}
-
                             <Select value={countries.destination} onValueChange={(value) => setCountries({ ...countries, destination: value })}>
                                 <SelectTrigger className="w-[280px]">
                                     <SelectValue placeholder="Select a country" />
@@ -446,7 +546,6 @@ const TariffCalculator = () => {
                                 </SelectContent>
                             </Select>
                         </div>
-                        {/* Input for selecting tariff date */}
                         <div>
                             <Label htmlFor="tariffDate" className="block text-sm font-medium text-gray-700 ml-6">Tariff Date</Label>
                             <Popover>
@@ -465,33 +564,20 @@ const TariffCalculator = () => {
                                 </PopoverContent>
                             </Popover>
                         </div>
-                        {/* <div className="ml-4 text-sm text-gray-600">
-                            {(() => {
-                                const tradeKey = `${countries.origin}-${countries.destination}`;
-                                const multiplier = tradeAgreements[tradeKey] || tradeAgreements.default;
-                                return multiplier < 1 ?
-                                    `Trade Agreement: ${Math.round((1 - multiplier) * 100)}% discount` :
-                                    'Standard tariff rates';
-                            })()}
-                        </div> */}
                     </div>
                 </div>
-
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Product Management */}
                     <div className="lg:col-span-2 space-y-6">
                         {/* Product List */}
-                        <div
-                            className="min-h-[300px] bg-blue-50 p-4 rounded-lg border-2 border-dashed border-blue-300"
-                        >
+                        <div className="min-h-[300px] bg-blue-50 p-4 rounded-lg border-2 border-dashed border-blue-300">
                             <div className="flex items-center justify-between mb-4">
                                 <h3 className="text-lg font-semibold flex items-center gap-2">
                                     <Package className="text-blue-600" size={18} />
                                     Products ({products.length})
                                 </h3>
                                 <div>
-                                    {/* Select product from product list */}
                                     <Select onValueChange={(value) => {
                                         if (!productsData) return;
                                         const product = productsData.find(prod => prod.id.toString() === value);
@@ -522,7 +608,6 @@ const TariffCalculator = () => {
                                 </Button>
                             </div>
 
-
                             {products.length === 0 ? (
                                 <div className="text-center py-8 text-gray-500">
                                     <Package size={48} className="mx-auto mb-4 opacity-50" />
@@ -542,6 +627,31 @@ const TariffCalculator = () => {
                                 </div>
                             )}
                         </div>
+
+                        {/* Detailed Breakdown Section */}
+                        {productBreakdowns.length > 0 && (
+                            <div className="bg-white p-4 rounded-lg border">
+                                <Button
+                                    variant="ghost"
+                                    onClick={() => setShowBreakdown(!showBreakdown)}
+                                    className="w-full flex items-center justify-between p-0 h-auto"
+                                >
+                                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                                        <DollarSign className="text-green-600" size={18} />
+                                        Detailed Cost Breakdown ({productBreakdowns.length} products)
+                                    </h3>
+                                    {showBreakdown ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                                </Button>
+                                
+                                {showBreakdown && (
+                                    <div className="mt-4 space-y-3">
+                                        {productBreakdowns.map((breakdown, index) => (
+                                            <ProductBreakdownCard key={index} breakdown={breakdown} />
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
 
 
@@ -571,6 +681,7 @@ const TariffCalculator = () => {
                                     </button>
                                 </div>
                             ) : !countryData || countries.destination == '' || countries.origin == '' || tariffDate === undefined ? (
+                            {countriesLoading || !countryData || countries.destination == '' || countries.origin == '' || tariffDate === undefined ? (
                                 <div className="text-center py-8 text-gray-500">
                                     <Globe size={48} className="mx-auto mb-4 opacity-50" />
                                     <p>No countries or date selected.</p>
@@ -598,20 +709,15 @@ const TariffCalculator = () => {
                                         <div className="text-lg font-semibold">US$ {results.totalValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
                                     </div>
 
-
                                     <div className="bg-white p-3 rounded-md">
                                         <div className="text-sm text-gray-600">Tariff Amount</div>
                                         <div className="text-lg font-semibold text-red-600">US$ {results.totalTariff.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
                                     </div>
 
-
                                     <div className="bg-gray-800 text-white p-4 rounded-md">
                                         <div className="text-center">
                                             <div className="text-sm text-gray-300">Total Landed Cost</div>
                                             <div className="text-2xl font-bold">US$ {results.totalCost.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
-                                            <div className="text-sm text-gray-300 mt-1">
-                                                Effective Rate: {results.effectiveRate.toFixed(2)}%
-                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -705,6 +811,11 @@ const TariffCalculator = () => {
                         )}
 
 
+                            <div className="mt-4 text-xs text-gray-600">
+                                Calculating: All {products.length} products
+                            </div>
+                        </div>
+
                         {/* Trade Information */}
                         {countriesLoading || !countryData ? "" : (
                             <div className="bg-blue-50 p-4 rounded-lg">
@@ -716,13 +827,6 @@ const TariffCalculator = () => {
                                     <div><strong>Origin:</strong> {getCountry(countries.origin)}</div>
                                     <div><strong>Destination:</strong> {getCountry(countries.destination)}</div>
                                     <div><strong>Currency:</strong> US$</div>
-                                    {/* {(() => {
-                                        const tradeKey = `${countries.origin}-${countries.destination}`;
-                                        const multiplier = tradeAgreements[tradeKey];
-                                        return multiplier && multiplier < 1 ? (
-                                            <div className="text-green-700"><strong>Trade Benefit:</strong> {Math.round((1 - multiplier) * 100)}% tariff reduction</div>
-                                        ) : null;
-                                    })()} */}
                                 </div>
                             </div>
                         )}
@@ -735,6 +839,7 @@ const TariffCalculator = () => {
                                 <div>2. Fill in product details (value, HS code, etc.)</div>
                                 <div>3. Change origin/destination countries to see different rates</div>
                                 <div>4. View calculated tariffs and total landed cost</div>
+                                <div>5. Expand &quot;Detailed Cost Breakdown&quot; to see individual product tariffs</div>
                             </div>
                         </div>
                     </div>

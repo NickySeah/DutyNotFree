@@ -1,6 +1,5 @@
 "use client";
 import { authClient } from "@/lib/auth-client";
-import { auth } from "@/utils/auth";
 import { toast } from "sonner";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -24,7 +23,8 @@ export default function RegisterPage() {
       {
         onSuccess: () => {
           toast.success("Registration successful!");
-          router.push("/tariff");
+          // Use replace instead of push to remove register from history
+          router.replace("/choose-role");
         },
         onError: (ctx) => {
           toast.error(ctx.error.message);
@@ -32,11 +32,11 @@ export default function RegisterPage() {
       }
     );
   };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const formData = new FormData(e.target as HTMLFormElement);
-    // Simple validation
     const name = formData.get("name") as string;
     if (!name) return toast.error("Name is required");
     const email = formData.get("email") as string;
@@ -121,12 +121,19 @@ export default function RegisterPage() {
           <div className="flex justify-center w-full border-t py-4">
             <p className="text-center text-xs text-neutral-500">
               Already have account?{" "}
-              <Link href="/login" className="text-orange-400">Sign in</Link>
+              <Link href="/login" className="text-orange-400">
+                Sign in
+              </Link>
             </p>
           </div>
         </div>
         <div className="w-3/5 flex items-center justify-center relative rounded-r-4xl overflow-hidden">
-          <Image src="/images/register.jpg" alt="Login with Google" fill sizes="(max-width: 768px) 100vw, 50vw" />
+          <Image
+            src="/images/register.jpg"
+            alt="Login with Google"
+            fill
+            sizes="(max-width: 768px) 100vw, 50vw"
+          />
         </div>
       </div>
     </div>
