@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 
 import com.example.CSD.country.*;
+import com.example.CSD.tradeParty.TradeParty;
 
 @Service
 public class BlocService {
@@ -130,9 +131,14 @@ public class BlocService {
     @Transactional
     public void deleteBloc(String code) {
         // Check if country exists before attempting to delete
-        if (!blocs.existsByCode(code)) {
-            throw new RuntimeException("No bloc found with code " + code);
+        Bloc bloc = blocs.findByCode(code)
+        .orElseThrow(() -> new RuntimeException("No bloc found with code " + code));
+
+        TradeParty blocTP = bloc.getTradeParty();
+        if (!blocTP.getFtasAsPartyA().isEmpty() || !blocTP.getFtasAsPartyB().isEmpty()) {
+            throw new RuntimeException("Cannot delete "+ bloc.getCode()+" (" + bloc.getName() + ") because it is part of one or more FTAs.");
         }
+
         blocs.deleteByCode(code);
     }
 }

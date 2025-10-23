@@ -1,6 +1,8 @@
 package com.example.CSD.fta;
 
 import java.util.List;
+import java.util.PriorityQueue;
+import java.util.Queue;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -13,8 +15,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.example.CSD.tariff.Tariff;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -62,8 +62,8 @@ public class FTAV1Controller {
 
     @Operation(summary = "Get FTA by ID", description = "Retrieve a FTA using its unique ID")
     @GetMapping("/{id}")
-    public Tariff getFTAByID(@Parameter(description = "FTA ID") @PathVariable Long id) {
-        return null;//FTAService.getFTAByID(id);
+    public FTA getFTAByID(@Parameter(description = "FTA ID") @PathVariable Long id) {
+        return FTAService.getFTAByID(id);
     }
 
     @Operation(summary = "Create a new FTA", description = "Adds a new FTA to the database")

@@ -1,14 +1,19 @@
 package com.example.CSD.fta;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
+import com.example.CSD.concession.Concession;
 import com.example.CSD.hscode.HSCode;
 import com.example.CSD.tradeParty.TradeParty;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -20,7 +25,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OrderBy;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -33,12 +39,10 @@ import lombok.ToString;
 @Setter
 @ToString
 @EqualsAndHashCode
-// @ToString(exclude = "memberCountries") //TODO: check exclude included
-// @EqualsAndHashCode(exclude = "memberCountries")
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-// @Schema(description = "Represents a group of countries")
+@Schema(description = "Represents a group of free trade agreements")
 public class FTA {
     public enum FTAType {
         BILATERAL,
@@ -79,8 +83,15 @@ public class FTA {
         joinColumns = @JoinColumn(name = "fta_id"),         
         inverseJoinColumns = @JoinColumn(name = "hscode_code")
     )
-    @Schema(hidden = true)
+    // @Schema(hidden = true)
     private Set<HSCode> excludedHsCodes = new LinkedHashSet<>();
 
-    // TODO: SpecialConcession :(
+    @OneToMany(mappedBy = "fta", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Concession> specialConcessions = new HashSet<>();
+
+    @JsonIgnore
+    public Set<HSCode> getAllSpecialHsCodes() {
+        return specialConcessions.stream()
+        .map(Concession :: getHsCode).collect(Collectors.toSet());
+    }
 }

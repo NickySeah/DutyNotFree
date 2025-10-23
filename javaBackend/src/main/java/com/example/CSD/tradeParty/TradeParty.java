@@ -9,6 +9,7 @@ import com.example.CSD.fta.FTA;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -52,12 +53,12 @@ public class TradeParty {
     @OneToOne(mappedBy = "tradeParty", fetch = FetchType.LAZY)
     private Bloc bloc; 
 
-    @OneToMany(mappedBy = "partyA")
+    @OneToMany(mappedBy = "partyA", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     @Schema(hidden = true)
     private Set<FTA> ftasAsPartyA = new HashSet<>();
 
-    @OneToMany(mappedBy = "partyB")
+    @OneToMany(mappedBy = "partyB", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     @Schema(hidden = true)
     private Set<FTA> ftasAsPartyB = new HashSet<>();

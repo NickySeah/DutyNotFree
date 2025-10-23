@@ -29,6 +29,9 @@ public class HSCodeService {
         String code = newHSCode.getCode();
         String description = newHSCode.getDescription();
 
+        if (hsCodes.existsByCode(code)) {
+            throw new RuntimeException("HS Code " + code + " already exists");
+        }
         if (code == null || code.trim().length() < 6) {
             throw new RuntimeException("HS Code cannot be empty or less than 6 digits");
         }

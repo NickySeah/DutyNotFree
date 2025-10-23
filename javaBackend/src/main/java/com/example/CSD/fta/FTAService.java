@@ -4,6 +4,7 @@ import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -13,6 +14,8 @@ import org.apache.commons.lang3.EnumUtils;
 import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 
+import com.example.CSD.concession.Concession;
+import com.example.CSD.concession.ConcessionRepository;
 import com.example.CSD.fta.FTA.FTAType;
 import com.example.CSD.hscode.HSCode;
 import com.example.CSD.hscode.HSCodeRepository;
@@ -25,11 +28,13 @@ public class FTAService {
     private FTARepository agreements;
     private TradePartyRepository parties;
     private HSCodeRepository hscodes;
+    private ConcessionRepository concessions;
 
-    public FTAService(FTARepository agreements, TradePartyRepository parties, HSCodeRepository hscodes) {
+    public FTAService(FTARepository agreements, TradePartyRepository parties, HSCodeRepository hscodes, ConcessionRepository concessions) {
         this.agreements = agreements;
         this.parties = parties;
         this.hscodes = hscodes;
+        this.concessions = concessions;
     }
 
     public List<FTA> listFTAs() {
@@ -149,7 +154,7 @@ public class FTAService {
         }
 
         // Excluded HS Codes
-        Set<String> excludedHsCodesStr = request.getExcludedHsCodes();                          
+        Set<String> excludedHsCodesStr = request.getExcludedHsCodes();                          // Set removes any duplicate entries          
         Set<HSCode> excludedHsCodes = new LinkedHashSet<>();
         if (excludedHsCodesStr != null && !excludedHsCodesStr.isEmpty()) {                      // HS Code(s) are given
             for (String hsCodeValue : excludedHsCodesStr) {
@@ -181,8 +186,56 @@ public class FTAService {
             validateDates(existingFTAs,startDate, endDate);     // Validate new date with dates of all existing FTA
         }
 
-        // (3) Create & save FTA
+        // (3) Create FTA and special concessions
         FTA fta = new FTA();
+        
+        Set<FTAConcessionRequest> concessionRequests = request.getConcessions();
+        Set<Concession> specialConcessions = new HashSet<>();
+        Set<HSCode> specialHsCodes = new HashSet<>();                                       // Temporary set to ensure no duplicates
+
+        if (concessionRequests != null && !concessionRequests.isEmpty()) {                  // Special concessions are given
+            for (FTAConcessionRequest concessionRequest : concessionRequests) {             // For each concession request
+                String hsCodeStr = concessionRequest.getHsCode();                               // Get HS code string
+                if (hsCodeStr == null || hsCodeStr.isBlank()) {
+                    throw new RuntimeException("HS code cannot be empty");
+                }
+
+                HSCode hsCode = hscodes.findByCode(hsCodeStr)                                   // Check if HS code exists
+                .orElseThrow(() -> new RuntimeException("HS Code '" + hsCodeStr + "' not found. Please provide a valid HS Code."));
+                if (excludedHsCodes.contains(hsCode)) {                                         // Check if HS code inside excluded list
+                    throw new RuntimeException("HS Code '" + hsCodeStr + "' cannot have a special concession as it is marked as excluded.");
+                }
+                if (specialHsCodes.contains(hsCode)) {                                          // Check if HS code already inside concession list
+                    throw new RuntimeException("There exists a special concession or prior request with same HS Code " + hsCodeStr);
+                }
+
+                Double finalRate = concessionRequest.getFinalRate();                            // Get final rate
+                if (finalRate == null || finalRate < 0.0) {                                     // Validate final rate
+                    throw new RuntimeException("Final rate cannot be empty or negative");
+                }
+
+                // Integer stagingDuration = concessionRequest.getStagingDuration();               // Get staging duration
+                // if (stagingDuration == null || stagingDuration < 0) {                           // Validate staging duration          
+                //     throw new RuntimeException("Staging duration cannot be empty or negative");
+                // }
+
+                if (finalRate.compareTo(defaultRate)==0) { //&& stagingDuration == 0) {             // Check if concession is special/redundant
+                    throw new RuntimeException("Special concession for HS Code '"+hsCodeStr+"' is redundant as its rate matches default rate.");
+                }
+
+                Concession concession = new Concession();
+                concession.setFta(fta);
+                concession.setHsCode(hsCode);
+                concession.setFinalRate(finalRate);
+                // concession.setStagingDuration(stagingDuration);
+
+                // concessions.save(concession);
+                specialConcessions.add(concession);
+                specialHsCodes.add(hsCode);
+            }
+        }
+        
+        // (4) Set FTA attributes
         fta.setType(enumType);
         fta.setPartyA(tPartyA);
         fta.setPartyB(tPartyB);
@@ -190,24 +243,8 @@ public class FTAService {
         fta.setEffectiveDate(startDate);
         fta.setExpirationDate(endDate);
         fta.setExcludedHsCodes(excludedHsCodes);
+        fta.setSpecialConcessions(specialConcessions);
         return agreements.save(fta);
-    }
-
-    public FTA updateFTA(String partyA, String partyB, String effectiveDateStr, FTAUpdateRequest request) {
-        // // Validate party A & B
-        // TradeParty tPartyA = validateTradeParty(partyA);                            // Validate country code or bloc code
-        // TradeParty tPartyB = validateTradeParty(partyB);                            // Returns null if unspecified, TradeParty if found, or error if not found 
-
-        // if (tPartyA == null || tPartyB == null) {
-        //     throw new RuntimeException("Both parties of the FTA must be given. Please provide 2 valid parties.");
-        // }
-        // else if (tPartyA.equals(tPartyB)) {                                        // Check if both given, A not the same as B
-        //     throw new RuntimeException("Same country/bloc cannot have a FTA with itself. Please provide 2 valid parties.");
-        // };
-
-        // // Validate LocalDate
-        // LocalDate effectiveDate = validateDateStr(effectiveDateStr, "Effective");
-        return null;
     }
 
     public FTA updateFTA(Long id, FTAUpdateRequest request) {
@@ -216,13 +253,29 @@ public class FTAService {
 
         // (2) Validate FTA request
         // Default Rate
-        if (request.isDefaultRateProvided()) {
+        if (request.isDefaultRateProvided()) {                          // Default rate to be updated
             Double finalRate = request.getDefaultRate();
-            System.out.println("\n\n"+finalRate+"\n\n");
-            if (finalRate < 0) {
+
+            if (finalRate < 0) {                                        // Check default rate is non-negative
                 throw new RuntimeException("Default rate under FTA cannot be negative. Please provide a valid default rate.");
             }
-            queryFTA.setDefaultRate(finalRate);
+            
+            // TODO: should it remove special concessions where their special rate matches the new default rate 
+            // Set<Concession> curConcessions = queryFTA.getSpecialConcessions();  // Check if new default rate affects existing special concessions
+            // Set<HSCode> curSpecialHsCodes = queryFTA.getSpecialHsCodes();
+            // Set<Concession> toRemove = new HashSet<Concession>();
+            // for (Concession c : curConcessions) {                               // For each special concessions whose rate matches new default rate
+            //     if (c.getFinalRate().equals(finalRate)) { //&& c.getStagingDuration() == 0) {
+            //         toRemove.add(c);                                                // Mark concession for removal
+            //         curSpecialHsCodes.remove(c.getHsCode());                        // Remove hs code associated with concession that is now redundant
+            //         // throw new RuntimeException("New default rate conflicts with existing special concession for HS Code '"+c.getHsCode().getCode()+"'. Please adjust the default rate or remove the special concession first.");
+            //     }
+            // }
+            // if (!toRemove.isEmpty()) {
+            //     curConcessions.removeAll(toRemove);                         // Remove all marked redundant concessions
+            // }
+
+            queryFTA.setDefaultRate(finalRate);                         // Update default rate
         }
 
         // Start & End Dates
@@ -241,38 +294,114 @@ public class FTAService {
             List<FTA> existingFTAs = agreements.findByParties(queryFTA.getPartyA(), queryFTA.getPartyB());  // List of all FTA between 2 parties
             existingFTAs.remove(queryFTA);                                                                  // Remove queried FTA from this list
             if (!existingFTAs.isEmpty()){                                                                   // Has old/new versions of the quried FTA
-                validateDates(existingFTAs, finalStart, finalEnd);                                          // Validate new date with dates of all existing FTA
+                validateDates(existingFTAs, finalStart, finalEnd);                                              // Validate new date with dates of all existing FTA
             }
 
-            if (request.isEffectiveDateProvided()) {
+            if (request.isEffectiveDateProvided()) {            // Update effective date
                 queryFTA.setEffectiveDate(finalStart);
             }
-            if (request.isExpirationDateProvided()) {
+            if (request.isExpirationDateProvided()) {           // Update expiration date
                 queryFTA.setExpirationDate(finalEnd);
             }
         }
 
         Set<HSCode> excludedHsCodes = queryFTA.getExcludedHsCodes();
-        Set<String> toInclude = request.getIncludeHSCodes();       // remove from list excluded hs codes
-        Set<String> toExclude = request.getExcludeHSCodes();       // add to list of excluded hs codes
+        Set<HSCode> specialHsCodes = queryFTA.getAllSpecialHsCodes();
+        Set<String> toRemoveFromExcluded = request.getIncludeHSCodes();     // remove from list excluded hs codes
+        Set<String> toAddtoExcluded = request.getExcludeHSCodes();          // add to list of excluded hs codes
 
-        if (toInclude != null) {                                   // Exists hs code to remove from excluded list
-            for (String include : toInclude) {
+        if (toRemoveFromExcluded != null) {                                 // Hs Code(s) to be removed from excluded list
+            for (String include : toRemoveFromExcluded) {
                 HSCode h = hscodes.findByCode(include)
                 .orElseThrow(() -> new RuntimeException("No HS Code found with code " + include));      // If one doesn't exist, don't update FTA
+
+                if (!excludedHsCodes.contains(h)) {                                                     // If HS Code was not excluded, don't update FTA
+                    throw new RuntimeException("HS Code '"+include+"' is not excluded in this FTA.");
+                }
 
                 excludedHsCodes.remove(h);
             }
         }
-        if (toExclude != null) {
-            for (String exclude : toExclude) {
+        if (toAddtoExcluded != null) {                                      // Hs Code(s) to be added to excluded list
+            for (String exclude : toAddtoExcluded) {
                 HSCode h = hscodes.findByCode(exclude)
                 .orElseThrow(() -> new RuntimeException("No HS Code found with code " + exclude));      // If one doesn't exist, don't update FTA
 
+                if (excludedHsCodes.contains(h)) {                                                     // If HS Code was not excluded, don't update FTA
+                    throw new RuntimeException("HS Code '"+exclude+"' has already been excluded in this FTA.");
+                }
+                if (specialHsCodes.contains(h)) {             // Check if hs code is associated with a special concession
+                    throw new RuntimeException("HS Code '"+exclude+"' is associated with a special concession in this FTA.. Please remove the special concession first.");
+                }
+                
                 excludedHsCodes.add(h);
             }
         }
+        
+        Set<Concession> specialConcessions = queryFTA.getSpecialConcessions();
+        Set<FTAConcessionRequest> toAddConcessions = request.getAddConcessions();   // new concessions to be added
+        Set<String> toRemoveConcessions = request.getRemoveConcessions();           // hs codes associated with concessions to be removed
+        
+        if (toAddConcessions != null) {                                             // have new concessions to be added
+            for (FTAConcessionRequest concessionRequest : toAddConcessions) {       // for each concession request
+                String hsCodeStr = concessionRequest.getHsCode();                       // Get HS code string
+                if (hsCodeStr == null || hsCodeStr.isBlank()) {
+                    throw new RuntimeException("HS code cannot be empty");
+                }
 
+                HSCode hsCode = hscodes.findByCode(hsCodeStr)                           // Check if HS code exists
+                .orElseThrow(() -> new RuntimeException("HS Code '" + hsCodeStr + "' not found. Please provide a valid HS Code."));
+
+                if (excludedHsCodes.contains(hsCode)) {                                 // Check if HS code inside excluded list
+                    throw new RuntimeException("HS Code '" + hsCodeStr + "' cannot have a special concession as it is marked as excluded.");
+                }
+                if (specialHsCodes.contains(hsCode)) {                                      // Check if HS code already inside concession list
+                    throw new RuntimeException("There exists a special concession or prior request with same HS Code " + hsCodeStr);
+                }
+
+                Double finalRate = concessionRequest.getFinalRate();                    // Get final rate
+                if (finalRate == null || finalRate < 0.0) {
+                    throw new RuntimeException("Final rate cannot be empty or negative");
+                }
+
+                // Integer stagingDuration = concessionRequest.getStagingDuration();       // Get staging duration
+                // if (stagingDuration == null || stagingDuration < 0) {
+                //     throw new RuntimeException("Staging duration cannot be empty or negative");
+                // }
+
+                if (finalRate.compareTo(queryFTA.getDefaultRate())==0){ //&& stagingDuration == 0) {   // Check if concession is special/redudant (same rates)
+                    throw new RuntimeException("Special concession for HS Code '"+hsCodeStr+"' is redundant as its rate matches default rate");
+                }
+
+                Concession concession = new Concession();                           // Create new concession and set attributes
+                concession.setFta(queryFTA);
+                concession.setHsCode(hsCode);
+                concession.setFinalRate(finalRate);
+                // concession.setStagingDuration(stagingDuration);
+
+                // concessions.save(concession);
+                specialConcessions.add(concession);                                 // Add to set of special concessions
+                specialHsCodes.add(hsCode);                                         // Add its associated hs code to a set for quick reference 
+            }
+        }
+        if (toRemoveConcessions != null) {                                          // have concessions to be removed
+            for (String hsCodeStr : toRemoveConcessions) {                          // for each hs code
+                HSCode hsCode = hscodes.findByCode(hsCodeStr)                           // Check if HS code exists
+                .orElseThrow(() -> new RuntimeException("HS Code '" + hsCodeStr + "' not found. Please provide a valid HS Code."));
+
+                if (!specialHsCodes.contains(hsCode)) {                                       // No concession with given hs code found
+                    throw new RuntimeException("No concession found for HS Code '" + hsCodeStr + "' in this FTA.");
+                }
+
+                Concession concessionToRemove = specialConcessions.stream()             // Find concession to remove
+                .filter(c -> c.getHsCode().equals(hsCode)).findFirst().orElse(null);
+
+                specialConcessions.remove(concessionToRemove);                          // Remove from set of special concessions
+                specialHsCodes.remove(hsCode);                                          // Remove its associated hs code from set
+                // concessions.delete(concessionToRemove);
+            }
+        }
+    
         return agreements.save(queryFTA);
     }
 
@@ -306,7 +435,7 @@ public class FTAService {
     }
 
     private FTAType validateFTAType(String type) {
-        if (type != null && type.isBlank()) {                                       // FTA type specified
+        if (type != null && !type.isBlank()) {                                       // FTA type specified
             if (!EnumUtils.isValidEnumIgnoreCase(FTAType.class, type)) {                // BUT not a valid type
                 throw new RuntimeException(type + " is not a valid FTA type.");
             }

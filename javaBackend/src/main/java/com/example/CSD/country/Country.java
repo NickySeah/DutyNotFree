@@ -1,14 +1,14 @@
 package com.example.CSD.country;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import com.example.CSD.bloc.Bloc;
 import com.example.CSD.tariff.Tariff;
 import com.example.CSD.tradeParty.TradeParty;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -17,7 +17,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -27,8 +27,6 @@ import lombok.ToString;
 
 @Getter
 @Setter
-// @ToString
-// @EqualsAndHashCode
 @ToString(exclude = {"originTariffs", "destTariffs", "blocs","tradeParty"})
 @EqualsAndHashCode(exclude = {"originTariffs", "destTariffs", "blocs","tradeParty"})
 @AllArgsConstructor
@@ -41,11 +39,11 @@ public class Country {
     @Column(columnDefinition = "CHAR(3)")                   // Exactly 3 characters
     private String code;                                    // 3-digit country code
 
-    @NotNull
+    @NotBlank
     @Schema(description = "Full name of the country", example = "Singapore")
     private String name;                                    // Full country name
 
-    @NotNull @Column(columnDefinition = "CHAR(3)")          // Exactly 3 characters
+    @NotBlank @Column(columnDefinition = "CHAR(3)")          // Exactly 3 characters
     @Schema(description = "Alpha-3 code of the country", example = "SGP")
     private String alpha3;                                  // 3-character country code 
 
@@ -64,7 +62,7 @@ public class Country {
     @Schema(hidden = true)
     private Set<Bloc> blocs;                                // one country can belong to any number of blocs 
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
     @JoinColumn(name = "trade_party_id", insertable = false, updatable = false)
     @JsonIgnore
     @Schema(hidden = true)

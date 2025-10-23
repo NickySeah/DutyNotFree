@@ -70,7 +70,7 @@ public class BlocV1Controller {
 
     @Operation(summary = "Delete bloc by code", description = "Deletes a bloc using its code")
     @DeleteMapping()
-    public void deleteBloc(@Parameter(description = "Code of the counbloctry to delete") @RequestParam String code) {
+    public void deleteBloc(@Parameter(description = "Code of the bloc to delete") @RequestParam String code) {
         blocService.deleteBloc(code);
     }
 }

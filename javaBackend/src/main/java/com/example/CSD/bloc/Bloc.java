@@ -5,9 +5,10 @@ import java.util.Set;
 
 import com.example.CSD.country.Country;
 import com.example.CSD.tradeParty.TradeParty;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
@@ -51,7 +52,7 @@ public class Bloc {
     @Schema(hidden = true)
     private Set<Country> memberCountries = new LinkedHashSet<>(); // one bloc have many members (countries)
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
     @JoinColumn(name = "trade_party_id", insertable = false, updatable = false)
     @JsonIgnore
     @Schema(hidden = true)

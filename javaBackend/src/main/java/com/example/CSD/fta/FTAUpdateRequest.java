@@ -26,6 +26,9 @@ public class FTAUpdateRequest {                      // Not an entity, just a da
     private Set<String> includeHSCodes;
     private Set<String> excludeHSCodes;
 
+    private Set<FTAConcessionRequest> addConcessions;
+    private Set<String> removeConcessions;                          // HS Code(s) specified by concession(s) to be removed
+
     @JsonIgnore private boolean defaultRateProvided = false;       // Flags to indicate if a field was provided in the update request
     @JsonIgnore private boolean effectiveDateProvided = false;
     @JsonIgnore private boolean expirationDateProvided = false;
