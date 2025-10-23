@@ -1,9 +1,9 @@
 "use client";
-import SignIn from "@/components/sign-in";
+// import SignIn from "@/components/sign-in";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Label } from "@/components/ui/label";
+// import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
@@ -16,16 +16,15 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const formData = new FormData(e.target as HTMLFormElement);
-    // Simple validation
     const email = formData.get("email");
     if (!email) return toast.error("Email is required");
     const password = formData.get("password");
     if (!password) return toast.error("Password is required");
+
     await authClient.signIn.email(
       {
         email: email as string,
         password: password as string,
-        callbackURL: "/tariff",
       },
       {
         onRequest: (ctx) => {
@@ -34,11 +33,13 @@ export default function LoginPage() {
         onResponse: (ctx) => {
           setLoading(false);
         },
+        onSuccess: (ctx) => {
+          window.location.href = "/tariff";
+        },
       }
     );
-
-    // Perform login logic here
   };
+
   return (
     <div>
       <div className="flex flex-row border-2 m-8 rounded-4xl shadow-lg overflow-hidden">
@@ -64,9 +65,9 @@ export default function LoginPage() {
             </div>
             <div>
               <div className="flex items-center mb-1">
-                <Label htmlFor="password" className="font-bold">
+                <label htmlFor="password" className="font-bold">
                   Password
-                </Label>
+                </label>
                 <Link
                   href="#"
                   className="ml-auto inline-block text-sm underline"
@@ -111,7 +112,6 @@ export default function LoginPage() {
               await authClient.signIn.social(
                 {
                   provider: "google",
-                  callbackURL: "/tariff",
                 },
                 {
                   onRequest: (ctx) => {
@@ -119,6 +119,9 @@ export default function LoginPage() {
                   },
                   onResponse: (ctx) => {
                     setLoading(false);
+                  },
+                  onSuccess: (ctx) => {
+                    window.location.href = "/tariff";
                   },
                 }
               );
@@ -152,7 +155,7 @@ export default function LoginPage() {
 
           <div className="flex justify-center w-full border-t py-4 mt-15">
             <p className="text-center text-xs text-neutral-500">
-              Don't have an account?{" "}
+              Don&apos;t have an account?{" "}
               <Link href="/register" className="text-orange-400">
                 Sign up
               </Link>
@@ -160,7 +163,12 @@ export default function LoginPage() {
           </div>
         </div>
         <div className="w-3/5 flex items-center justify-center relative rounded-r-4xl overflow-hidden">
-          <Image src="/images/shipyard.jpg" alt="Login with Google" fill sizes="(max-width: 768px) 100vw, 50vw" />
+          <Image
+            src="/images/shipyard.jpg"
+            alt="Login with Google"
+            fill
+            sizes="(max-width: 768px) 100vw, 50vw"
+          />
         </div>
       </div>
     </div>
