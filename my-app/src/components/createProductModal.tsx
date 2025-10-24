@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -16,82 +15,105 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Combobox } from "@/components/ui/combobox";
 
+// Hooks and Data
 import { useCreateProduct } from "@/hooks/useCreateProduct";
+import { useHsCodes } from "@/hooks/useHsCodes";
 
 interface CreateProductModalProps {
+  userId: string;
   isOpen: boolean;
   onClose: () => void;
 }
+
 interface FormData {
-    name: string;
+  name: string;
   hsCode: string;
-  description: string;
-  userId: string;
+  // description: string;
+  // userId: string;
   isPrivate: boolean;
 }
 
-const initialFormData: FormData = {
-    name: "",
-    hsCode: "",
-    description: "",
-    userId: "", 
-    isPrivate: false,
+export function CreateProductModal({ userId, isOpen, onClose }: CreateProductModalProps) {
+  const initialFormData: FormData = {   // placed inside function to initiate with userId
+      name: "",
+      hsCode: "",
+      // description: "",
+      // userId: userId,    // removed, add when sending payload
+      isPrivate: true,
+  };
 
-};
-
-export function CreateProductModal({ isOpen, onClose }: CreateProductModalProps) {
-  const [formData, setFormData] = useState({
-    name: "",
-    hsCode: "",
-    description: "",
-    userId: "", // if your backend auto-handles this, you can omit it
-    isPrivate: false,
-  });
-
+  // Hooks
+  const { data: hsCodes, isLoading: hsCodesLoading } = useHsCodes();
   const { mutate, isPending } = useCreateProduct();
+
+  // State
+  const [formData, setFormData] = useState<FormData>(initialFormData);
+
+  const hsCodeOptions = hsCodes?.map((hsCode) => ({
+    value: hsCode.code,
+    label: `${hsCode.code} - ${hsCode.description}`,
+  })) || [];
 
   const handleChange = (field: keyof typeof formData, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const resetForm = () => {
-    setFormData({
-      name: "",
-      hsCode: "",
-      description: "",
-      userId: "",
-      isPrivate: false,
-    });
+    setFormData(initialFormData);
   };
 
-  const validateForm = () => {
-    if (!formData.name.trim()) {
-      toast.error("Please enter a product name");
-      return false;
+  // Validation
+  const validateForm = (): boolean => {
+    const validations = [
+      {
+        condition: (!formData.name || formData.name.trim().length === 0),
+        message: "Please provide a name for your product"
+      },
+      {
+        condition: !formData.hsCode,
+        message: "Please select an HS code"
+      },
+      // {
+      //   condition: !formData.isPrivate,
+      //   message: "Please select an importing country"
+      // }
+    ];
+
+    for (const validation of validations) {
+      if (validation.condition) {
+        toast.error(validation.message);
+        return false;
+      }
     }
-    if (!formData.hsCode.trim()) {
-      toast.error("Please enter an HS Code");
-      return false;
-    }
-    if (!formData.description.trim()) {
-      toast.error("Please enter a description");
-      return false;
-    }
+
     return true;
   };
 
-  const handleCreate = () => {
+  const handleSave = () => {
     if (!validateForm()) return;
 
-    mutate(formData, {
+    const productPayload = {
+      name: formData.name,
+      hsCode: formData.hsCode,
+      isPrivate: formData.isPrivate,
+      userId: userId                  // from modal prop
+    };
+
+    mutate(productPayload, {
       onSuccess: () => {
-        toast.success("✅ Product created successfully!");
+        toast.success("Product created successfully!");
         resetForm();
         onClose();
       },
-      onError: () => {
-        toast.error("❌ Failed to create product");
+      onError: (error: any) => {
+        toast.error(error.response?.data?.message || "Failed to create product");
       },
     });
   };
@@ -102,6 +124,25 @@ export function CreateProductModal({ isOpen, onClose }: CreateProductModalProps)
       onClose();
     }
   };
+
+  // Render helper
+  const renderHsCodeSelection = () => (
+    <div className="space-y-2">
+      <Label className="text-sm font-medium text-gray-700">
+        HS Code
+      </Label>
+      <Combobox
+        options={hsCodeOptions}
+        value={formData.hsCode}
+        onValueChange={(value) => handleChange("hsCode", value)}
+        placeholder="Select HS Code"
+        searchPlaceholder="Search HS codes..."
+        emptyMessage="No HS codes found."
+        width="w-full"
+        loading={hsCodesLoading}
+      />
+    </div>
+  );
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -120,7 +161,7 @@ export function CreateProductModal({ isOpen, onClose }: CreateProductModalProps)
             </Label>
             <Input
               id="name"
-              placeholder="e.g. Steel Bolts"
+              placeholder="e.g. Steamed Hams"
               value={formData.name}
               onChange={(e) => handleChange("name", e.target.value)}
               className="w-full"
@@ -128,20 +169,9 @@ export function CreateProductModal({ isOpen, onClose }: CreateProductModalProps)
           </div>
 
           {/* HS Code */}
-          <div>
-            <Label htmlFor="hsCode" className="block mb-1 text-sm font-medium text-gray-700">
-              HS Code
-            </Label>
-            <Input
-              id="hsCode"
-              placeholder="e.g. 73181590"
-              value={formData.hsCode}
-              onChange={(e) => handleChange("hsCode", e.target.value)}
-              className="w-full"
-            />
-          </div>
+          {renderHsCodeSelection()}
 
-          {/* Description */}
+          {/* Description
           <div>
             <Label htmlFor="description" className="block mb-1 text-sm font-medium text-gray-700">
               Description
@@ -153,17 +183,17 @@ export function CreateProductModal({ isOpen, onClose }: CreateProductModalProps)
               onChange={(e) => handleChange("description", e.target.value)}
               className="border rounded-md w-full p-2 text-sm min-h-[100px]"
             />
-          </div>
+          </div> */}
 
           {/* Private checkbox */}
           <div className="flex items-center space-x-2 pt-2">
             <Checkbox
               id="isPrivate"
-              checked={formData.isPrivate}
-              onCheckedChange={(checked) => handleChange("isPrivate", !!checked)}
+              checked={!formData.isPrivate}                                      // Checked = public, Unchecked = private
+              onCheckedChange={(checked) => handleChange("isPrivate", !checked)} // Negate here
             />
             <Label htmlFor="isPrivate" className="text-sm text-gray-700">
-              Make this product private
+              Make product visible to public?
             </Label>
           </div>
         </div>
@@ -175,7 +205,7 @@ export function CreateProductModal({ isOpen, onClose }: CreateProductModalProps)
             </Button>
             <Button
               disabled={isPending}
-              onClick={handleCreate}
+              onClick={handleSave}
               className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
             >
               {isPending ? (

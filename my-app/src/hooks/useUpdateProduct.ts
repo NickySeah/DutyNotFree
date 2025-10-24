@@ -18,7 +18,7 @@ export function useUpdateProduct() {
       // Map frontend fields to backend expected fields
       const backendPayload = {
         name: payload.name,
-        isPrivate: payload.isPrivate 
+        private: payload.isPrivate 
       };
       const response = await productService.put(`${product_id}`, backendPayload);
       return response.data;
@@ -26,6 +26,7 @@ export function useUpdateProduct() {
         onSuccess: () => {
       // Invalidate and refetch tariffs data
       queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['userProducts'] });
     },
   });
 }

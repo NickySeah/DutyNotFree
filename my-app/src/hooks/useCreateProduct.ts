@@ -27,6 +27,7 @@ export function useCreateProduct() {
     onSuccess: () => {
       // Invalidate and refetch products after successful creation
       queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['userProducts'] });
     },
   });
 }

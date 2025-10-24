@@ -40,7 +40,7 @@ export function DataTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const { isAdmin, isPending } = useUserRole();
+    const { userId, isSupplier, isAdmin, isPending } = useUserRole();
 
   // Global search only for Product fields
   const globalFilter = (row: any, columnId: string, value: string) => {
@@ -81,7 +81,7 @@ export function DataTable<TData, TValue>({
       <div className="flex items-center py-4 justify-between">
         <div className="flex items-center space-x-2 w-md">
           <Input
-            placeholder="Filter by product name, HS Code, description..."
+            placeholder="Filter by product name, HS Code or description..."
             value={table.getState().globalFilter ?? ""}
             onChange={(e) => table.setGlobalFilter(e.target.value)}
             className="max-w-sm"
@@ -91,7 +91,7 @@ export function DataTable<TData, TValue>({
           </Button>
         </div>
 
-        {!isPending && isAdmin && (
+        {!isPending && isSupplier && (
           <Button variant="default" onClick={() => setIsCreateModalOpen(true)}>
             Create Product
           </Button>
@@ -140,6 +140,7 @@ export function DataTable<TData, TValue>({
 
       {/* Create Product Modal */}
       <CreateProductModal
+        userId={userId || ''}
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
       />

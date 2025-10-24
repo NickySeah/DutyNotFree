@@ -45,8 +45,9 @@ export function DeleteProductModal({
         </DialogHeader>
         <div className="py-4">
           <p>Are you sure you want to delete this product?</p>
-          <p className="font-semibold mt-2">{product.description}</p>
+          <p className="font-semibold mt-2">{product.name}</p>
           <p className="text-sm text-gray-600">HS Code: {product.hsCode}</p>
+          <p className="text-sm text-gray-600">Description: {product.description}</p>
         </div>
         <div className="flex justify-end gap-2">
           <Button variant="outline" onClick={onClose}>

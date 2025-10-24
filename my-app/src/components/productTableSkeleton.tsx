@@ -25,11 +25,11 @@ export default function ProductTableSkeleton() {
           {/* Table Header */}
           <div className="border-b bg-muted/50 p-4">
             <div className="flex space-x-6">
-              <Skeleton className="h-4 w-32" />
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-4 w-48" />
-              <Skeleton className="h-4 w-20" />
-              <Skeleton className="h-4 w-16" />
+              <Skeleton className="h-4 w-32" />               {/*Product Name*/}
+              <Skeleton className="h-4 w-24" />               {/*HS Code*/}
+              <Skeleton className="h-4 w-48" />               {/*Description (HS Code)*/}
+              <Skeleton className="h-4 w-24" />               {/*Privacy*/}
+              <Skeleton className="h-4 w-8" />                {/*Action*/}
             </div>
           </div>
 
@@ -40,11 +40,11 @@ export default function ProductTableSkeleton() {
                 key={index}
                 className="flex space-x-6 p-4 border-b last:border-b-0"
               >
-                <Skeleton className="h-4 w-32" />
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-4 w-48" />
-                <Skeleton className="h-4 w-20" />
-                <Skeleton className="h-6 w-24 rounded-full" />
+                <Skeleton className="h-4 w-32" />               {/*Product Name*/}
+                <Skeleton className="h-4 w-24" />               {/*HS Code*/}
+                <Skeleton className="h-4 w-48" />               {/*Description (HS Code)*/}
+                <Skeleton className="h-6 w-24 rounded-full" />  {/*Privacy*/}
+                <Skeleton className="h-8 w-8 rounded" />        {/*Action*/}
               </div>
             ))}
           </div>

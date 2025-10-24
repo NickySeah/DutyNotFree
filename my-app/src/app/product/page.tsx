@@ -16,7 +16,7 @@ export default function ProductPage() {
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const { isAdmin, isPending } = useUserRole();
+  const { userId, isSupplier, isAdmin, isPending } = useUserRole();
 
   // Column functions
   const handleModifyProduct = (product: Product) => {
@@ -34,11 +34,13 @@ export default function ProductPage() {
   const columns = createColumns(
     handleModifyProduct,
     handleDeleteProduct,
+    isSupplier,
     isAdmin,
     isPending
   );
-
-  const { data: products = [], isLoading, error } = useUserProduct();
+  
+  if (!userId) return null;
+  const { data: products = [], isLoading, error } = useUserProduct(userId);
 
   if (error) {
     return (

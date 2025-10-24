@@ -18,6 +18,7 @@ import type { Product } from "@/types/product";
 export const createColumns = (
   onModify: (product: Product) => void,
   onDelete: (product: Product) => void,
+  isSupplier: boolean,
   isAdmin: boolean,
   isPending: boolean,
 ): ColumnDef<Product>[] => {
@@ -56,11 +57,11 @@ export const createColumns = (
         <DataTableColumnHeader column={column} title="Description" />
       ),
       cell: ({ row }) => {
-        const description = row.getValue("description") as string;
+    const description = row.getValue("description") as string;
         return (
-          <div className="text-center max-w-md">
-            <span
-              className="block truncate cursor-help hover:bg-slate-100 px-2 py-1 rounded transition-colors"
+          <div className="flex justify-center w-full">
+            <span 
+              className="block truncate cursor-help hover:bg-slate-100 px-1 py-1 rounded transition-colors max-w-2xl" 
               title={description}
             >
               {description}
@@ -72,7 +73,7 @@ export const createColumns = (
     {
       accessorKey: "isPrivate",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Privacy" />
+        <DataTableColumnHeader column={column} title="Visibility" />
       ),
       cell: ({ row }) => {
         const isPrivate = row.getValue("isPrivate") as boolean;
@@ -102,7 +103,7 @@ export const createColumns = (
       cell: ({ row }) => {
         const product = row.original;
 
-        if (isPending || !isAdmin) return null;
+        if (isPending || !isSupplier) return null;
 
         return (
           <DropdownMenu>
@@ -124,7 +125,7 @@ export const createColumns = (
               <DropdownMenuSeparator />
 
               <DropdownMenuItem onClick={() => onModify(product)}>
-                Modify Product
+                Modify Product Details
               </DropdownMenuItem>
 
               <DropdownMenuItem onClick={() => onDelete(product)}>

@@ -25,9 +25,6 @@ import { format } from "date-fns";
 import { useUpdateProduct } from "@/hooks/useUpdateProduct";
 import type { Product } from "@/types/product";
 import { Description } from "@radix-ui/react-dialog";
-// import { getCountryIsoCode } from "@/utils/countryUtils";
-// import ReactCountryFlag from "react-country-flag";
-// import { getBackendValueFromData} from "@/lib/testData";
 
 interface UpdateProductModalProps {
   isOpen: boolean;
@@ -43,22 +40,16 @@ export function UpdateProductModal({isOpen,onClose,product: product,}: UpdatePro
     isPrivate: true,
   });
 
-//   // No Expiration state
-//   const [noExpiration, setNoExpiration] = useState(false);
-
   // Mutation hook
   const { mutate, isPending } = useUpdateProduct();
 
   // Populate form data when product prop changes
   useEffect(() => {
     if (product && isOpen) {
-    //   const hasNoExpiration = !product.expirationDate;
-    //   setNoExpiration(hasNoExpiration);
-
-      // Map the TradeRate properties to form data
+      // Map the Product properties to form data
       setFormData({
         name : product.name || "",
-        isPrivate: !! product.isPrivate,
+        isPrivate: product.isPrivate,
       });
     }
   }, [product, isOpen]);
@@ -74,11 +65,11 @@ export function UpdateProductModal({isOpen,onClose,product: product,}: UpdatePro
   // Form validation function
   const validateForm = () => {
         if (!formData.name || formData.name.trim().length === 0) {  // null OR blank name
-            toast.error("name cannot be empty");
+            toast.error("Product name cannot be empty");
             return false;
         }
 
-        if (typeof formData.isPrivate !== "boolean") {
+        if (typeof formData.isPrivate !== "boolean") {              // somehow non-boolean
             toast.error("Invalid value for 'isPrivate'");
             return false;
         }
@@ -89,14 +80,6 @@ export function UpdateProductModal({isOpen,onClose,product: product,}: UpdatePro
   function handleChange(field: keyof typeof formData, value: string | boolean) {
     setFormData((prev) => ({ ...prev, [field]: value }));
   }
-
-//   const handleNoExpirationChange = (checked: boolean) => {
-//     setNoExpiration(checked);
-//     if (checked) {
-//       // Clear expiration date when "No Expiration" is checked
-//       setFormData((prev) => ({ ...prev, expirationDate: undefined }));
-//     }
-//   };
 
   const handleClose = (open: boolean) => {
     if (!open) {
@@ -116,11 +99,10 @@ export function UpdateProductModal({isOpen,onClose,product: product,}: UpdatePro
     }
 
     const updatePayload = {
-      product_id: product.product_id, // This one just take from the tariff prop
+      product_id: product.product_id, // This one just take from the product prop
       name: formData.name,
       isPrivate: formData.isPrivate,
     };
-
     mutate(updatePayload, {
       onSuccess: () => {
         toast.success("Product updated successfully!");
@@ -143,12 +125,82 @@ export function UpdateProductModal({isOpen,onClose,product: product,}: UpdatePro
           <DialogTitle className="text-2xl font-semibold text-gray-900">
             Update Product
           </DialogTitle>
-          <div className="text-sm text-gray-600 font-mono bg-gray-50 px-3 py-2 rounded-md mt-2">
-            name: {product.name}
-          </div>
         </DialogHeader>
 
-        
+        <div className="space-y-4">
+          <div className="bg-white rounded-lg p-3 border-2 border-orange-200">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3">
+              Product Name
+            </h3>
+
+            <div className="space-y-3">
+              <span className="block text-sm font-medium text-gray-700 mb-2">
+                Current Name:
+              </span>
+              <div className="flex items-center justify-between p-3 bg-orange-50 rounded-md">
+                <span className="font-bold text-orange-400 text-lg">
+                  {product.name}
+                </span>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  New Name:
+                </label>
+                <Input
+                  placeholder="Enter new product name"
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) =>
+                    handleChange("name", e.target.value)
+                  }
+                  className="w-full text-lg font-medium"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Product Information */}
+          <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+            <h3 className="text-sm font-semibold text-gray-700 mb-2">
+              Product Information
+            </h3>
+            <div className="space-y-2">
+              <div>
+                <span className="text-xs text-gray-500">HS Code:</span>
+                <p className="text-sm text-gray-800 mt-1">
+                  {product.hsCode}
+                </p>
+              </div>
+              <div>
+                <span className="text-xs text-gray-500">Description:</span>
+                <p className="text-sm text-gray-800 mt-1">
+                  {product.description}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Visibility Configuration */}
+          <div className="bg-white rounded-lg p-3 border border-blue-200">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3">
+              Product Visibility
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Visibility Checkbox */}
+                <div className="flex items-center space-x-3">
+                  <Checkbox
+                    id="isPrivate"
+                    checked={!formData.isPrivate}                                      // Checked = public, Unchecked = private
+                    onCheckedChange={(checked) => handleChange("isPrivate", !checked)} // Negate here
+                  />
+                  <Label htmlFor="isPrivate" className="text-sm text-gray-700">
+                    Visible to Public?
+                  </Label>
+                </div>
+              </div>
+          </div>
+        </div>
 
         <DialogFooter className="pt-4 border-t border-gray-100">
           <div className="flex space-x-3 w-full sm:w-auto">

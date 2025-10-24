@@ -35,6 +35,7 @@ import { useCountries } from '@/hooks/useCountry';
 import { useProducts } from '@/hooks/useProducts';
 import { calculatorService, tariffService } from '@/lib/axios';
 import { formatDateToYYYYMMDD } from '@/utils/dateUtils';
+import { useUserRole } from "@/lib/checkRole";                  // NEW: TO GET USER'S ID
 
 // Add these interfaces to your types file or at the top of the component
 interface AppliedTariff {
@@ -94,7 +95,9 @@ const TariffCalculator = () => {
     const [showBreakdown, setShowBreakdown] = useState(false);
 
     const { data: countryData, isLoading: countriesLoading } = useCountries();
-    const { data: productsData } = useProducts();
+    const { userId } = useUserRole();                       // NEW: GET USER ID AND 
+    if (!userId) return null;
+    const { data: productsData } = useProducts(userId);     // GET PRODUCTS BELONGING TO USER AND PUBLICLY AVAILABLE PRODUCTS
 
     const countryMap = useRef({} as { [key: string]: { name: string; alpha3: string; code: string } });
 
