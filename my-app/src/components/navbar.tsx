@@ -49,18 +49,6 @@ export default function Navbar() {
               Manage Users
             </Link>
           )}
-          <Link href="/tariff" className="text-lg font-semibold text-white">
-            Browse Tariffs
-          </Link>
-          <Link href="/calculator" className="text-lg font-semibold text-white">
-            Calculator
-          </Link>
-          <Link href="/dashboard" className="text-lg font-semibold text-white">
-            Analytics
-          </Link>
-          <Link href="/api-docs" className="text-lg font-semibold text-white">
-            API Docs
-          </Link>
           {/* Only show these links if user is authenticated */}
           {!isPending && isAuthenticated && (
             <>
@@ -72,6 +60,18 @@ export default function Navbar() {
                 className="text-lg font-semibold text-white"
               >
                 Calculator
+              </Link>
+              <Link
+                href="/dashboard"
+                className="text-lg font-semibold text-white"
+              >
+                Analytics
+              </Link>
+              <Link
+                href="/api-docs"
+                className="text-lg font-semibold text-white"
+              >
+                API Docs
               </Link>
             </>
           )}
