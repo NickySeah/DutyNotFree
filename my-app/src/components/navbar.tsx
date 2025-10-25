@@ -67,6 +67,18 @@ export default function Navbar() {
               >
                 Calculator
               </Link>
+              <Link
+                href="/dashboard"
+                className="text-lg font-semibold text-white"
+              >
+                Analytics
+              </Link>
+              <Link
+                href="/api-docs"
+                className="text-lg font-semibold text-white"
+              >
+                API Docs
+              </Link>
             </>
           )}
         </div>
