@@ -13,6 +13,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Optional<Product> findByNameAndUserIdAndHsCode_Code(String name, String userId, String code);
     boolean existsByNameAndUserIdAndHsCode_Code(String name, String userId, String code);
     void deleteByNameAndUserIdAndHsCode_Code(String name, String userId, String code);
+    List<Product> findByUserIdOrIsPrivate(String userId, Boolean isPrivate);
 
     @Query("""
     SELECT p FROM Product p 

@@ -12,11 +12,11 @@ interface Product {
     };
 }
 
-export function useProducts() {
+export function useProducts(userId : string) {
     return useQuery({
         queryKey: ['products'],
         queryFn: async (): Promise<Product[]> => {
-            const response = await productService.get('/all');
+            const response = await productService.get(`/user/${userId}`);
             return response.data;
         },
     });

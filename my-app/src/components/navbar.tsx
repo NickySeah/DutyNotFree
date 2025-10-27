@@ -9,7 +9,7 @@ import { useUserRole } from "@/lib/checkRole";
 import { redirect, RedirectType } from 'next/navigation'
 
 export default function Navbar() {
-  const { isAdmin, isAuthenticated, isPending } = useUserRole();
+  const { isImporter, isSupplier, isAdmin, isAuthenticated, isPending } = useUserRole();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -58,9 +58,22 @@ export default function Navbar() {
           {/* Only show these links if user is authenticated */}
           {!isPending && isAuthenticated && (
             <>
-              <Link href="/tariff" className="text-lg font-semibold text-white">
+              <Link 
+                href="/tariff" 
+                className="text-lg font-semibold text-white"
+              >
                 Browse Tariffs
               </Link>
+              {isSupplier && (
+                <>
+                  <Link 
+                    href="/product" 
+                    className="text-lg font-semibold text-white"
+                  >
+                    Browse Products
+                  </Link>
+                </>
+              )}
               <Link
                 href="/calculator"
                 className="text-lg font-semibold text-white"
