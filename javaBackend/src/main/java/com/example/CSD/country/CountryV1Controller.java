@@ -30,6 +30,7 @@ public class CountryV1Controller {
     }
 
     @Operation(summary = "Health check", description = "Returns a simple message to confirm the country microservice is running")
+    @GetMapping("/test")
     public String index() {
         return "Country microservice is running.";
     }
@@ -42,10 +43,11 @@ public class CountryV1Controller {
 
     @Operation(summary = "Search countries", description = "Search countries by optional ISO code, name, or alpha-3 code")
     @GetMapping()
-    public List<Country> getCountry(@Parameter(description = "ISO code of the country")
-    @RequestParam(required=false) String iso, @Parameter(description = "Name of the country")
-    @RequestParam(required=false) String name, @Parameter(description = "Alpha-3 code of the country")
-    @RequestParam(required=false) String alpha3) {
+    public List<Country> getCountry(
+        @Parameter(description = "ISO code of the country") @RequestParam(required=false) String iso, 
+        @Parameter(description = "Name of the country") @RequestParam(required=false) String name, 
+        @Parameter(description = "Alpha-3 code of the country") @RequestParam(required=false) String alpha3
+    ) {
         return countryService.getCountry(iso, name, alpha3);
     }
 
@@ -61,13 +63,11 @@ public class CountryV1Controller {
 
     @Operation(summary = "Update country by ISO code", description = "Updates an existing country using its ISO code")
     @PutMapping()
-    public Country updateCountry(@Parameter(description = "ISO code of the country to update") 
-    @RequestParam String iso, @RequestBody Country updatedCountry) {
+    public Country updateCountry(@Parameter(description = "ISO code of the country to update") @RequestParam String iso, @RequestBody Country updatedCountry) {
         return countryService.updateCountry(iso, updatedCountry);
     }
 
     @Operation(summary = "Delete country by ISO code", description = "Deletes a country using its ISO code")
-
     @DeleteMapping()
     public void deleteCountry(@Parameter(description = "ISO code of the country to delete") @RequestParam String iso) {
         countryService.deleteCountry(iso);

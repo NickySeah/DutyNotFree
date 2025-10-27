@@ -29,8 +29,11 @@ public class HSCodeService {
         String code = newHSCode.getCode();
         String description = newHSCode.getDescription();
 
+        if (hsCodes.existsByCode(code)) {
+            throw new RuntimeException("HS Code " + code + " already exists");
+        }
         if (code == null || code.trim().length() < 6) {
-            throw new RuntimeException("HS Code cannot be empty & is at least 6 numbers long");
+            throw new RuntimeException("HS Code cannot be empty or less than 6 digits");
         }
         if (description == null || description.isBlank()) {
             throw new RuntimeException("HS code description cannot be empty");
@@ -41,7 +44,7 @@ public class HSCodeService {
 
     public HSCode updateHSCode(String code, @RequestBody HSCode updatedHSCode) {
         HSCode hsCode = hsCodes.findByCode(code)
-        .orElseThrow(() -> new RuntimeException("HSCode not found with code " + code));
+        .orElseThrow(() -> new RuntimeException("No HSCode found with code " + code));
        
         String description = updatedHSCode.getDescription();
 
@@ -61,7 +64,7 @@ public class HSCodeService {
     public void deleteHSCode(String code) {
         // Check if HSCode exists before attempting to delete
         if (!hsCodes.existsByCode(code)) {
-            throw new RuntimeException("HSCode not found with code " + code);
+            throw new RuntimeException("No HSCode found with code " + code);
         }
         hsCodes.deleteByCode(code);
     }
