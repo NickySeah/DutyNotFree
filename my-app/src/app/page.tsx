@@ -42,12 +42,6 @@ export default function HomePage() {
                   </Button>
                 </Link>
               </div>
-
-              <Link href="/tariff">
-                <Button variant="link" size="lg" className="text-white">
-                  Continue as Guest
-                </Button>
-              </Link>
             </div>
           ) : (
             <Link href="/tariff">

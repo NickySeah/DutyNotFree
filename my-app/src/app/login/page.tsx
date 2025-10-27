@@ -1,14 +1,15 @@
 "use client";
-import SignIn from "@/components/sign-in";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Label } from "@/components/ui/label";
+// import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
-import { authClient } from "@/lib/auth-client";
+import { authClient, sendVerificationEmail } from "@/lib/auth-client";
 import { toast } from "sonner";
-import { Loader2, Key } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { AuthContext, VerificationError } from "@/types/auth";
+// import { redirect, RedirectType } from "next/navigation";
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
@@ -16,29 +17,64 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const formData = new FormData(e.target as HTMLFormElement);
-    // Simple validation
     const email = formData.get("email");
-    if (!email) return toast.error("Email is required");
     const password = formData.get("password");
+
+    if (!email) return toast.error("Email is required");
     if (!password) return toast.error("Password is required");
+
     await authClient.signIn.email(
       {
         email: email as string,
         password: password as string,
-        callbackURL: "/tariff",
       },
       {
-        onRequest: (ctx) => {
+        onRequest: () => {
           setLoading(true);
         },
-        onResponse: (ctx) => {
+        onResponse: () => {
           setLoading(false);
+        },
+        onSuccess: () => {
+          window.location.href = "/tariff";
+        },
+        onError: async (ctx: AuthContext) => {
+          const isNotVerified =
+            ctx.error.code === "EMAIL_NOT_VERIFIED" ||
+            ctx.error.status === 403 ||
+            ctx.error.message.toLowerCase().includes("verify");
+
+          if (isNotVerified) {
+            try {
+              await sendVerificationEmail({
+                email: email as string,
+                // callbackURL: `/verify-your-email/success`,
+              });
+
+              // Redirect to verification page
+              // redirect(
+              //   `/verify-your-email?email=${encodeURIComponent(email as string)}`,
+              //   RedirectType.replace
+              // );
+              window.location.href = `/verify-your-email?email=${encodeURIComponent(
+                email as string
+              )}`;
+            } catch (error) {
+              const verifyError = error as VerificationError;
+              console.error("Failed to send verification email:", verifyError);
+              toast.error(
+                verifyError.message ||
+                  "Failed to send verification email. Please try again."
+              );
+            }
+          } else {
+            toast.error(ctx.error.message);
+          }
         },
       }
     );
-
-    // Perform login logic here
   };
+
   return (
     <div>
       <div className="flex flex-row border-2 m-8 rounded-4xl shadow-lg overflow-hidden">
@@ -64,9 +100,9 @@ export default function LoginPage() {
             </div>
             <div>
               <div className="flex items-center mb-1">
-                <Label htmlFor="password" className="font-bold">
+                <label htmlFor="password" className="font-bold">
                   Password
-                </Label>
+                </label>
                 <Link
                   href="#"
                   className="ml-auto inline-block text-sm underline"
@@ -111,14 +147,19 @@ export default function LoginPage() {
               await authClient.signIn.social(
                 {
                   provider: "google",
-                  callbackURL: "/tariff",
                 },
                 {
-                  onRequest: (ctx) => {
+                  onRequest: () => {
                     setLoading(true);
                   },
-                  onResponse: (ctx) => {
+                  onResponse: () => {
                     setLoading(false);
+                  },
+                  onSuccess: () => {
+                    window.location.href = "/tariff";
+                  },
+                  onError: (ctx) => {
+                    toast.error(ctx.error.message);
                   },
                 }
               );
@@ -152,7 +193,7 @@ export default function LoginPage() {
 
           <div className="flex justify-center w-full border-t py-4 mt-15">
             <p className="text-center text-xs text-neutral-500">
-              Don't have an account?{" "}
+              Don&apos;t have an account?{" "}
               <Link href="/register" className="text-orange-400">
                 Sign up
               </Link>
@@ -160,7 +201,12 @@ export default function LoginPage() {
           </div>
         </div>
         <div className="w-3/5 flex items-center justify-center relative rounded-r-4xl overflow-hidden">
-          <Image src="/images/shipyard.jpg" alt="Login with Google" fill sizes="(max-width: 768px) 100vw, 50vw" />
+          <Image
+            src="/images/shipyard.jpg"
+            alt="Login with Google"
+            fill
+            sizes="(max-width: 768px) 100vw, 50vw"
+          />
         </div>
       </div>
     </div>

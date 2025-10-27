@@ -10,11 +10,13 @@ import { UpdateTariffModal } from "@/components/updateTariffModal";
 import { DeleteTariffModal } from "@/components/deleteTariffModal";
 import { useState } from "react";
 import TariffTableSkeleton from "@/components/tariffTableSkeleton";
+import { useUserRole } from "@/lib/checkRole";
 
 export default function ProductPage() {
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedTariff, setSelectedTariff] = useState<TradeRate | null>(null);
+  const { isAdmin, isPending } = useUserRole();
 
   // This function will be passed to createColumns
   const handleModifyTariff = (tariff: TradeRate) => {
@@ -29,7 +31,7 @@ export default function ProductPage() {
     setIsDeleteModalOpen(true);
   };
 
-  const columns = createColumns(handleModifyTariff, handleDeleteTariff);
+  const columns = createColumns(handleModifyTariff, handleDeleteTariff, isAdmin, isPending);
 
   const { data: tariffs = [], isLoading, error } = useTariffs();
 

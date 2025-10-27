@@ -202,8 +202,8 @@ export function CreateTariffModal({ isOpen, onClose }: CreateTariffModalProps) {
         resetForm();
         onClose();
       },
-      onError: (error: any) => {
-        toast.error(error.response?.data?.message || "Failed to create tariff");
+      onError: (error) => {
+        toast.error(error.message || "Failed to create tariff");
       },
     });
   };

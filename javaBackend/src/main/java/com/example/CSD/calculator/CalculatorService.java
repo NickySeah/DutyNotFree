@@ -34,7 +34,7 @@ public class CalculatorService {
      *
      * Formula: (apply each tariff -> value*rate OR value+fee) + original value
      */
-    public double calculateTariffedValue(
+    public Map<String, Object> calculateTariffedValue(
             double originalValue,
             String originCode,
             String destCode,

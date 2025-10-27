@@ -3,36 +3,44 @@ import { useUserRole } from "@/lib/checkRole";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import {
-  Table,
-  TableHeader,
-  TableRow,
-  TableHead,
-  TableBody,
-  TableCell,
-} from "@/components/ui/table";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
-import { authClient } from "@/lib/auth-client";
 
-interface UserWithRole {
-  id: string;
-  name: string;
-  email: string;
-  role: string | undefined; // Allow undefined role
-  createdAt: Date; // This is a Date object, not string
-  emailVerified: number; // This is 0 or 1, not boolean
-  image?: string;
-  banned?: number;
-  banExpires?: null | Date;
-  banReason?: null | string;
-}
+import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import DeleteUserModal from "@/components/deleteUserModal";
+import UpdateUserModal from "@/components/updateUserModal";
+
+import { DataTable } from "./data-table";
+import { createColumns } from "./columns";
+
+import type { UserInformation } from "@/types/user";
+import { useUsers } from "@/hooks/useUser";
+import { Users, Shield, AlertCircle, Loader2, Activity } from "lucide-react";
+
 
 export default function AdminDashboardPage() {
   const { isAdmin, isPending, isAuthenticated } = useUserRole();
   const router = useRouter();
-  const [userData, setUserData] = useState<any>(null);
-  const [loadingUsers, setLoadingUsers] = useState(true);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<UserInformation | null>(null);
+  const { data: users, isLoading, error } = useUsers();
+
+  // This function will be passed to createColumns
+  const handleDeleteUser = (user: UserInformation) => {
+    console.log("Deleting user:", user);
+    setSelectedUser(user);
+    setIsDeleteModalOpen(true);
+  }
+
+  const handleUpdateUser = (user: UserInformation) => {
+    console.log("Updating user:", user);
+    setSelectedUser(user);
+    setIsUpdateModalOpen(true);
+  };
+
+  const columns = createColumns(handleUpdateUser, handleDeleteUser);
 
   useEffect(() => {
     if (!isPending) {
@@ -50,34 +58,22 @@ export default function AdminDashboardPage() {
     }
   }, [isAdmin, isPending, isAuthenticated, router]);
 
+  // Handle error state
   useEffect(() => {
-    const loadUsers = async () => {
-      try {
-        const { data, error } = await authClient.admin.listUsers({
-          query: { limit: 100 },
-        });
-
-        if (error) {
-          throw new Error(error.message);
-        }
-        console.log("Fetched users:", data?.users);
-        setUserData(data);
-      } catch (err) {
-        console.error("Error fetching users:", err);
-        toast.error("Error fetching users");
-      } finally {
-        setLoadingUsers(false);
-      }
-    };
-
-    loadUsers();
-  }, []);
+    if (error) {
+      console.error("Error fetching users:", error);
+      toast.error("Error fetching users");
+    }
+  }, [error]);
 
   // Show loading while checking authentication
   if (isPending) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg">Loading...</div>
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-12 h-12 text-slate-600 dark:text-slate-400 animate-spin" />
+          <div className="text-lg font-medium text-slate-600 dark:text-slate-400">Loading...</div>
+        </div>
       </div>
     );
   }
@@ -88,48 +84,83 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
-      <p>Welcome to the admin dashboard!</p>
-      {/* Admin dashboard content will be implemented here */}
-      <div className="mt-8">
-        <h2 className="text-xl font-semibold mb-4">User Management</h2>
-        {loadingUsers ? (
-          <Skeleton className="h-10 w-full" />
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Created At</TableHead>
-                <TableHead>Email Verified</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {userData.users.map((user : UserWithRole) => (
-                <TableRow key={user.id}>
-                  <TableCell>{user.name || "N/A"}</TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>{user.role}</TableCell>
-                  <TableCell>{user.createdAt.toString()}</TableCell>
-                  <TableCell>{user.emailVerified ? "Yes" : "No"}</TableCell>
-                  <TableCell>
-                    <Button variant="outline" size="sm">
-                      Edit
-                    </Button>
-                    <Button variant="destructive" size="sm">
-                      Delete
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        {/* Header Section */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-3 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl shadow-lg">
+              <Shield className="w-8 h-8 text-white" />
+            </div>
+            <div>
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 dark:from-slate-100 dark:to-slate-400 bg-clip-text text-transparent">
+                Admin Dashboard
+              </h1>
+              <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">
+                Manage users and monitor system activity
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* User Management Card */}
+        <Card className="border-slate-200 dark:border-slate-800 shadow-lg">
+          <CardHeader className="bg-gradient-to-r from-slate-50 to-white dark:from-slate-900 dark:to-slate-800 border-b border-slate-200 dark:border-slate-800">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-2xl flex items-center gap-2">
+                  <Users className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                  User Management
+                </CardTitle>
+                <CardDescription className="mt-2">
+                  {users ? `Managing ${users.length} user accounts` : "Loading user data..."}
+                </CardDescription>
+              </div>
+              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800">
+                <Activity className="w-3 h-3 mr-1" />
+                Live
+              </Badge>
+            </div>
+          </CardHeader>
+
+          <CardContent className="p-6">
+            {isLoading ? (
+              <div className="space-y-4">
+                <Skeleton className="h-12 w-full rounded-lg" />
+                <Skeleton className="h-64 w-full rounded-lg" />
+              </div>
+            ) : error ? (
+              <Alert variant="destructive" className="border-red-200 dark:border-red-900">
+                <AlertCircle className="h-5 w-5" />
+                <AlertDescription className="ml-2">
+                  <span className="font-medium">Error fetching users.</span> Please try refreshing the page or contact support if the issue persists.
+                </AlertDescription>
+              </Alert>
+            ) : users ? (
+              <div className="bg-slate-50 dark:bg-slate-950 rounded-xl p-6 border border-slate-200 dark:border-slate-800">
+                <DataTable columns={columns} data={users} />
+              </div>
+            ) : null}
+          </CardContent>
+        </Card>
       </div>
+
+      <UpdateUserModal
+        isOpen={isUpdateModalOpen}
+        onClose={() => {
+          setIsUpdateModalOpen(false);
+          setSelectedUser(null);
+        }}
+        user={selectedUser}
+      />
+      <DeleteUserModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setSelectedUser(null);
+        }}
+        user={selectedUser}
+      />
     </div>
   );
 }
