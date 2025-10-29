@@ -43,12 +43,13 @@ public class CalculatorService {
             String hsCode,
             String dateStr
     ) {
+        
         // Case 1: FTA
         List<FTA> ftas = fs.getActiveFTA(null,originCode,destCode,dateStr);     // Get all FTA between both countries
         HSCode queryHsCode = hs.getHSCode(hsCode, null).get(0);     
         FTA bestFTA = null;                                                     // Track if an applicable FTA exists 
-        Boolean hasConcession = false; //temp for debug
         Double lowestFTARate = 0.0;                                             // Track lowest FTA rate if multple applicable FTAs exist
+        Double ftaCost = 0.0;                                                   // Calculate additional cost under FTA
         for (FTA fta : ftas) {                                                  // For each FTA
             Set<HSCode> excludedHsCodes = fta.getExcludedHsCodes();                 // Retrieve the HSCodes excluded from this FTA
             if (excludedHsCodes.contains(queryHsCode)) {continue;}                  // (1) query HS Code is excluded, skip this FTA
@@ -64,12 +65,14 @@ public class CalculatorService {
             if (bestFTA == null || curRate < lowestFTARate) {                       // First applicable FTA OR better FTA
                 lowestFTARate = curRate;
                 bestFTA = fta;
+                ftaCost = originalValue * (lowestFTARate/100);
             }
         }
-        Double ftaCost = originalValue * (lowestFTARate/100);                       // Calculate additional cost under FTA
+        Boolean hasFTA = bestFTA != null;
 
         // Case 2: Tariff
         List<Tariff> tariffs = ts.getActiveTariffs(originCode, destCode, hsCode, null, dateStr);    // Get all tariff lines between both countries
+        Boolean hasTariffs = !tariffs.isEmpty();
         List<String> tRate = new ArrayList<>();
         Double tariffTotal = 0.0;                                                                   // Track total tariff cost
         for (Tariff tariff : tariffs) {                                                             // For each tariff line
@@ -85,22 +88,45 @@ public class CalculatorService {
         
         // Determine which cost is less
         Map<String, Object> result = new HashMap<>();
-        System.out.println(ftaCost + " vs " + tariffTotal);
-        if (bestFTA != null && ftaCost.compareTo(tariffTotal) <= 0) {                   // If applicable FTA exists AND fta cost lower than tariff costs 
-            System.out.printf("\nFree Trade Agreement %s:\nRate Applied %.3f%%\nCost: $%.2f\n", hasConcession?"(Special Concession)":"",lowestFTARate,ftaCost);
-            
-            result.put("appliedFTA", bestFTA);
-            result.put("tariffTotal", tariffTotal);
-            result.put("finalValue", originalValue + tariffTotal);
-            // return originalValue + ftaCost;                                                 // Return final cost = fta rate + base value
+        Object appliedFTA = null;
+        List<Tariff> appliedTariffs = null;
+        Double additionalCost = 0.0;
+
+        Map<String, Object> ftaMap = new HashMap<String,Object>();              // Extract relevant info to be displayed
+        if (hasFTA) {
+            ftaMap.put("name", bestFTA.getName());
+            ftaMap.put("partyA", bestFTA.getPartyA().getName());
+            ftaMap.put("partyB", bestFTA.getPartyB().getName());
+            ftaMap.put("appliedRate", lowestFTARate);
+            ftaMap.put("effectiveDate", bestFTA.getEffectiveDate());
+            ftaMap.put("expirationDate", bestFTA.getExpirationDate());
         }
-        else {                                                                          // If no applicable FTA exists OR fta cost higher than tariff costs 
-            System.out.printf("\nTariff:\nRate Applied %s\nCost: $%.2f\n", tRate.toString(), tariffTotal);
-            result.put("appliedTariffs", tariffs);
-            result.put("tariffTotal", tariffTotal);
-            result.put("finalValue", originalValue + tariffTotal);
-            // return originalValue + tariffTotal;                                             // Returns final cost = tariffs + base value
+
+        if (hasFTA && hasTariffs) {     // BOTH FTA & Tariffs are applicable -> Take one with less cost
+            appliedFTA = ftaCost <= tariffTotal ? ftaMap : null;
+            appliedTariffs = ftaCost <= tariffTotal ? tariffs : new ArrayList<>();
+            additionalCost = ftaCost <= tariffTotal ? ftaCost : tariffTotal;
         }
+        else if (hasFTA) {              // Only FTA applicable
+            appliedFTA =  ftaMap;
+            appliedTariffs = new ArrayList<>();
+            additionalCost = ftaCost;
+        }
+        else if (hasTariffs) {          // Only Tariff applicable
+            appliedFTA = null;
+            appliedTariffs = tariffs;
+            additionalCost = tariffTotal;
+        }
+        else {                          // Nothing applicable
+            appliedFTA = null;
+            appliedTariffs = new ArrayList<>();
+            additionalCost = 0.0;
+
+        }
+        result.put("appliedFTA", appliedFTA);
+        result.put("appliedTariffs", appliedTariffs);
+        result.put("tariffTotal", additionalCost);
+        result.put("finalValue", originalValue + additionalCost);
         return result;
     }
 }

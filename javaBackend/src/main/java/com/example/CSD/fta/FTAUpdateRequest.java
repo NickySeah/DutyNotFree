@@ -20,6 +20,7 @@ import lombok.ToString;
 @EqualsAndHashCode
 @Schema(description = "Request payload for updating an existing tariff")
 public class FTAUpdateRequest {                      // Not an entity, just a data carrier
+    private String name;
     private Double defaultRate; 
     private String effectiveDate;                       // YYYY-MM-DD format
     private String expirationDate;                      // YYYY-MM-DD format
@@ -29,9 +30,16 @@ public class FTAUpdateRequest {                      // Not an entity, just a da
     private Set<FTAConcessionRequest> addConcessions;
     private Set<String> removeConcessions;                          // HS Code(s) specified by concession(s) to be removed
 
+    @JsonIgnore private boolean nameProvided = false;       // Flags to indicate if a field was provided in the update request
     @JsonIgnore private boolean defaultRateProvided = false;       // Flags to indicate if a field was provided in the update request
     @JsonIgnore private boolean effectiveDateProvided = false;
     @JsonIgnore private boolean expirationDateProvided = false;
+
+    @Schema(description = "Updated name of FTA")
+    public void setName(String name) {
+        this.name = name;
+        this.nameProvided = true;
+    }
 
     @Schema(description = "Updated standard rate percentage", example = "8.0")
     public void setDefaultRate(Double defaultRate) {

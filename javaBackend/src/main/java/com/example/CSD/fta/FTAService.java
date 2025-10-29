@@ -130,6 +130,12 @@ public class FTAService {
 
     public FTA createFTA(FTACreateRequest request) {
         // (1) Validate FTA Request
+        // FTA name
+        String name = request.getName();
+        if (name.isBlank()) {
+            throw new RuntimeException("FTA cannot have a blank name. Please provide a name for this FTA.");
+        }
+
         // Party A and B
         TradeParty tPartyA = validateTradeParty(request.getPartyA());                           
         TradeParty tPartyB = validateTradeParty(request.getPartyB());  
@@ -236,6 +242,7 @@ public class FTAService {
         }
         
         // (4) Set FTA attributes
+        fta.setName(name);
         fta.setType(enumType);
         fta.setPartyA(tPartyA);
         fta.setPartyB(tPartyB);
@@ -252,6 +259,15 @@ public class FTAService {
         FTA queryFTA = getFTAByID(id);
 
         // (2) Validate FTA request
+        // FTA Name
+        if (request.isNameProvided()) {
+            String newName = request.getName();
+            if (newName.isBlank()) {
+                throw new RuntimeException("FTA cannot have a blank name. Please provide a name for this FTA.");
+            }
+            queryFTA.setName(newName);
+        }
+
         // Default Rate
         if (request.isDefaultRateProvided()) {                          // Default rate to be updated
             Double finalRate = request.getDefaultRate();

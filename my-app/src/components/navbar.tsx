@@ -64,6 +64,12 @@ export default function Navbar() {
               >
                 Browse Tariffs
               </Link>
+              <Link 
+                href="/fta" 
+                className="text-lg font-semibold text-white"
+              >
+                Browse FTA
+              </Link>
               {isSupplier && (
                 <>
                   <Link 

@@ -1,8 +1,6 @@
 package com.example.CSD.fta;
 
 import java.util.List;
-import java.util.PriorityQueue;
-import java.util.Queue;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;

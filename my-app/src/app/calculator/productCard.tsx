@@ -220,7 +220,7 @@ const ProductCard = ({
           <div className="font-medium text-gray-700 mb-1">
             Applicable Tariffs:
           </div>
-          <div className="text-gray-600">{tariffDetails}</div>
+          <div className="text-gray-600 whitespace-pre-line">{tariffDetails}</div>
         </div>
       )}
     </div>

@@ -69,4 +69,14 @@ public class TradeParty {
     //     ftas.addAll(ftasAsPartyB);
     //     return ftas;
     // }
+
+    @JsonIgnore
+    public String getName() {
+        if (type.equals(PartyType.BLOC)) {
+            return bloc.getName(); 
+        }
+        else {
+            return country.getName();
+        }
+    }
 }

@@ -22,6 +22,9 @@ public class FTACreateRequest {  // Not an entity, just a data carrier
     // @NotBlank(message = "FTA is either Bilateral or Plurilateral")
     // @Schema(description = "Date when the tariff becomes effective", example = "2025-01-01")
     // private String type; // BILATERAL (country-country) or PLURILATERAL (country-bloc/bloc-bloc) 
+    @NotBlank(message = "FTA must have a name")
+    @Schema(description = "Name of FTA", example = "US-Singapore Free Trade Agreement (USSFTA)")
+    private String name;
 
     @NotBlank(message = "FTA must have a trade party with a valid code")
     @Schema(description = "Code of first trade party in FTA", example = "702/ASEAN")

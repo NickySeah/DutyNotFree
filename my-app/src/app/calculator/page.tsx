@@ -14,7 +14,9 @@ import {
     CalendarIcon,
     ArrowRightLeft,
     ChevronDown,
-    ChevronUp
+    ChevronUp,
+    BadgeCheck,
+    FileText
 } from 'lucide-react';
 import {
     Select,
@@ -35,9 +37,9 @@ import { useCountries } from '@/hooks/useCountry';
 import { useProducts } from '@/hooks/useProducts';
 import { calculatorService, tariffService } from '@/lib/axios';
 import { formatDateToYYYYMMDD } from '@/utils/dateUtils';
-import { useUserRole } from "@/lib/checkRole";                  // NEW: TO GET USER'S ID
+import { useUserRole } from "@/lib/checkRole";
 
-// Add these interfaces to your types file or at the top of the component
+// Add these interfaces
 interface AppliedTariff {
     id: number;
     hsCode: {
@@ -61,10 +63,20 @@ interface AppliedTariff {
     expirationDate: string | null;
 }
 
+interface AppliedFTA {
+    name: string;
+    partyA: string;
+    partyB: string;
+    appliedRate: number;
+    effectiveDate: string;
+    expirationDate: string | null;
+}
+
 interface CalculationResponse {
     tariffTotal: number;
     finalValue: number;
-    appliedTariffs: AppliedTariff[];
+    appliedTariffs?: AppliedTariff[];
+    appliedFTA?: AppliedFTA;
 }
 
 interface ProductBreakdown {
@@ -72,7 +84,8 @@ interface ProductBreakdown {
     originalValue: number;
     tariffAmount: number;
     finalValue: number;
-    appliedTariffs: AppliedTariff[];
+    appliedTariffs?: AppliedTariff[];
+    appliedFTA?: AppliedFTA;
 }
 
 const TariffCalculator = () => {
@@ -93,11 +106,13 @@ const TariffCalculator = () => {
     const [productTariffDetails, setProductTariffDetails] = useState<{ [productId: number]: string }>({});
     const [productBreakdowns, setProductBreakdowns] = useState<ProductBreakdown[]>([]);
     const [showBreakdown, setShowBreakdown] = useState(false);
+    const [overallAppliedFTA, setOverallAppliedFTA] = useState<AppliedFTA | null>(null);
+    const [hasUserInteracted, setHasUserInteracted] = useState(false);
 
     const { data: countryData, isLoading: countriesLoading } = useCountries();
-    const { userId } = useUserRole();                       // NEW: GET USER ID AND 
+    const { userId } = useUserRole();
     if (!userId) return null;
-    const { data: productsData } = useProducts(userId);     // GET PRODUCTS BELONGING TO USER AND PUBLICLY AVAILABLE PRODUCTS
+    const { data: productsData } = useProducts(userId);
 
     const countryMap = useRef({} as { [key: string]: { name: string; alpha3: string; code: string } });
 
@@ -115,6 +130,16 @@ const TariffCalculator = () => {
 
     const removeProduct = (id: number) => {
         setProducts(products.filter(p => p.id !== id));
+    };
+
+    const handleCountryChange = (field: 'origin' | 'destination', value: string) => {
+        setHasUserInteracted(true);
+        setCountries(prev => ({ ...prev, [field]: value }));
+    };
+
+    const handleDateChange = (date: Date | undefined) => {
+        setHasUserInteracted(true);
+        setTariffDate(date);
     };
 
     const getCountry = (code: string) => {
@@ -142,11 +167,17 @@ const TariffCalculator = () => {
     const calculateTariffs = async () => {
         const warningToastId = "select-fields-warning";
 
-        if ((!tariffDate || countries.origin === '' || countries.destination === '') && isMounted.current) {
+        // Only show warning after user has interacted
+        if ((!tariffDate || countries.origin === '' || countries.destination === '') && hasUserInteracted) {
             toast.warning("Please select valid origin, destination and date before calculating", {
                 id: warningToastId
             });
             return;
+        }
+
+        // Set interacted when calculate is attempted
+        if (!hasUserInteracted) {
+            setHasUserInteracted(true);
         }
 
         if (products.length === 0) {
@@ -157,6 +188,7 @@ const TariffCalculator = () => {
                 effectiveRate: 0
             });
             setProductBreakdowns([]);
+            setOverallAppliedFTA(null);
             return;
         }
 
@@ -166,6 +198,8 @@ const TariffCalculator = () => {
         const newProductBreakdowns: ProductBreakdown[] = [];
         
         const newProductTariffDetails: { [productId: number]: string } = {};
+        let ftaAppliedCount = 0;
+        let mostCommonFTA: AppliedFTA | null = null;
 
         for (const product of productsToCalculate) {
             const finalProductValue = product.value * product.quantity;
@@ -194,10 +228,6 @@ const TariffCalculator = () => {
                     continue;
                 }
                 
-                // Format tariffs for display
-                const formattedTariffs = formatTariffsForDisplay(tariffs);
-                newProductTariffDetails[product.id] = formattedTariffs;
-
                 const response = await calculatorService.get("", {
                     params: {
                         value: finalProductValue,
@@ -207,11 +237,24 @@ const TariffCalculator = () => {
                         date: date
                     }
                 });
-
+                
                 const calculationResult = response.data as CalculationResponse;
+                
+                // Format tariffs for display
+                const formattedTariffs = formatTariffsForDisplay(tariffs, calculationResult.appliedFTA);
+                newProductTariffDetails[product.id] = formattedTariffs;
                 
                 totalValue += finalProductValue;
                 totalTariff += calculationResult.tariffTotal;
+
+                // Track FTA usage
+                if (calculationResult.appliedFTA) {
+                    ftaAppliedCount++;
+                    // For simplicity, track the most common FTA applied
+                    if (!mostCommonFTA) {
+                        mostCommonFTA = calculationResult.appliedFTA;
+                    }
+                }
 
                 // Add detailed breakdown for this product
                 newProductBreakdowns.push({
@@ -219,7 +262,8 @@ const TariffCalculator = () => {
                     originalValue: finalProductValue,
                     tariffAmount: calculationResult.tariffTotal,
                     finalValue: calculationResult.finalValue,
-                    appliedTariffs: calculationResult.appliedTariffs
+                    appliedTariffs: calculationResult.appliedTariffs,
+                    appliedFTA: calculationResult.appliedFTA
                 });
 
             } catch (error) {
@@ -240,6 +284,13 @@ const TariffCalculator = () => {
 
         setProductTariffDetails(newProductTariffDetails);
         setProductBreakdowns(newProductBreakdowns);
+        
+        // Set overall FTA if majority of products use the same FTA
+        if (ftaAppliedCount > products.length / 2 && mostCommonFTA) {
+            setOverallAppliedFTA(mostCommonFTA);
+        } else {
+            setOverallAppliedFTA(null);
+        }
 
         const totalCost = totalValue + totalTariff;
         const effectiveRate = totalValue > 0 ? ((totalCost - totalValue) / totalValue) * 100 : 0;
@@ -252,7 +303,11 @@ const TariffCalculator = () => {
         });
     };
 
-    const formatTariffsForDisplay = (tariffs: TariffData[]): string => {
+    const formatTariffsForDisplay = (tariffs: TariffData[], appliedFTA?: AppliedFTA): string => {
+        if (appliedFTA) {
+            return `FTA Applied: ${appliedFTA.name} (${appliedFTA.appliedRate}%)`;
+        }
+
         if (!tariffs || tariffs.length === 0) {
             return "No tariffs applicable";
         }
@@ -266,12 +321,12 @@ const TariffCalculator = () => {
 
             const expiryInfo = tariff.expirationDate 
                 ? ` (expires: ${new Date(tariff.expirationDate).toLocaleDateString()})`
-                : " (no expiry)";
+                : " (ongoing)";
 
             return `${tariff.tariffType}: ${rateInfo}${expiryInfo}`;
         });
 
-        return tariffStrings.join(" | ");
+        return tariffStrings.join("\n");
     };
 
     // Component for detailed breakdown
@@ -301,9 +356,41 @@ const TariffCalculator = () => {
                 </div>
             </div>
 
-            {breakdown.appliedTariffs.length > 0 && (
+            {/* FTA Information */}
+            {breakdown.appliedFTA && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-3">
+                    <div className="flex items-center gap-2 mb-2">
+                        <BadgeCheck className="h-4 w-4 text-green-600" />
+                        <h5 className="font-medium text-green-800">Free Trade Agreement Applied</h5>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                        <div>
+                            <span className="font-medium">FTA:</span> {breakdown.appliedFTA.name}
+                        </div>
+                        <div>
+                            <span className="font-medium">Rate:</span> {breakdown.appliedFTA.appliedRate}%
+                        </div>
+                        <div>
+                            <span className="font-medium">Parties:</span> {breakdown.appliedFTA.partyA} ↔ {breakdown.appliedFTA.partyB}
+                        </div>
+                        <div>
+                            <span className="font-medium">Effective:</span> {new Date(breakdown.appliedFTA.effectiveDate).toLocaleDateString()}
+                        </div>
+                    </div>
+                    {breakdown.appliedFTA.expirationDate && (
+                        <div className="text-xs text-green-600 mt-1">
+                            Expires: {new Date(breakdown.appliedFTA.expirationDate).toLocaleDateString()}
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {breakdown.appliedTariffs && breakdown.appliedTariffs.length > 0 && (
                 <div className="border-t pt-3">
-                    <h5 className="font-medium text-gray-700 mb-2">Applied Tariffs:</h5>
+                    <h5 className="font-medium text-gray-700 mb-2 flex items-center gap-2">
+                        <FileText className="h-4 w-4 text-blue-600" />
+                        Applied Tariffs:
+                    </h5>
                     <div className="space-y-2">
                         {breakdown.appliedTariffs.map((tariff, index) => (
                             <div key={index} className="bg-gray-50 p-2 rounded text-sm">
@@ -365,9 +452,9 @@ const TariffCalculator = () => {
                         <div>
                             <Label className="block text-sm font-medium text-gray-700 mb-1">From</Label>
                             <Select
-                                value={countries.origin}
-                                onValueChange={(value) => setCountries({ ...countries, origin: value })}
-                            >
+                                    value={countries.origin}
+                                    onValueChange={(value) => handleCountryChange('origin', value)}
+                                >
                                 <SelectTrigger className="w-[280px]">
                                     <SelectValue placeholder="Select a country" />
                                 </SelectTrigger>
@@ -398,7 +485,7 @@ const TariffCalculator = () => {
                         </div>
                         <div>
                             <Label className="block text-sm font-medium text-gray-700 mb-1">To</Label>
-                            <Select value={countries.destination} onValueChange={(value) => setCountries({ ...countries, destination: value })}>
+                            <Select value={countries.destination} onValueChange={(value) => handleCountryChange('destination', value)}>
                                 <SelectTrigger className="w-[280px]">
                                     <SelectValue placeholder="Select a country" />
                                 </SelectTrigger>
@@ -422,13 +509,14 @@ const TariffCalculator = () => {
                                         variant="outline"
                                         data-empty={!tariffDate}
                                         className="data-[empty=true]:text-muted-foreground w-[280px] justify-start text-left font-normal"
+                                        onClick={() => setHasUserInteracted(true)}
                                     >
                                         <CalendarIcon />
                                         {tariffDate ? format(tariffDate, "PPP") : <span>Pick a date</span>}
                                     </Button>
                                 </PopoverTrigger>
                                 <PopoverContent className="w-auto p-0">
-                                    <Calendar mode="single" selected={tariffDate} onSelect={setTariffDate} />
+                                    <Calendar mode="single" selected={tariffDate} onSelect={handleDateChange} />
                                 </PopoverContent>
                             </Popover>
                         </div>
@@ -506,7 +594,8 @@ const TariffCalculator = () => {
                                 >
                                     <h3 className="text-lg font-semibold flex items-center gap-2">
                                         <DollarSign className="text-green-600" size={18} />
-                                        Detailed Cost Breakdown ({productBreakdowns.length} products)
+                                        Detailed Cost Breakdown ({productBreakdowns.length} products)   
+                                        
                                     </h3>
                                     {showBreakdown ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                                 </Button>
@@ -546,20 +635,35 @@ const TariffCalculator = () => {
                                     <div className="bg-white p-3 rounded-md">
                                         <div className="text-sm text-gray-600">Tariff Amount</div>
                                         <div className="text-lg font-semibold text-red-600">US$ {results.totalTariff.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
+                                        {/* {overallAppliedFTA && (
+                                            <div className="text-xs text-green-600 mt-1">
+                                                Using FTA: {overallAppliedFTA.appliedRate}% rate
+                                            </div>
+                                        )} */}
                                     </div>
 
                                     <div className="bg-gray-800 text-white p-4 rounded-md">
                                         <div className="text-center">
                                             <div className="text-sm text-gray-300">Total Landed Cost</div>
                                             <div className="text-2xl font-bold">US$ {results.totalCost.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
+                                            {/* {overallAppliedFTA && (
+                                                <div className="text-xs text-green-300 mt-1">
+                                                    FTA savings applied
+                                                </div>
+                                            )} */}
                                         </div>
                                     </div>
                                 </div>
                             )}
 
-                            <div className="mt-4 text-xs text-gray-600">
+                            {/* <div className="mt-4 text-xs text-gray-600">
                                 Calculating: All {products.length} products
-                            </div>
+                                {overallAppliedFTA && (
+                                    <div className="text-green-600 mt-1">
+                                        ✓ Free Trade Agreement applied for preferential rates
+                                    </div>
+                                )}
+                            </div> */}
                         </div>
 
                         {/* Trade Information */}
@@ -573,6 +677,11 @@ const TariffCalculator = () => {
                                     <div><strong>Origin:</strong> {getCountry(countries.origin)}</div>
                                     <div><strong>Destination:</strong> {getCountry(countries.destination)}</div>
                                     <div><strong>Currency:</strong> US$</div>
+                                    {/* {overallAppliedFTA && (
+                                        <div className="text-green-600">
+                                            <strong>FTA Applied:</strong> {overallAppliedFTA.name}
+                                        </div>
+                                    )} */}
                                 </div>
                             </div>
                         )}
@@ -586,6 +695,7 @@ const TariffCalculator = () => {
                                 <div>3. Change origin/destination countries to see different rates</div>
                                 <div>4. View calculated tariffs and total landed cost</div>
                                 <div>5. Expand &quot;Detailed Cost Breakdown&quot; to see individual product tariffs</div>
+                                {/* <div className="text-green-600 font-medium">6. Green panels show when FTAs are applied for savings</div> */}
                             </div>
                         </div>
                     </div>
@@ -594,6 +704,5 @@ const TariffCalculator = () => {
         </div>
     );
 };
-
 
 export default TariffCalculator;
