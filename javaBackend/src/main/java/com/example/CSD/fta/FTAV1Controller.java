@@ -19,14 +19,15 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 
 @Tag(name = "FTA Controller", description = "Operations related to TradeParty management")
 @RestController
 @RequestMapping("/api/v1/ftas")
 public class FTAV1Controller {
-    private FTAService FTAService;
+    private FTAServiceImpl FTAService;
 
-    public FTAV1Controller(FTAService fs) {
+    public FTAV1Controller(FTAServiceImpl fs) {
         this.FTAService = fs;
     }
 
@@ -70,13 +71,13 @@ public class FTAV1Controller {
     })
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping()
-    public FTA createFTA(@RequestBody FTACreateRequest request){
+    public FTA createFTA(@Valid @RequestBody FTACreateRequest request){
         return FTAService.createFTA(request);
     }
 
     @Operation(summary = "Update FTA by id", description = "Updates an existing FTA using its id")
     @PutMapping("/{id}")
-    public FTA updateFTA(@Parameter(description = "Id of the FTA to delete") @PathVariable Long id, @RequestBody FTAUpdateRequest request) {
+    public FTA updateFTA(@Parameter(description = "Id of the FTA to delete") @PathVariable Long id, @Valid @RequestBody FTAUpdateRequest request) {
         return FTAService.updateFTA(id, request);
     }
 

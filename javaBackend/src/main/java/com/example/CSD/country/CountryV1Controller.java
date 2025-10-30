@@ -18,14 +18,15 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 
 @Tag(name = "Country Controller", description = "Operations related to country management")
 @RestController
 @RequestMapping("/api/v1/countries")        // url starts with /countries
 public class CountryV1Controller {
-    private CountryService countryService;
+    private CountryServiceImpl countryService;
 
-    public CountryV1Controller(CountryService cs) {
+    public CountryV1Controller(CountryServiceImpl cs) {
         this.countryService = cs;
     }
 
@@ -57,13 +58,13 @@ public class CountryV1Controller {
     })
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping()
-    public Country addCountry(@RequestBody Country country){
+    public Country addCountry(@Valid @RequestBody Country country){
         return countryService.addCountry(country);
     }
 
     @Operation(summary = "Update country by ISO code", description = "Updates an existing country using its ISO code")
     @PutMapping()
-    public Country updateCountry(@Parameter(description = "ISO code of the country to update") @RequestParam String iso, @RequestBody Country updatedCountry) {
+    public Country updateCountry(@Parameter(description = "ISO code of the country to update") @RequestParam String iso, @Valid @RequestBody Country updatedCountry) {
         return countryService.updateCountry(iso, updatedCountry);
     }
 
