@@ -52,3 +52,4 @@ export const countriesService = createAuthenticatedApiInstance(process.env.NEXT_
 export const calculatorService = createAuthenticatedApiInstance(process.env.NEXT_PUBLIC_CALCULATOR_SERVICE_URL!);
 export const ftaService = createAuthenticatedApiInstance(process.env.NEXT_PUBLIC_FTA_SERVICE_URL!);
 export const blocService = createAuthenticatedApiInstance(process.env.NEXT_PUBLIC_BLOC_SERVICE_URL!);
+export const wishlistService = createAuthenticatedApiInstance(process.env.NEXT_PUBLIC_WISHLIST_SERVICE_URL!);

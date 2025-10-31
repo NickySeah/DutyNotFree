@@ -89,4 +89,12 @@ public interface TariffService {
      * @param id the unique ID of the tariff
      */
     public void  deleteTariffById(Long id);
+
+    /**
+     * Gets all tariffs that match the criteria for a user's wishlist.
+     *
+     * @param userId The user's ID.
+     * @return A list of matching Tariff entities.
+     */
+    public List<Tariff> getTariffsForWishlist(String userId);
 }

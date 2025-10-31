@@ -3,6 +3,7 @@ package com.example.CSD.tariff;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -97,5 +98,13 @@ public class TariffV1Controller {
     @DeleteMapping("/{id}")
     public void deleteTariffById(@Parameter(description = "Tariff ID") @PathVariable Long id) {
         tariffService.deleteTariffById(id);
+    }
+
+    @Operation(summary = "Get all tariffs from a user's wishlist")
+    @ApiResponse(responseCode = "200", description = "List of matching tariffs")
+    @GetMapping("/wishlist")
+    public ResponseEntity<List<Tariff>> getWishlistTariffs(@RequestParam String userId) {
+        List<Tariff> tariffs = tariffService.getTariffsForWishlist(userId);
+        return ResponseEntity.ok(tariffs);
     }
 }

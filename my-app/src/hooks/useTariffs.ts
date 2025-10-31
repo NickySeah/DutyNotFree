@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query'
-import { tariffService } from '@/lib/axios'
-import type { TradeRate } from '@/types/trade'
+import { useQuery } from "@tanstack/react-query";
+import { tariffService } from "@/lib/axios";
+import type { TradeRate } from "@/types/trade";
 
 // Define the API response structure
 interface TariffApiResponse {
@@ -27,23 +27,29 @@ interface TariffApiResponse {
 }
 
 export function useTariffs() {
-    return useQuery({
-        queryKey: ['tariffs'],
-        queryFn: async (): Promise<TradeRate[]> => {
-            const response = await tariffService.get('/all');
-            // Map API response to TradeRate interface
-            return response.data.map((item: TariffApiResponse) => ({
-                tariff_id: item.id,
-                hsCode: item.hsCode.code,
-                description: item.hsCode.description,
-                exportingFrom: item.originCountry.name,
-                importingTo: item.destCountry.name,
-                type: item.tariffType,
-                rate: item.standardRate,
-                flatFee: item.flatFee || 0,
-                effectiveDate: item.effectiveDate ? new Date(item.effectiveDate) : null,
-                expirationDate: item.expirationDate ? new Date(item.expirationDate) : null,
-            }));
-        },
-    });
+  return useQuery({
+    queryKey: ["tariffs"],
+    queryFn: async (): Promise<TradeRate[]> => {
+      const response = await tariffService.get("/all");
+      // Map API response to TradeRate interface
+      return response.data.map((item: TariffApiResponse) => ({
+        tariff_id: item.id,
+        hsCode: item.hsCode.code,
+        description: item.hsCode.description,
+        exportingFrom: item.originCountry.name,
+        importingTo: item.destCountry.name,
+        // --- THIS IS THE FIX ---
+        exportingFromCode: item.originCountry.code, // <-- ADD THIS
+        importingToCode: item.destCountry.code, // <-- ADD THIS
+        // ---------------------
+        type: item.tariffType,
+        rate: item.standardRate,
+        flatFee: item.flatFee || 0,
+        effectiveDate: item.effectiveDate ? new Date(item.effectiveDate) : null,
+        expirationDate: item.expirationDate
+          ? new Date(item.expirationDate)
+          : null,
+      }));
+    },
+  });
 }

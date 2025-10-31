@@ -4,22 +4,54 @@ import java.util.*;
 import java.time.DateTimeException;
 import java.time.LocalDate;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
+
+import jakarta.persistence.criteria.Predicate;
 import jakarta.transaction.Transactional;
 
 import com.example.CSD.country.*;
+import com.example.CSD.email.EmailService;
 import com.example.CSD.hscode.*;
+import com.example.CSD.user.UserDTO;
+import com.example.CSD.wishlist.Wishlist;
+import com.example.CSD.wishlist.WishlistService;
 
 @Service
 public class TariffServiceImpl implements TariffService {
     private TariffRepository tariffs;
     private CountryRepository countries;
     private HSCodeRepository hscodes;
+    private WishlistService wishlistService;
+    private final RestTemplate restTemplate;
+    private final EmailService emailService;
 
-    public TariffServiceImpl(TariffRepository tariffs, CountryRepository countries, HSCodeRepository hscodes) {
+    @Value("${user.service.url}")
+    private String userServiceUrl;
+
+    @Value("${user.service.api-key}")
+    private String internalApiKey;
+
+    public TariffServiceImpl(TariffRepository tariffs, CountryRepository countries,
+            HSCodeRepository hscodes,
+            WishlistService wishlistService, // <-- Inject the SERVICE
+            EmailService emailService, // <-- Inject the SERVICE
+            RestTemplate restTemplate) {
         this.tariffs = tariffs;
         this.countries = countries;
         this.hscodes = hscodes;
+        this.wishlistService = wishlistService; // <-- Assign the SERVICE
+        this.emailService = emailService;
+        this.restTemplate = restTemplate;
     }
 
     // Retrieve all tariffs in DB
@@ -118,7 +150,10 @@ public class TariffServiceImpl implements TariffService {
         tariff.setFlatFee(flatFee);
         tariff.setEffectiveDate(startDate);
         tariff.setExpirationDate(endDate);
-        return tariffs.save(tariff);
+        Tariff savedTariff = tariffs.save(tariff);
+
+        notifyWishlistUsers(savedTariff, "created");
+        return savedTariff;
     }
 
     // Helper function to validate date string
@@ -216,7 +251,10 @@ public class TariffServiceImpl implements TariffService {
             }
         }
 
-        return tariffs.save(existingTariff);
+        Tariff savedTariff = tariffs.save(existingTariff);
+        notifyWishlistUsers(savedTariff, "updated");
+
+        return savedTariff;
     }
     
     // Update tariff; Find using tariff id
@@ -247,5 +285,171 @@ public class TariffServiceImpl implements TariffService {
         }
 
         tariffs.deleteById(id);
+    }
+
+    /**
+     * Gets all tariffs that match the criteria for a user's wishlist.
+     *
+     * @param userId The user's ID.
+     * @return A list of matching Tariff entities.
+     */
+    public List<Tariff> getTariffsForWishlist(String userId) {
+        // 1. Get all items the user is watching
+        List<Wishlist> wishlistItems = wishlistService.getWishlistsByUserId(userId);
+
+        if (wishlistItems.isEmpty()) {
+            return List.of(); // Return an empty list if the wishlist is empty
+        }
+
+        // 2. Build a dynamic "OR" query using Specifications.
+        // This creates a single efficient query to the database.
+        Specification<Tariff> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            for (Wishlist item : wishlistItems) {
+                // For each wishlist item, create an "AND" group:
+                // (hsCode = ? AND originCountry = ? AND destCountry = ?)
+                Predicate p = cb.and(
+                        // We join on the entity's field, then get the 'code' field from that entity.
+                        // This assumes your Country and HSCode entities have a field named 'code'.
+                        cb.equal(root.get("hsCode").get("code"), item.getHsCode()),
+                        cb.equal(root.get("originCountry").get("code"), item.getExportingCountry()),
+                        cb.equal(root.get("destCountry").get("code"), item.getImportingCountry()));
+                predicates.add(p);
+            }
+
+            // 3. Combine all the "AND" groups with "OR"
+            // (item1_match) OR (item2_match) OR (item3_match) ...
+            return cb.or(predicates.toArray(new Predicate[0]));
+        };
+
+        // 4. Execute the single query and return the results
+
+        return tariffs.findAll(spec);
+    }
+
+    private void notifyWishlistUsers(Tariff tariff, String action) {
+        String hsCode = tariff.getHsCode().getCode();
+        String hsDescription = tariff.getHsCode().getDescription();
+        String origin = tariff.getOriginCountry().getName();
+        String dest = tariff.getDestCountry().getName();
+        String originCode = tariff.getOriginCountry().getCode();
+        String destCode = tariff.getDestCountry().getCode();
+
+        List<Wishlist> matchingItems = wishlistService.findMatchingWishlists(hsCode, originCode, destCode);
+
+        // Create the headers that will be sent with each request
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("x-internal-api-key", internalApiKey);
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        for (Wishlist item : matchingItems) {
+            String userId = item.getUserId();
+            String userEmail = null;
+
+            try {
+                // Call your Next.js API: e.g., "http://.../api/users/cxkcFQ48n..."
+                String urlToCall = userServiceUrl + userId;
+
+                // --- NEW: Use exchange() to send headers ---
+                ResponseEntity<UserDTO> response = restTemplate.exchange(
+                        urlToCall,
+                        HttpMethod.GET,
+                        entity, // <-- This includes your API key
+                        UserDTO.class);
+
+                UserDTO user = response.getBody();
+
+                if (user != null) {
+                    userEmail = user.getEmail();
+                }
+
+            } catch (HttpClientErrorException.NotFound e) {
+                System.err.println("User not found in Next.js app for ID: " + userId);
+                continue;
+            } catch (HttpClientErrorException.Unauthorized e) {
+                System.err.println("Unauthorized: API key for user service is wrong or missing.");
+                // Stop trying, as all requests will fail
+                return;
+            } catch (Exception e) {
+                System.err.println("User service API call failed. Is Next.js running? Error: " + e.getMessage());
+                continue;
+            }
+
+            if (userEmail == null || userEmail.isEmpty()) {
+                System.err.println("User " + userId + " has no email, skipping notification.");
+                continue;
+            }
+
+            // --- 4. Determine the rate to display (NEW LOGIC) ---
+            String tariffValueText;
+            if (tariff.getStandardRate() != null) {
+                tariffValueText = tariff.getStandardRate() + "%";
+            } else if (tariff.getFlatFee() != null) {
+                // Assuming a currency like dollars. You can change "$" as needed.
+                tariffValueText = "$" + String.format("%.2f", tariff.getFlatFee()) + " (flat fee)";
+            } else {
+                tariffValueText = "N/A";
+            }
+
+            // Build and send the email (same as before)
+            String subject = "Tariff Update: " + hsCode + " (" + origin + " to " + dest + ")";
+            String body = String.format(
+                    "Hello,\n\nA tariff you are watching has been %s.\n\n" +
+                            "--- Tariff Details ---\n" +
+                            "HS Code: %s\n" +
+                            "Description: %s\n" +
+                            "Origin Country: %s\n" +
+                            "Destination Country: %s\n" +
+                            "Tariff Type: %s\n" +
+                            "Rate: %s\n" +
+                            "Effective Date: %s\n" +
+                            "Expiration Date: %s\n\n" +
+                            "Thank you.",
+                    action,
+                    hsCode,
+                    hsDescription,
+                    origin,
+                    dest,
+                    tariff.getTariffType(),
+                    tariffValueText,
+                    tariff.getEffectiveDate(),
+                    tariff.getExpirationDate() != null ? tariff.getExpirationDate().toString() : "Ongoing");
+
+            emailService.sendEmail(userEmail, subject, body);
+            System.out.println("Going to send an email");
+        }
+    }
+    /**
+     * A scheduled task that runs every day at 1:00 AM server time.
+     * This task finds all tariffs that expired on the previous day
+     * and sends email notifications to all users who wishlisted them.
+     */
+    @Async
+    @Scheduled(cron = "0 0 1 * * *") // Runs at 1:00 AM every day
+    public void notifyForExpiredTariffs() {
+        // 1. We check for tariffs that expired "yesterday"
+        LocalDate yesterday = LocalDate.now().minusDays(1);
+        System.out.println("Running daily expiration check for: " + yesterday);
+
+        // 2. Find all tariffs that expired on that date
+        List<Tariff> expiredTariffs = tariffs.findAllByExpirationDate(yesterday);
+
+        if (expiredTariffs.isEmpty()) {
+            System.out.println("No tariffs expired on " + yesterday);
+            return;
+        }
+
+        System.out.println("Found " + expiredTariffs.size() + " expired tariffs. Notifying users...");
+
+        // 3. Loop through each expired tariff and notify users
+        for (Tariff tariff : expiredTariffs) {
+            System.out.println("Notifying for expired tariff ID: " + tariff.getId());
+            
+            // 4. Call your existing notification logic!
+            notifyWishlistUsers(tariff, "expired");
+        }
+
+        System.out.println("Finished expired tariff notification task.");
     }
 }
