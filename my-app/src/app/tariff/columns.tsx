@@ -254,6 +254,11 @@ export const createColumns = (
                 >
                   Copy Description
                 </DropdownMenuItem>
+                <DropdownMenuItem 
+                onClick={() => onAddToWishlist(tradeRate)}
+                >
+                  Add to wishlist
+                  </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={() => {
