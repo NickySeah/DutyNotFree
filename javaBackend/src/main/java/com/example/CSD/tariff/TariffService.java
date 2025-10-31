@@ -18,8 +18,10 @@ import com.example.CSD.email.EmailService;
 import com.example.CSD.hscode.*;
 import com.example.CSD.user.UserDTO;
 import com.example.CSD.wishlist.Wishlist;
-import com.example.CSD.wishlist.WishlistRepository;
+
 import com.example.CSD.wishlist.WishlistService;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.annotation.Async;
 
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -450,5 +452,37 @@ public class TariffService {
             emailService.sendEmail(userEmail, subject, body);
             System.out.println("Going to send an email");
         }
+    }
+    /**
+     * A scheduled task that runs every day at 1:00 AM server time.
+     * This task finds all tariffs that expired on the previous day
+     * and sends email notifications to all users who wishlisted them.
+     */
+    @Async
+    @Scheduled(cron = "0 0 1 * * *") // Runs at 1:00 AM every day
+    public void notifyForExpiredTariffs() {
+        // 1. We check for tariffs that expired "yesterday"
+        LocalDate yesterday = LocalDate.now().minusDays(1);
+        System.out.println("Running daily expiration check for: " + yesterday);
+
+        // 2. Find all tariffs that expired on that date
+        List<Tariff> expiredTariffs = tariffs.findAllByExpirationDate(yesterday);
+
+        if (expiredTariffs.isEmpty()) {
+            System.out.println("No tariffs expired on " + yesterday);
+            return;
+        }
+
+        System.out.println("Found " + expiredTariffs.size() + " expired tariffs. Notifying users...");
+
+        // 3. Loop through each expired tariff and notify users
+        for (Tariff tariff : expiredTariffs) {
+            System.out.println("Notifying for expired tariff ID: " + tariff.getId());
+            
+            // 4. Call your existing notification logic!
+            notifyWishlistUsers(tariff, "expired");
+        }
+
+        System.out.println("Finished expired tariff notification task.");
     }
 }

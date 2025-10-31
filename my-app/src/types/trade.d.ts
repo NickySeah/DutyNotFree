@@ -1,12 +1,28 @@
-export interface TradeRate {
+export type TradeRate = {
   tariff_id: number;
-  hsCode: string;           // maps to hs_code in DB
-  description: string;     // from hs_code table join
-  exportingFrom: string;    // maps to origin_country in DB  
-  importingTo: string;      // maps to dest_country in DB
-  type: string;            // maps to tariff_type in DB
-  rate: number;            // maps to standard_rate in DB
-  flatFee: number;        // maps to flat_fee in DB
-  effectiveDate: Date | undefined;    // maps to effective_date in DB
-  expirationDate: Date | undefined;   // maps to expiry_date in DB
-}
+  hsCode: string;
+  description: string;
+  exportingFrom: string; // This is the country NAME
+  importingTo: string;   // This is the country NAME
+  
+  // --- ADD THESE NEW FIELDS ---
+  exportingFromCode: string; // This is the country CODE
+  importingToCode: string;   // This is the country CODE
+  // --------------------------
+
+  type: string;
+  rate: number | null;
+  flatFee: number | null;
+  effectiveDate: Date | null;
+  expirationDate: Date | null;
+};
+
+// --- ADD THIS NEW TYPE ---
+export type WishlistItem = {
+  id: number;
+  userId: string;
+  hsCode: string;
+  exportingCountry: string; // This is the country CODE
+  importingCountry: string; // This is the country CODE
+  createdAt: string;
+};

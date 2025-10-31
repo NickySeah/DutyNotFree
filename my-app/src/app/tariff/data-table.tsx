@@ -18,8 +18,6 @@ import {
   Row
 } from "@tanstack/react-table";
 
-import { useUserRole } from "@/lib/checkRole";
-
 import {
   Table,
   TableBody,
@@ -28,8 +26,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-import { CreateTariffModal } from "@/components/createTariffModal";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -40,8 +36,6 @@ export function DataTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const { isAdmin, isPending } = useUserRole();
 
   const globalFilter = (row: Row<TData>, columnId: string, value: string) => {
     const description = String(row.getValue("description")).toLowerCase();
@@ -104,16 +98,6 @@ export function DataTable<TData, TValue>({
             Clear
           </Button>
         </div>
-        {!isPending && isAdmin && (
-          <Button
-            variant="default"
-            onClick={() => {
-              setIsCreateModalOpen(true);
-            }}
-          >
-            Define New Tariff
-          </Button>
-        )}
       </div>
       <div className="overflow-hidden rounded-md border">
         <Table>
@@ -168,11 +152,6 @@ export function DataTable<TData, TValue>({
 
       <DataTablePagination table={table} />
 
-      {/* Create Tariff Modal */}
-      <CreateTariffModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-      />
     </div>
   );
 }
