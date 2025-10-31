@@ -41,11 +41,11 @@ export default function FtaTableSkeleton() {
             {Array.from({ length: 8 }).map((_, index) => (
               <div key={index} className="flex space-x-4 p-4 border-b last:border-b-0">
                   <Skeleton className="h-4 w-48"/>                                            {/* FTA Name */}
-                  <div className="flex items-center justify-center space-x-2">                {/*Party A*/}
+                  <div className="flex items-center space-x-2">                               {/*Party A*/}
                     <Skeleton className="h-4 w-24" />                                           {/* Name */}
                     <Skeleton className="h-6 w-6 rounded" />                                    {/* Flag */}
                   </div>
-                  <div className="flex items-center justify-center space-x-2">                {/*Party B*/}
+                  <div className="flex items-center space-x-2">                               {/*Party B*/}
                     <Skeleton className="h-4 w-24" />                                           {/* Name */}
                     <Skeleton className="h-6 w-6 rounded" />                                    {/* Flag */}
                   </div>

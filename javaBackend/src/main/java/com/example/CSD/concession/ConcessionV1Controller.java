@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.CSD.fta.FTA;
-import com.example.CSD.fta.FTAService;
+import com.example.CSD.fta.FTAServiceImpl;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -27,9 +27,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/v1/concessions")        // url starts with /blocs
 public class ConcessionV1Controller {
-    private ConcessionService concessionService;
+    private ConcessionServiceImpl concessionService;
 
-    public ConcessionV1Controller(ConcessionService cs) {
+    public ConcessionV1Controller(ConcessionServiceImpl cs) {
         this.concessionService = cs;
     }
 
@@ -66,13 +66,13 @@ public class ConcessionV1Controller {
     // })
     // @ResponseStatus(HttpStatus.CREATED)
     // @PostMapping()
-    // public Concession addConcession(@RequestBody ConcessionCreateRequest request){
+    // public Concession addConcession(@Valid @RequestBody ConcessionCreateRequest request){
     //     return concessionService.addConcession(request);
     // }
 
     // @Operation(summary = "Update a concession", description = "Updates an existing concession")
     // @PutMapping("/{id}")
-    // public Concession updateConcession(@Parameter(description = "Code of the bloc to update") @PathVariable Long id, @RequestBody ConcessionUpdateRequest request) {
+    // public Concession updateConcession(@Parameter(description = "Code of the bloc to update") @PathVariable Long id, @Valid @RequestBody ConcessionUpdateRequest request) {
     //     return concessionService.updateConcession(id, request);
     // }
 

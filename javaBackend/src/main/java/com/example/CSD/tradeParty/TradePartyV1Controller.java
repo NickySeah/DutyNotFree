@@ -19,13 +19,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-// @Tag(name = "TradeParty Controller", description = "Operations related to TradeParty management")
+@Tag(name = "Trade Party Controller", description = "Operations related to Trade Party management")
 @RestController
 @RequestMapping("/api/v1/tradeParties")        // TODO: nothing for now
 public class TradePartyV1Controller {
-    private TradePartyService TradePartyService;
+    private TradePartyServiceImpl TradePartyService;
 
-    public TradePartyV1Controller(TradePartyService cs) {
+    public TradePartyV1Controller(TradePartyServiceImpl cs) {
         this.TradePartyService = cs;
     }
 
@@ -56,14 +56,14 @@ public class TradePartyV1Controller {
     // })
     // @ResponseStatus(HttpStatus.CREATED)
     // @PostMapping()
-    // public TradeParty addTradeParty(@RequestBody TradeParty TradeParty){
+    // public TradeParty addTradeParty(@Valid @RequestBody TradeParty TradeParty){
     //     return TradePartyService.addTradeParty(TradeParty);
     // }
 
     // @Operation(summary = "Update TradeParty by ISO code", description = "Updates an existing TradeParty using its ISO code")
     // @PutMapping()
     // public TradeParty updateTradeParty(@Parameter(description = "ISO code of the TradeParty to update") 
-    // @RequestParam String iso, @RequestBody TradeParty updatedTradeParty) {
+    // @RequestParam String iso, @Valid @RequestBody TradeParty updatedTradeParty) {
     //     return TradePartyService.updateTradeParty(iso, updatedTradeParty);
     // }
 

@@ -18,14 +18,15 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 
 @Tag(name = "HS Code Controller", description = "Operations related to HS code management")
 @RestController 
 @RequestMapping("/api/v1/hscodes")        // url starts with /hscodes
 public class HSCodeV1Controller {
-    private HSCodeService hsCodeService;
+    private HSCodeServiceImpl hsCodeService;
 
-    public HSCodeV1Controller(HSCodeService hsCodeService) {
+    public HSCodeV1Controller(HSCodeServiceImpl hsCodeService) {
         this.hsCodeService = hsCodeService;
     }
 
@@ -62,13 +63,13 @@ public class HSCodeV1Controller {
     })
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping()
-    public HSCode addHSCode(@RequestBody HSCode newHSCode) {
+    public HSCode addHSCode(@Valid @RequestBody HSCode newHSCode) {
         return hsCodeService.addHSCode(newHSCode);
     }
 
     @Operation(summary = "Update HS code by code", description = "Updates an existing HS code using its code value")
     @PutMapping()
-    public HSCode updateHSCode(@Parameter(description = "HS code to update") @RequestParam String code, @RequestBody HSCode updatedHSCode) {
+    public HSCode updateHSCode(@Parameter(description = "HS code to update") @RequestParam String code, @Valid @RequestBody HSCode updatedHSCode) {
         return hsCodeService.updateHSCode(code, updatedHSCode);
     }
 

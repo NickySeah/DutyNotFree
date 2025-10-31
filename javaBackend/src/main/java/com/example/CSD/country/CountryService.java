@@ -1,95 +1,47 @@
 package com.example.CSD.country;
 
 import java.util.*;
-// import javax.swing.text.html.Option;
-import org.springframework.stereotype.Service;
 
-import com.example.CSD.bloc.Bloc;
-import com.example.CSD.tradeParty.TradeParty;
+public interface CountryService {
+    /**
+     * Retrieves all countries in the system
+     * 
+     * @return a list of all countries currently stored in the system
+     *         Returns an empty list if no countries are found
+     */
+    public List<Country> listCountries();
 
-import jakarta.transaction.Transactional;
+    /**
+     * Retrieves countries based on given condition(s)
+     * 
+     * @param iso the ISO code of the country
+     * @param name exact name of the country
+     * @param alpha3 the Alpha 3 code of the country
+     * @return a list of countries matching the specified criteria
+     *         If no parameters are provided, returns all countries
+     */
+    public List<Country> getCountry(String iso, String name, String alpha3);
 
-@Service
-public class CountryService {
-    private CountryRepository countries;
+    /**
+     * Adds a new country to the system
+     * 
+     * @param newCountry the details of the country to be added
+     * @return the newly created country
+     */
+    public Country addCountry(Country newCountry);
 
-    public CountryService(CountryRepository countries) {
-        this.countries = countries;
-    }
+    /**
+     * Updates an existing country identified by its ISO code
+     * 
+     * @param code the unique ISO code of the country
+     * @param newCountry the details of the country to be updated
+     * @return the newly created country
+     */
+    public Country updateCountry(String code, Country updatedCountry);
 
-    public List<Country> listCountries() {
-        return countries.findAllByOrderByNameAsc();
-    }
-
-    public List<Country> getCountry(String iso, String name, String alpha3) {
-        if (iso == null && name == null && alpha3 == null) {
-            return listCountries();
-        }
-
-        return countries.findByFilters(iso, name, alpha3);
-    }
-
-    public Country addCountry(Country newCountry) {
-        // Check if country already exists
-        if (countries.existsByCode(newCountry.getCode())) {
-            throw new RuntimeException("Country with code " + newCountry.getCode() + " already exists");
-        }
-
-        String iso = newCountry.getCode();
-        String name = newCountry.getName();
-        String alpha3 = newCountry.getAlpha3();
-
-        if (iso == null || iso.trim().length() != 3) {
-            throw new RuntimeException("Invalid ISO code");
-        }
-        if (name == null || name.isBlank()) {
-            throw new RuntimeException("Country name cannot be empty");
-        }
-        if (alpha3 == null || alpha3.trim().length() != 3) {
-            throw new RuntimeException("Invalid Alpha 3 code");
-        }
-
-        return countries.save(newCountry);
-    }
-
-    public Country updateCountry(String code, Country updatedCountry) {
-        Country country = countries.findByCode(code)
-                .orElseThrow(() -> new RuntimeException("No country found with iso code " + code));
-
-        String name = updatedCountry.getName();
-        String alpha3 = updatedCountry.getAlpha3();
-
-        if (name != null) {
-            if (!name.isBlank()) {
-                country.setName(name);
-            } else {
-                throw new RuntimeException("Country name cannot be empty");
-            }
-        }
-        if (alpha3 != null) {
-            if (alpha3.length() == 3) {
-                country.setAlpha3(alpha3);
-            } else {
-                throw new RuntimeException("Alpha 3 code must be exactly 3 characters long");
-            }
-        }
-        return countries.save(country);
-    }
-
-    @Transactional
-    public void deleteCountry(String code) {
-        // Check if country exists before attempting to delete
-        if (!countries.existsByCode(code)) {
-            throw new RuntimeException("No country found with code " + code);
-        }
-        Country country = countries.findByCode(code)
-        .orElseThrow(() -> new RuntimeException("No bloc found with code " + code));
-
-        TradeParty countryTP = country.getTradeParty();
-        if (!countryTP.getFtasAsPartyA().isEmpty() || !countryTP.getFtasAsPartyB().isEmpty()) {
-            throw new RuntimeException("Cannot delete "+ country.getName()+" (" + country.getCode() + ") because it is part of one or more FTAs.");
-        }
-
-        countries.deleteByCode(code);
-    }
+    /**
+     * Deletes an existing country identified by its ISO code
+     * @param code the unique ISO code of the country
+     */
+    public void deleteCountry(String code);
 }

@@ -27,9 +27,9 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/api/v1/tariffs")        // url starts with /tariffs
 public class TariffV1Controller {
-    private TariffService tariffService;
+    private TariffServiceImpl tariffService;
 
-    public TariffV1Controller(TariffService ts) {
+    public TariffV1Controller(TariffServiceImpl ts) {
         this.tariffService = ts;
     }
 
@@ -77,15 +77,14 @@ public class TariffV1Controller {
     @Operation(summary = "Update tariff by composite key", description = "Updates a tariff using origin, destination, HS code, and type")
     @ResponseStatus(HttpStatus.OK)
     @PutMapping()       // compulsory request parameters
-    public Tariff updateTariff(@RequestParam String origin, @RequestParam String dest, @RequestParam String hsCode, @RequestParam String type, @RequestParam String effectiveDate, @RequestBody TariffUpdateRequest request) {
+    public Tariff updateTariff(@RequestParam String origin, @RequestParam String dest, @RequestParam String hsCode, @RequestParam String type, @RequestParam String effectiveDate, @Valid @RequestBody TariffUpdateRequest request) {
         return tariffService.updateTariff(origin, dest, hsCode, type, effectiveDate, request);
     }
 
     @Operation(summary = "Update tariff by ID", description = "Updates a tariff using its unique ID")
     @ResponseStatus(HttpStatus.OK)
     @PutMapping("/{id}")       
-    public Tariff updateTariff(@Parameter(description = "Tariff ID")
-    @PathVariable Long id, @RequestBody TariffUpdateRequest request) {
+    public Tariff updateTariff(@Parameter(description = "Tariff ID")@PathVariable Long id, @Valid @RequestBody TariffUpdateRequest request) {
         return tariffService.updateTariffById(id, request);
     }
 
@@ -97,8 +96,7 @@ public class TariffV1Controller {
 
     @Operation(summary = "Delete tariff by ID", description = "Deletes a tariff using its unique ID")
     @DeleteMapping("/{id}")
-    public void deleteTariffById(@Parameter(description = "Tariff ID")
-    @PathVariable Long id) {
+    public void deleteTariffById(@Parameter(description = "Tariff ID") @PathVariable Long id) {
         tariffService.deleteTariffById(id);
     }
 

@@ -1,79 +1,43 @@
 package com.example.CSD.wishlist;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.stereotype.Service;
-
 import java.util.List;
-import java.util.Optional;
 
-@Service
-public class WishlistService {
-
-    private final WishlistRepository wishlistRepository;
-
-    @Autowired
-    public WishlistService(WishlistRepository wishlistRepository) {
-        this.wishlistRepository = wishlistRepository;
-    }
+/**
+ * Interface for the Wishlist service.
+ * Defines all public-facing business logic for managing wishlists.
+ */
+public interface WishlistService {
 
     /**
-     * Gets all wishlist items for a specific user.
-     *
-     * @param userId The user's ID.
-     * @return A list of their wishlist items.
+     * Retrieves all wishlist items for a specific user.
+     * @param userId The ID of the user.
+     * @return A list of wishlist items.
      */
-    public List<Wishlist> getWishlistsByUserId(String userId) {
-        return wishlistRepository.findByUserId(userId);
-    }
+    List<Wishlist> getWishlistsByUserId(String userId);
 
     /**
      * Creates a new wishlist item.
-     *
-     * @param dto The DTO containing item details.
-     * @return The saved Wishlist entity.
-     * @throws DataIntegrityViolationException if a duplicate item (same user, hsCode, countries) exists.
+     * @param dto The DTO containing data for the new item.
+     * @return The created Wishlist entity.
+     * @throws IllegalStateException if the item already exists.
      */
-    public Wishlist createWishlist(CreateWishlistDTO dto) {
-        Wishlist newWishlist = new Wishlist();
-        newWishlist.setUserId(dto.getUserId());
-        newWishlist.setHsCode(dto.getHsCode());
-        newWishlist.setExportingCountry(dto.getExportingCountry());
-        newWishlist.setImportingCountry(dto.getImportingCountry());
-        
-        // The @CreationTimestamp will automatically set createdAt
-        
-        try {
-            return wishlistRepository.save(newWishlist);
-        } catch (DataIntegrityViolationException e) {
-            // This is how you handle the unique constraint violation
-            throw new IllegalStateException("This item is already in your wishlist.", e);
-        }
-    }
+    Wishlist createWishlist(CreateWishlistDTO dto);
 
     /**
-     * Deletes a wishlist item by its unique ID.
-     *
+     * Deletes a wishlist item by its ID.
      * @param id The ID of the wishlist item to delete.
+     * @throws IllegalStateException if the item is not found.
      */
-    public void deleteWishlist(Long id) {
-        if (!wishlistRepository.existsById(id)) {
-            // You can create a custom exception here
-            throw new IllegalStateException("Wishlist item with id " + id + " not found.");
-        }
-        wishlistRepository.deleteById(id);
-    }
+    void deleteWishlist(Long id);
 
     /**
-     * Finds all wishlist entries matching a tariff.
-     * This method will be called by your TariffService (or similar) when a tariff changes.
-     *
-     * @param hsCode HS Code of the changed tariff.
-     * @param exportingCountry Exporting country of the changed tariff.
-     * @param importingCountry Importing country of the changed tariff.
-     * @return List of Wishlist items to notify.
+     * Finds all wishlist items that match a given tariff's criteria.
+     * Used for sending email notifications.
+     * @param hsCode The HS code.
+     * @param exportingCountry The origin country code.
+     * @param importingCountry The destination country code.
+     * @return A list of matching wishlist items.
      */
-    public List<Wishlist> findMatchingWishlists(String hsCode, String exportingCountry, String importingCountry) {
-        return wishlistRepository.findByHsCodeAndExportingCountryAndImportingCountry(hsCode, exportingCountry, importingCountry);
-    }
+    List<Wishlist> findMatchingWishlists(String hsCode, String exportingCountry, String importingCountry);
 }
+
