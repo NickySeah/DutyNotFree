@@ -34,7 +34,7 @@ public class TariffService {
     
     // Retrieve tariff by its id
     public Tariff getTariffByID(Long id) {
-        return tariffs.findById(id).orElseThrow(() -> new RuntimeException("No product with id "+id+" exist."));
+        return tariffs.findById(id).orElseThrow(() -> new RuntimeException("No tariff with id "+id+" exist."));
     }
 
     // Retrieve active tariffs based on given condition(s) and date
@@ -61,7 +61,7 @@ public class TariffService {
         String originCode = request.getOriginCountry();
         String destCode = request.getDestCountry();
         
-        // Origin & Destination Country Codes (compulsory fields)               // TODO: note null/trim().length() checks removed because of @NotBlank
+        // Origin & Destination Country Codes (compulsory fields)
         if (originCode.equals(destCode)) {                                      // (!) Origin & destination codes are the same
             throw new RuntimeException("Origin and destination country codes cannot be the same.");
         }
@@ -125,7 +125,7 @@ public class TariffService {
     private LocalDate validateDateStr(String dateStr, String type) {
         if (dateStr != null && !dateStr.isEmpty()) {                                    // Date provided
             try {
-                    return LocalDate.parse(dateStr);
+                return LocalDate.parse(dateStr);
             }
             catch (DateTimeException e) {                                               // (!) Given in invalid format   
                 System.out.println(e.getMessage());

@@ -3,6 +3,10 @@ package com.example.CSD.country;
 import java.util.*;
 // import javax.swing.text.html.Option;
 import org.springframework.stereotype.Service;
+
+import com.example.CSD.bloc.Bloc;
+import com.example.CSD.tradeParty.TradeParty;
+
 import jakarta.transaction.Transactional;
 
 @Service
@@ -50,7 +54,7 @@ public class CountryService {
 
     public Country updateCountry(String code, Country updatedCountry) {
         Country country = countries.findByCode(code)
-                .orElseThrow(() -> new RuntimeException("Country not found with iso code " + code));
+                .orElseThrow(() -> new RuntimeException("No country found with iso code " + code));
 
         String name = updatedCountry.getName();
         String alpha3 = updatedCountry.getAlpha3();
@@ -76,8 +80,16 @@ public class CountryService {
     public void deleteCountry(String code) {
         // Check if country exists before attempting to delete
         if (!countries.existsByCode(code)) {
-            throw new RuntimeException("Country not found with code " + code);
+            throw new RuntimeException("No country found with code " + code);
         }
+        Country country = countries.findByCode(code)
+        .orElseThrow(() -> new RuntimeException("No bloc found with code " + code));
+
+        TradeParty countryTP = country.getTradeParty();
+        if (!countryTP.getFtasAsPartyA().isEmpty() || !countryTP.getFtasAsPartyB().isEmpty()) {
+            throw new RuntimeException("Cannot delete "+ country.getName()+" (" + country.getCode() + ") because it is part of one or more FTAs.");
+        }
+
         countries.deleteByCode(code);
     }
 }

@@ -58,7 +58,7 @@ export default function RegisterPage() {
     if (password !== confirmPassword)
       return toast.error("Passwords do not match");
 
-    console.log({ name, email, password });
+    // console.log({ name, email, password });
 
     await handleEmailPasswordRegister(name, email, password);
   };

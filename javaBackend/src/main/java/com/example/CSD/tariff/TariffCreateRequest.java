@@ -16,7 +16,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @EqualsAndHashCode
 @Schema(description = "Request payload for creating a new tariff")
-public class TariffCreateRequest {  // Not an entity, just a data carrier   //TODO: if want to change JSON field names, use @JsonProperty("field_name")
+public class TariffCreateRequest {  // Not an entity, just a data carrier   // if want to change JSON field names, use @JsonProperty("field_name")
     @NotBlank(message = "Tariff must have a valid HS code")
     @Schema(description = "HS code for the product", example = "847130")
     private String hsCode;          

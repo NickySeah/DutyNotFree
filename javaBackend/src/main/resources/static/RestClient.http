@@ -11,7 +11,7 @@ GET http://localhost:3001/api/v1/countries
 GET http://localhost:3001/api/v1/countries?iso=702
 
 ###
-GET http://localhost:3001/api/v1/countries?name=China
+GET http://localhost:3001/api/v1/countries?name=MCK Cuntry
 
 ###
 GET http://localhost:3001/api/v1/countries?alpha3=USA
@@ -48,7 +48,7 @@ GET http://localhost:3001/api/v1/hscodes/all
 GET http://localhost:3001/api/v1/hscodes?code=01012100
 
 ###
-GET http://localhost:3001/api/v1/hscodes?keyword=bovine
+GET http://localhost:3001/api/v1/hscodes?keyword=
 
 ###
 POST http://localhost:3001/api/v1/hscodes
@@ -78,7 +78,7 @@ DELETE http://localhost:3001/api/v1/hscodes?code=00000000
 GET http://localhost:3001/api/v1/tariffs/all
 
 ###
-GET http://localhost:3001/api/v1/tariffs?origin=724
+GET http://localhost:3001/api/v1/tariffs?dest=702
 
 ###
 GET http://localhost:3001/api/v1/tariffs/1
@@ -108,12 +108,12 @@ Content-Type: application/json
     "hsCode": "02061000",
     "tariffType": "Mock A",
     "standardRate": 1.0,
-    "effectiveDate": "1999-01-01"
-    //, "expirationDate": "2000-01-01"
+    "effectiveDate": "1999-01-01",
+    "expirationDate": "2000-01-01"
 }
 
 ###
-PUT http://localhost:3001/api/v1/tariffs?origin=702&dest=724&hsCode=123456&type=Ad Valorem
+PUT http://localhost:3001/api/v1/tariffs?origin=156&dest=840&hsCode=02023000&type=Mock B&effectiveDate=2015-01-01
 Content-Type: application/json
 
 {
@@ -131,7 +131,7 @@ Content-Type: application/json
 }
 
 ####
-DELETE http://localhost:3001/api/v1/tariffs?hsCode=02023000&origin=840&dest=156&type=Mock A&effectiveDate=
+DELETE http://localhost:3001/api/v1/tariffs?hsCode=02023000&origin=156&dest=840&type=Mock B&effectiveDate=2015-01-01
 
 ###
 DELETE http://localhost:3001/api/v1/tariffs/6
@@ -189,3 +189,279 @@ DELETE http://localhost:3001/api/v1/products/13
 
 ###
 GET http://localhost:3001/api/v1/calculator?value=1000&origin=840&dest=156&hsCode=02023000&date=2011-2-2 
+
+
+
+
+#=== Bloc CRUD Operations ===#
+###
+GET http://localhost:3001/api/v1/blocs/all
+
+###
+GET http://localhost:3001/api/v1/blocs?code=ASEAN
+
+###
+GET http://localhost:3001/api/v1/blocs?name=Association of Southeast Asian Nations
+
+###
+GET http://localhost:3001/api/v1/blocs?keyword=Southeast
+
+# For country=_&country=_ etc, means bloc must have all these countries, not any of them
+###
+GET http://localhost:3001/api/v1/blocs?country=458&country=702
+
+###
+GET http://localhost:3001/api/v1/blocs?country=372&country=702
+
+###
+POST http://localhost:3001/api/v1/blocs
+Content-Type: application/json
+
+{
+    "code": "ASEAN",
+    "name": "Association of Southeast Asian Nations", 
+    "memberCodes": ["096", "104", "116", "360", "418", "458", "608", "702", "704", "764"]
+}  
+
+###
+POST http://localhost:3001/api/v1/blocs
+Content-Type: application/json
+
+{
+    "code": "EU",
+    "name": "European Union", 
+    "memberCodes": ["040", "056", "100", "191", "196", "203", "208", "233", "246", "250", "276", "300", "348", "372", "380", "428", "440", "442", "470", "528", "616", "620", "642", "703", "705", "724", "752"]
+}  
+
+###
+PUT http://localhost:3001/api/v1/blocs?code=ASEAN
+Content-Type: application/json
+
+{
+    "addMemberCodes": ["702", "762", "840"]
+}  
+
+###
+PUT http://localhost:3001/api/v1/blocs?code=ASEAN
+Content-Type: application/json
+
+{
+    "removeMemberCodes": ["762", "840"]
+}  
+
+###
+DELETE http://localhost:3001/api/v1/blocs?code=ASEAN
+
+
+
+
+#=== FTA CRUD Operations ===#
+###
+GET http://localhost:3001/api/v1/ftas/all
+
+###
+GET http://localhost:3001/api/v1/ftas
+
+###
+GET http://localhost:3001/api/v1/ftas?type=bilateral
+
+###
+GET http://localhost:3001/api/v1/ftas?partyA=702
+
+###
+GET http://localhost:3001/api/v1/ftas?partyA=ASEAN
+
+// partyA=<code1>&partyB=<code2> same as partyA=<code2>&partyB=<code1>
+###
+GET http://localhost:3001/api/v1/ftas?partyA=840&partyB=702
+
+###
+GET http://localhost:3001/api/v1/ftas?partyA=EU&partyB=ASEAN
+
+###
+GET http://localhost:3001/api/v1/ftas?date=2010-01-01
+
+###
+POST http://localhost:3001/api/v1/ftas
+Content-Type: application/json
+
+{
+  "partyA": "458",
+  "partyB": "702",
+  "effectiveDate": "1967-09-16",
+  "expirationDate": "1968-08-09",
+  "defaultRate": 0.0,
+  "excludedHsCodes": [
+    "24031919", "24031919", "22030011"
+  ],
+  "concessions": [
+    {"hsCode":"20098920", "finalRate": 2.5},
+    {"hsCode":"16041311", "finalRate": 5},
+    {"hsCode":"87120020", "finalRate": 5}
+  ]
+}
+
+###
+POST http://localhost:3001/api/v1/ftas
+Content-Type: application/json
+
+{
+  "partyA": "ASEAN",
+  "partyB": "EU",
+  "effectiveDate": "2004-01-01",
+  "expirationDate": "2010-12-31",
+  "defaultRate": 10.0
+}
+
+// Below should swap order so partyA=ASEAN and partB=840 to match existing FTA above
+###
+POST http://localhost:3001/api/v1/ftas
+Content-Type: application/json
+
+{
+  "partyA": "EU",
+  "partyB": "ASEAN",
+  "effectiveDate": "2011-01-01",
+  "defaultRate": 5.0,
+  "excludedHsCodes": [
+    "87032221",
+    "87112012"
+  ],
+  "concessions": [
+    {"hsCode":"20098920", "finalRate": 2.5},
+    {"hsCode":"16041311", "finalRate": 5},
+    {"hsCode":"87120020", "finalRate": 5}
+  ]
+}
+
+###
+PUT http://localhost:3001/api/v1/ftas/14
+Content-Type: application/json
+
+{
+  "effectiveDate": "2005-01-01",
+  "defaultRate": 30.0,
+  "excludeHSCodes": [
+    "24031919"
+  ],
+  "addConcessions": [
+    {"hsCode":"02061000", "finalRate": 11.2}
+  ]
+}
+
+###
+PUT http://localhost:3001/api/v1/ftas/14
+Content-Type: application/json
+
+{
+  "effectiveDate": "1999-01-01",
+  "expirationDate": "2010-12-31",
+  "defaultRate": 10.0,
+  "includeHSCodes": [
+    "87032221"
+  ],
+  "removeConcessions": [
+    "30031090", "16041311"
+  ]
+}
+
+###
+GET http://localhost:3001/api/v1/ftas/14
+
+###
+DELETE http://localhost:3001/api/v1/ftas/16
+
+
+
+
+
+#=== Calculator Tests ===#
+###
+POST http://localhost:3001/api/v1/tariffs
+Content-Type: application/json
+
+{
+    "originCountry": "702",
+    "destCountry": "458",
+    "hsCode": "02061000",
+    "tariffType": "Mock A",
+    "standardRate": 10.0,
+    "effectiveDate": "2000-01-01"
+    //,"expirationDate": "2000-01-01"
+}
+
+###
+PUT http://localhost:3001/api/v1/tariffs/18
+Content-Type: application/json
+
+{
+    "standardRate": 0.0
+}
+
+###
+POST http://localhost:3001/api/v1/tariffs
+Content-Type: application/json
+
+{
+    "originCountry": "702",
+    "destCountry": "458",
+    "hsCode": "01013090",
+    "tariffType": "Mock B",
+    "flatFee": 10.0,
+    "effectiveDate": "2000-01-01"
+    ,"expirationDate": "2005-01-01"
+}
+
+###
+PUT http://localhost:3001/api/v1/tariffs/19
+Content-Type: application/json
+
+{
+    "flatFee": 2.5
+}
+
+###
+POST http://localhost:3001/api/v1/ftas
+Content-Type: application/json
+
+{
+  "partyA": "702",
+  "partyB": "458",
+  "effectiveDate": "2001-01-01",
+  "expirationDate": "2020-01-01",
+  "defaultRate": 5.0,
+  "excludedHsCodes": [
+    "02061000"
+  ],
+  "concessions": [
+    {"hsCode":"01013090", "finalRate": 2.5}
+  ]
+}
+
+###
+POST http://localhost:3001/api/v1/ftas
+Content-Type: application/json
+
+{
+  "partyA": "458",
+  "partyB": "ASEAN",
+  "effectiveDate": "2001-01-01",
+  "expirationDate": "2020-01-01",
+  "defaultRate": 0.0
+}
+
+###
+PUT http://localhost:3001/api/v1/ftas/19
+Content-Type: application/json
+
+{
+  "defaultRate": 5
+}
+
+###
+GET http://localhost:3001/api/v1/tariffs/18
+###
+GET http://localhost:3001/api/v1/ftas/19
+
+###
+GET http://localhost:3001/api/v1/calculator?value=100&origin=702&dest=458&hsCode=01013090&date=2003-01-01

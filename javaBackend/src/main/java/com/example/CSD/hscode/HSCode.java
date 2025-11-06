@@ -3,12 +3,14 @@ package com.example.CSD.hscode;
 import java.util.Set;
 
 import com.example.CSD.product.Product;
+import com.example.CSD.concession.Concession;
+import com.example.CSD.fta.FTA;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -21,10 +23,10 @@ import lombok.ToString;
 @Entity
 @Getter
 @Setter
-@ToString
+@ToString(exclude = {"products","excludedFromFTA","specialConcessions"})
+@EqualsAndHashCode(exclude = {"products","excludedFromFTA","specialConcessions"})
 @AllArgsConstructor
 @NoArgsConstructor
-@EqualsAndHashCode 
 @Schema(description = "Represents a Harmonized System (HS) code used for product classification")
 public class HSCode {
     @Id
@@ -41,5 +43,15 @@ public class HSCode {
     @OneToMany(mappedBy = "hsCode")
     @JsonIgnore  
     @Schema(hidden = true)
-    private Set<Product> products;
+    private Set<Product> products;              // one hscode can belong to any number of products
+    
+    @ManyToMany(mappedBy = "excludedHsCodes")               
+    @JsonIgnore
+    @Schema(hidden = true)
+    private Set<FTA> excludedFromFTA;            // one country can belong to any number of blocs 
+
+    @OneToMany(mappedBy = "hsCode")
+    @JsonIgnore  
+    @Schema(hidden = true)
+    private Set<Concession> specialConcessions;  // one hscode can belong to any number of special concession
 }

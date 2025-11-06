@@ -40,7 +40,6 @@ public class Tariff {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "hscode_code", nullable = false)
     @Schema(description = "HS code associated with the tariff")
-    // @JsonBackReference   
     private HSCode hsCode;
 
     @ManyToOne(fetch = FetchType.EAGER)
@@ -60,10 +59,14 @@ public class Tariff {
     //TODO: maybe add tariff description later
     @Schema(description = "Standard rate percentage applied to the product", example = "7.5")
     private Double standardRate;
+
     @Schema(description = "Flat fee applied regardless of product value", example = "50.0")
     private Double flatFee;
+
+    @NotNull 
     @Schema(description = "Date when the tariff becomes effective", example = "2025-01-01")
-    @NotNull private LocalDate effectiveDate;
+    private LocalDate effectiveDate;
+    
     @Schema(description = "Date when the tariff expires", example = "2025-12-31")
     private LocalDate expirationDate;
 } 

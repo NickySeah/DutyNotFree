@@ -54,7 +54,6 @@ public class TariffV1Controller {
         else {                                                              // Date specified - Need consider effective & expiration date
             return tariffService.getActiveTariffs(origin, dest, hsCode, type, date);
         }
-        
     }
 
     @Operation(summary = "Get tariff by ID", description = "Retrieve a tariff using its unique ID")

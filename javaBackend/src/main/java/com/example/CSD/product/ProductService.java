@@ -3,9 +3,13 @@ package com.example.CSD.product;
 import java.util.*;
 // import javax.swing.text.html.Option;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
+
 import jakarta.transaction.Transactional;
 
 import com.example.CSD.hscode.*;
+
+import io.swagger.v3.oas.annotations.Parameter;
 
 @Service
 public class ProductService {
@@ -37,6 +41,10 @@ public class ProductService {
         return products.findById(id).orElseThrow(() -> new NoSuchElementException("Product with ID " + id + " not found."));
     }
 
+    public List<Product> getProductsByUserId(String userId) {
+        return products.findByUserIdOrIsPrivate(userId, false);
+    }
+
     // Create & add a new tariff to DB
     public Product createProduct(ProductCreateRequest request) {
         // (1) Validate Tariff Request                      // TODO: note null/trim().length() checks removed because of @NotBlank
@@ -50,7 +58,7 @@ public class ProductService {
 
         // (2) Check if product with same name, userID, HS code already exists
         if (products.existsByNameAndUserIdAndHsCode_Code(pName, userID, hsCodeValue)){
-            throw new IllegalArgumentException("Product with name '" + pName + "', User ID '" + userID + "', and HS Code '" + hsCodeValue + "' already exists.");
+            throw new IllegalArgumentException("Product '" + pName + "' (HS Code: '" + hsCodeValue + "') already exists.");
         }
 
         // (3) Create and save product 

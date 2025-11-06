@@ -9,6 +9,7 @@ export const useUserRole = () => {
   const isSupplier = session?.user?.role === "supplier";
   const isImporter = session?.user?.role === "importer";
   const isAuthenticated = !!session?.user;
+  const userId = session?.user?.id;
 
   // Check if user has a role that doesn't need role selection
   const hasValidRole =
@@ -44,5 +45,6 @@ export const useUserRole = () => {
     checkHasRole,
     checkIsAuthenticated,
     userRole: session?.user?.role,
+    userId
   };
 };
