@@ -10,12 +10,12 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/chat")
-public class HSCodeRagController {
+public class RagController {
 
     private final RagService ragService;
 
     @Autowired
-    public HSCodeRagController(RagService ragService) {
+    public RagController(RagService ragService) {
         this.ragService = ragService;
     }
 
