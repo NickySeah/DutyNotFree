@@ -93,13 +93,11 @@ public class PineconeService {
     private String extractTextFromMetadata(Map<String, Object> metadata) {
         if (metadata == null) return "";
 
-        String[] textFields = {"text", "ID"};
-        
-        for (String field : textFields) {
-            Object value = metadata.get(field);
-            if (value != null && !value.toString().trim().isEmpty()) {
-                return value.toString();
-            }
+        String textField = "text";
+
+        Object value = metadata.get(textField);
+        if (value != null && !value.toString().trim().isEmpty()) {
+            return value.toString();
         }
         
         return "";
