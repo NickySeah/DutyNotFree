@@ -3,7 +3,7 @@ import { ragService } from "./axios";
 
 export async function classifyProduct(query: string, topK: number = 5): Promise<ChatResponse> {
   try {
-    const response = await ragService.post('', {
+    const response = await ragService.post('/classify', {
       query,
       topK
     });
