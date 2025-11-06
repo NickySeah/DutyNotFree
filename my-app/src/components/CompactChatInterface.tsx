@@ -108,7 +108,7 @@ export function CompactChatInterface({ onHSCodeSelect }: CompactChatInterfacePro
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <h4 className="font-medium text-gray-800">
-                Results for: "{response.query}"
+                Results for: {`"${response.query}"`}
               </h4>
               <Button
                 variant="ghost"
