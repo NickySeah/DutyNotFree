@@ -70,11 +70,6 @@ export default function ProductPage() {
             <div className="mb-8">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold">Find HS Codes for Your Products</h2>
-                <Button asChild>
-                  <Link href="/product/add">
-                    Add New Product
-                  </Link>
-                </Button>
               </div>
 
               {/* AI Assistant */}
