@@ -75,7 +75,7 @@ export const handlers = http ? [
     return HttpResponse.json(mockTariffs)
   }),
 
-  http.get('http://localhost:8080', ({ request }) => {
+  http.get('http://localhost:8080', ({ request } : { request: Request}) => {
     const url = new URL(request.url)
     const origin = url.searchParams.get('origin')
     const dest = url.searchParams.get('dest')
@@ -108,7 +108,7 @@ export const handlers = http ? [
   }),
 
   // Calculator service handlers
-  http.get('http://localhost:8084', ({ request }) => {
+  http.get('http://localhost:8084', ({ request } : {request : Request}) => {
     const url = new URL(request.url)
     const value = parseFloat(url.searchParams.get('value') || '0')
     const origin = url.searchParams.get('origin')
