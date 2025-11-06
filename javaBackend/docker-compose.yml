@@ -1,7 +1,5 @@
 # docker-compose.yml
 
-version: '3.8'
-
 services:
   # 1. The Java Spring Boot Backend
   java-backend:
@@ -24,7 +22,8 @@ services:
       MAIL_USERNAME: ${MAIL_USERNAME}
       MAIL_PASSWORD: ${MAIL_PASSWORD}
     depends_on:
-      - productdb # Tells Docker to start the database first
+      productdb: # Tells Docker to start the database first
+        condition: service_healthy
 
   # 2. The MySQL Database for Products
   productdb:
@@ -37,6 +36,11 @@ services:
     command:
       # This sets the case-insensitivity you asked about
       - --lower_case_table_names=1
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_SECRET_PASSWORD}"]
+      interval: 5s
+      timeout: 10s
+      retries: 20
     volumes:
       - product-db-data:/var/lib/mysql
 
