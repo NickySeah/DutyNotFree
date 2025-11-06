@@ -14,7 +14,6 @@ public class RagController {
 
     private final RagService ragService;
 
-    @Autowired
     public RagController(RagService ragService) {
         this.ragService = ragService;
     }
