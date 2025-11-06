@@ -41,6 +41,8 @@ import {
   Target
 } from 'lucide-react';
 
+import { useUserRole } from '@/lib/checkRole';
+
 // Color schemes for different chart types
 const COLORS = {
   primary: '#10b981', // emerald-500
@@ -59,9 +61,11 @@ const CHART_COLORS = [
 ];
 
 export default function TariffDashboard() {
+  const { userId } = useUserRole();
   const { data: tariffs = [], isLoading: tariffsLoading } = useTariffs();
   const { data: countries = [], isLoading: countriesLoading } = useCountries();
-  const { data: products = [], isLoading: productsLoading } = useProducts();
+  if (!userId) return null;
+  const { data: products = [], isLoading: productsLoading } = useProducts(userId);
   
   const [selectedCountry, setSelectedCountry] = useState('all');
   const [selectedProduct, setSelectedProduct] = useState('all');
