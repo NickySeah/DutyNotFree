@@ -10,6 +10,9 @@ COPY .mvn .mvn
 COPY mvnw .
 COPY mvnw.cmd .
 
+# Give the maven wrapper execute permissions
+RUN chmod +x ./mvnw
+
 # Download dependencies
 RUN ./mvnw dependency:go-offline -B
 

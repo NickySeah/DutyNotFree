@@ -3,3 +3,4 @@
 *.env.local
 *.env.production
 application.properties
+DutyNotFree_key.pem
