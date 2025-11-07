@@ -7,23 +7,27 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
+import com.example.CSD.bloc.Bloc;
+import com.example.CSD.bloc.BlocRepository;
 import com.example.CSD.country.Country;
 import com.example.CSD.country.CountryRepository;
 import com.example.CSD.hscode.HSCode;
 import com.example.CSD.hscode.HSCodeRepository;
+import com.example.CSD.tradeParty.TradeParty;
 
 @Component
 @ConditionalOnProperty(name = "app.data.loading.enabled", havingValue = "true")
 public class DataLoader implements CommandLineRunner {
     
     private final CountryRepository countries;
+    private final BlocRepository blocs;
     private final HSCodeRepository hsCodes;
     
-    public DataLoader(CountryRepository countryRepository, HSCodeRepository hsCodeRepository) {
+    public DataLoader(CountryRepository countryRepository, HSCodeRepository hsCodeRepository, BlocRepository blocRepository) {
         this.countries = countryRepository;
+        this.blocs = blocRepository;
         this.hsCodes = hsCodeRepository;
     }
     
@@ -36,6 +40,13 @@ public class DataLoader implements CommandLineRunner {
             loadCountries();
         } else {
             System.out.println("Countries already loaded: " + countries.count());
+        }
+
+        if (blocs.count() == 0) {
+            System.out.println("Loading blocs...");
+            loadBlocs();
+        } else {
+            System.out.println("Bloc already loaded: " + blocs.count());
         }
         
         if (hsCodes.count() == 0) {
@@ -68,6 +79,11 @@ public class DataLoader implements CommandLineRunner {
                         country.setCode(String.format("%03d", Integer.parseInt(isoStr)));
                         country.setName(name.trim());
                         country.setAlpha3(alpha3);
+
+                        TradeParty tradeParty = new TradeParty();
+                        tradeParty.setType(TradeParty.PartyType.COUNTRY);
+                        tradeParty.setCountry(country);
+                        country.setTradeParty(tradeParty);
                         countriesList.add(country);
                     } 
                     catch (NumberFormatException e) {
@@ -78,6 +94,54 @@ public class DataLoader implements CommandLineRunner {
             
             countries.saveAll(countriesList);
             System.out.println("✓ Loaded " + countriesList.size() + " countries");
+        }
+    }
+
+    private void loadBlocs() throws Exception {
+        InputStream file = new ClassPathResource("data/AllBloc.xlsx").getInputStream();
+        
+        try (Workbook workbook = WorkbookFactory.create(file)) {
+            Sheet sheet = workbook.getSheetAt(0);
+            List<Bloc> blocsList = new ArrayList<>();
+            
+            for (Row row : sheet) {
+                if (row.getRowNum() == 0) continue; // Skip header
+                
+                String name = getCellValue(row.getCell(0));
+                String code = getCellValue(row.getCell(1));
+                String members = getCellValue(row.getCell(2));
+                List<String> memberCodes = List.of(members.split(","));
+                
+                if (memberCodes != null && memberCodes.size() >= 2) {
+                    try {
+                        Bloc bloc = new Bloc();
+                        bloc.setCode(code.trim());
+                        bloc.setName(name.trim());
+
+                        Set<Country> memberCountries = new LinkedHashSet<>();
+                        for (String memberCode : memberCodes) {
+                            Country c = countries.findByCode(memberCode)                                                 // Checks if country with code exists 
+                            .orElseThrow(() -> new RuntimeException("No country found with iso code " + memberCode + "for bloc "+name));    // If one doesn't exist, don't add new bloc
+
+                            memberCountries.add(c);
+                        }
+                        bloc.setMemberCountries(memberCountries);
+
+                        TradeParty tradeParty = new TradeParty();
+                        tradeParty.setType(TradeParty.PartyType.COUNTRY);
+                        tradeParty.setBloc(bloc);
+                        bloc.setTradeParty(tradeParty);
+
+                        blocsList.add(bloc);
+                    } 
+                    catch (RuntimeException e) {
+                        System.err.println(e.getMessage());
+                    }
+                }
+            }
+            
+            blocs.saveAll(blocsList);
+            System.out.println("✓ Loaded " + blocsList.size() + " Blocs");
         }
     }
     

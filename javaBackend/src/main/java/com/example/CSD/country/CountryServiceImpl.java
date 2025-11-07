@@ -49,6 +49,12 @@ public class CountryServiceImpl implements CountryService {
             throw new RuntimeException("Invalid Alpha 3 code");
         }
 
+        // Create and save corresponding TradeParty 
+        TradeParty tradeParty = new TradeParty();
+        tradeParty.setType(TradeParty.PartyType.COUNTRY);
+        tradeParty.setCountry(newCountry);
+        newCountry.setTradeParty(tradeParty);
+
         return countries.save(newCountry);
     }
 

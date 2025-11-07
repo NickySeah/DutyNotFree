@@ -9,15 +9,18 @@ import jakarta.transaction.Transactional;
 
 import com.example.CSD.country.*;
 import com.example.CSD.tradeParty.TradeParty;
+import com.example.CSD.tradeParty.TradePartyServiceImpl;
 
 @Service
 public class BlocServiceImpl implements BlocService{
     private BlocRepository blocs;
     private CountryRepository countries;
+    private TradePartyServiceImpl partyService;
 
-    public BlocServiceImpl(BlocRepository blocs, CountryRepository countries) {
+    public BlocServiceImpl(BlocRepository blocs, CountryRepository countries, TradePartyServiceImpl partyService) {
         this.blocs = blocs;
         this.countries = countries;
+        this.partyService = partyService;
     }
 
     @Override
@@ -96,6 +99,12 @@ public class BlocServiceImpl implements BlocService{
         newBloc.setCode(code);
         newBloc.setName(name);
         newBloc.setMemberCountries(memberCountries);
+
+        // Create and save corresponding TradeParty 
+        TradeParty tradeParty = new TradeParty();
+        tradeParty.setType(TradeParty.PartyType.BLOC);
+        tradeParty.setBloc(newBloc);
+        newBloc.setTradeParty(tradeParty);
 
         return blocs.save(newBloc);
     } 
