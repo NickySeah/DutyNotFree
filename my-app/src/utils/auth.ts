@@ -54,14 +54,4 @@ export const auth = betterAuth({
       await sendEmail(url, user as Session);
     },
   },
-  advanced: {
-    cookiePrefix: "better-auth",
-    useSecureCookies: process.env.NODE_ENV === "production", // Use secure cookies in production
-  },
-  session: {
-    cookieCache: {
-      enabled: true,
-      maxAge: 5 * 60, // 5 minutes
-    },
-  },
 });

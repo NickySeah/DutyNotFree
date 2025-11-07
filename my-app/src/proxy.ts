@@ -14,8 +14,10 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Get session from cookies - check both possible cookie names
+  // Get session from cookies - check for both secure (production) and non-secure (dev) cookie names
   const sessionCookie =
+    request.cookies.get("__Secure-better-auth.session_token") ||
+    request.cookies.get("__Secure-better-auth.session_token.0") ||
     request.cookies.get("better-auth.session_token") ||
     request.cookies.get("better-auth.session_token.0");
 
