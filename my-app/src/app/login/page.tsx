@@ -42,7 +42,8 @@ export default function LoginPage() {
           const isNotVerified =
             ctx.error.code === "EMAIL_NOT_VERIFIED" ||
             ctx.error.status === 403 ||
-            ctx.error.message.toLowerCase().includes("verify");
+            (ctx.error.message &&
+              ctx.error.message.toLowerCase().includes("verify"));
 
           if (isNotVerified) {
             try {
