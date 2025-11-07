@@ -1,4 +1,4 @@
-package com.example.CSD.tariff.repository;
+package com.example.CSD.repository;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,13 +43,13 @@ public class TariffRepositoryTest {
 
         // Create and save Countries (required foreign keys for Tariff)
         testOriginCountry = new Country();
-        testOriginCountry.setCode("SG");
+        testOriginCountry.setCode("702");
         testOriginCountry.setName("Singapore");
         testOriginCountry.setAlpha3("SGP");
         countryRepository.save(testOriginCountry);
 
         testDestCountry = new Country();
-        testDestCountry.setCode("US");
+        testDestCountry.setCode("840");
         testDestCountry.setName("United States");
         testDestCountry.setAlpha3("USA");
         countryRepository.save(testDestCountry);
@@ -75,8 +75,8 @@ public class TariffRepositoryTest {
         // Assert
         assertTrue(found.isPresent());
         assertEquals("Standard", found.get().getTariffType());
-        assertEquals("SG", found.get().getOriginCountry().getCode());
-        assertEquals("US", found.get().getDestCountry().getCode());
+        assertEquals("702", found.get().getOriginCountry().getCode());
+        assertEquals("840", found.get().getDestCountry().getCode());
         assertEquals("847130", found.get().getHsCode().getCode());
     }
 
@@ -96,14 +96,14 @@ public class TariffRepositoryTest {
 
         // Act: Find tariff by composite key
         List<Tariff> tariffs = tariffRepository.findByOriginCountry_CodeAndDestCountry_CodeAndHsCode_CodeAndTariffType(
-                "SG", "US", "847130", "Standard");
+                "702", "840", "847130", "Standard");
 
         // Assert: Verify tariff was found
         assertNotNull(tariffs);
         assertEquals(1, tariffs.size());
         assertEquals("Standard", tariffs.get(0).getTariffType());
-        assertEquals("SG", tariffs.get(0).getOriginCountry().getCode());
-        assertEquals("US", tariffs.get(0).getDestCountry().getCode());
+        assertEquals("702", tariffs.get(0).getOriginCountry().getCode());
+        assertEquals("840", tariffs.get(0).getDestCountry().getCode());
         assertEquals("847130", tariffs.get(0).getHsCode().getCode());
     }
 
@@ -156,7 +156,7 @@ public class TariffRepositoryTest {
         tariffRepository.save(tariff);
 
         // Act: Find tariff using filters
-        List<Tariff> tariffs = tariffRepository.findByFilters("SG", "US", "847130", "Standard");
+        List<Tariff> tariffs = tariffRepository.findByFilters("702", "840", "847130", "Standard");
 
         // Assert: Verify tariff was found
         assertNotNull(tariffs);

@@ -3,7 +3,9 @@ package com.example.CSD.calculator;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import com.example.CSD.concession.Concession;
@@ -84,15 +86,60 @@ public class CalculatorService {
             } 
         }
         
-        // Determine which cost is less
-        System.out.println(ftaCost + " vs " + tariffTotal);
+        // Determine which cost is less and build response map
+        Map<String, Object> result = new HashMap<>();
+        result.put("origin", originCode);
+        result.put("destination", destCode);
+        result.put("hsCode", hsCode);
+        result.put("originalValue", originalValue);
+        result.put("appliedDate", dateStr);
+        
         if (hasFTA && ftaCost.compareTo(tariffTotal) <= 0) {                             // If applicable FTA exists AND fta cost lower than tariff costs 
-            System.out.printf("\nFree Trade Agreement %s:\nRate Applied %.3f%%\nCost: $%.2f\n", hasConcession?"(Special Concession)":"",lowestFTARate,ftaCost);
-            return originalValue + ftaCost;                                                 // Return final cost = fta rate + base value
+            // Find the FTA that was applied (lowest rate)
+            FTA appliedFTA = null;
+            for (FTA fta : ftas) {
+                Set<HSCode> excludedHsCodes = fta.getExcludedHsCodes();
+                if (excludedHsCodes.contains(queryHsCode)) continue;
+                
+                double curRate = fta.getDefaultRate();
+                if (fta.getAllSpecialHsCodes().contains(queryHsCode)) {
+                    Set<Concession> specialConcessions = fta.getSpecialConcessions();
+                    Concession concession = specialConcessions.stream()
+                        .filter(c -> c.getHsCode().equals(queryHsCode))
+                        .findFirst().orElse(null);
+                    if (concession != null) {
+                        curRate = concession.getFinalRate();
+                    }
+                }
+                
+                if (curRate == lowestFTARate) {
+                    appliedFTA = fta;
+                    break;
+                }
+            }
+            
+            result.put("standardRate", tariffs.isEmpty() ? null : tariffs.get(0).getStandardRate());
+            result.put("adjustedRate", lowestFTARate);
+            result.put("agreementName", appliedFTA != null ? 
+                (appliedFTA.getPartyA().getCountry() != null ? 
+                    appliedFTA.getPartyA().getCountry().getName() : "Bloc") + "-" +
+                (appliedFTA.getPartyB().getCountry() != null ? 
+                    appliedFTA.getPartyB().getCountry().getName() : "Bloc") + " FTA" : "FTA");
+            result.put("ftaApplied", true);
+            result.put("finalValue", originalValue + ftaCost);
+            result.put("tariffCost", ftaCost);
+            return result;
         }
         else {                                                                          // If no applicable FTA exists OR fta cost higher than tariff costs 
-            System.out.printf("\nTariff:\nRate Applied %s\nCost: $%.2f\n", tRate.toString(), tariffTotal);
-            return originalValue + tariffTotal;                                             // Returns final cost = tariffs + base value
+            Double standardRate = tariffs.isEmpty() ? null : 
+                (tariffs.get(0).getStandardRate() != null ? tariffs.get(0).getStandardRate() : null);
+            result.put("standardRate", standardRate);
+            result.put("adjustedRate", null);
+            result.put("agreementName", null);
+            result.put("ftaApplied", false);
+            result.put("finalValue", originalValue + tariffTotal);
+            result.put("tariffCost", tariffTotal);
+            return result;
         }
     }
 }
