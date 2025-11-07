@@ -4,6 +4,7 @@ import java.util.Set;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -41,7 +42,7 @@ public class FTACreateRequest {  // Not an entity, just a data carrier
     @Schema(description = "Date when the FTA expires", example = "2025-12-31")
     private String expirationDate;          // YYYY-MM-DD format
 
-    @NotBlank(message = "FTA must have a default rate (minimal 0%)")
+    @NotNull(message = "FTA must have a default rate (minimal 0%)")
     @Schema(description = "Default ad valorem rate unless specified otherwise", example = "7.5")
     private Double defaultRate;
 

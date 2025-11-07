@@ -16,11 +16,13 @@ services:
       # --- URLs for Next.js App ---
       # 'host.docker.internal' is a special DNS name that lets the
       # container talk to your main 'localhost' (where Next.js is running)
-      FRONTEND_URL: http://host.docker.internal:3000
+      FRONTEND_URL: ${FRONTEND_URL}
       
       # --- Other Secrets ---
       MAIL_USERNAME: ${MAIL_USERNAME}
       MAIL_PASSWORD: ${MAIL_PASSWORD}
+      COHERE_API_KEY: ${COHERE_API_KEY}
+      PINECONE_API_KEY: ${PINECONE_API_KEY}
     depends_on:
       productdb: # Tells Docker to start the database first
         condition: service_healthy

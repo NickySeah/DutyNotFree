@@ -452,6 +452,8 @@ public class FTAServiceImpl implements FTAService{
             } 
             catch (NumberFormatException e) {}  // Else, Code is for Bloc
         }
+        System.out.println("\n\n"+isCountry+"\n\n");
+
 
         Optional<TradeParty> result = isCountry ? parties.findByCountryCode(code) : parties.findByBlocCode(code);
         return result.orElseThrow(() -> new RuntimeException("No country/bloc found with code: " + code));

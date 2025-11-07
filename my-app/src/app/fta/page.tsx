@@ -42,35 +42,42 @@ export default function ProductPage() {
     onModify: handleModifyFTA,
     onDelete: handleDeleteFTA,
     isAdmin,
-    isPending
+    isPending,
   });
 
   const { data: ftas = [], isLoading, error } = useFTAs();
 
   if (error) {
+    console.error("FTA Error:", error);
     return (
-      <div className="p-8 text-center text-red-500">Error loading free trade agreements</div>
+      <div className="p-8 text-center">
+        <div className="text-red-500 font-bold mb-2">
+          Error loading free trade agreements
+        </div>
+        <div className="text-sm text-gray-600">
+          {error instanceof Error ? error.message : "Unknown error"}
+        </div>
+      </div>
     );
   }
 
   return (
     <div>
-
-        {isLoading ? (
-          <FtaTableSkeleton />
-        ) : (
-          <>
+      {isLoading ? (
+        <FtaTableSkeleton />
+      ) : (
+        <>
           <div className="p-8 mx-auto text-center">
             <h1 className="text-2xl font-bold">Free Trade Agreements</h1>
             <h3 className="text-lg font-medium text-gray-500">
               View, manage, and define free trade agremeents
-             </h3>
-         </div>
-           <div className="container mx-auto p-5">
-           <DataTable columns={columns} data={ftas} />
+            </h3>
           </div>
-          </>
-        )}
+          <div className="container mx-auto p-5">
+            <DataTable columns={columns} data={ftas} />
+          </div>
+        </>
+      )}
 
       <div className="p-8 mx-auto text-center">
         <h1 className="text-2xl font-bold">Need help calculating tariffs?</h1>
