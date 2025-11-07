@@ -8,9 +8,11 @@ import { ArrowRight } from "lucide-react";
 import { useUserProduct } from "@/hooks/useUserProduct";
 import { UpdateProductModal } from "@/components/updateProductModal";
 import { DeleteProductModal } from "@/components/deleteProductModal";
+import { CompactChatInterface } from "@/components/CompactChatInterface";
 import { useState } from "react";
 import ProductTableSkeleton from "@/components/productTableSkeleton";
 import { useUserRole } from "@/lib/checkRole";
+import { Button } from "@/components/ui/button";
 
 export default function ProductPage() {
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
@@ -64,7 +66,21 @@ export default function ProductPage() {
           </div>
 
           <div className="container mx-auto p-5">
-            <DataTable columns={columns} data={products} />
+            {/* HS Code Assistant Section */}
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold">Find HS Codes for Your Products</h2>
+              </div>
+
+              {/* AI Assistant */}
+              <CompactChatInterface />
+            </div>
+
+            {/* Existing Products Table */}
+            <div>
+              <h2 className="text-xl font-semibold mb-4">Your Products</h2>
+              <DataTable columns={columns} data={products} />
+            </div>
           </div>
         </>
       )}
