@@ -128,7 +128,7 @@ public class DataLoader implements CommandLineRunner {
                         bloc.setMemberCountries(memberCountries);
 
                         TradeParty tradeParty = new TradeParty();
-                        tradeParty.setType(TradeParty.PartyType.COUNTRY);
+                        tradeParty.setType(TradeParty.PartyType.BLOC);
                         tradeParty.setBloc(bloc);
                         bloc.setTradeParty(tradeParty);
 

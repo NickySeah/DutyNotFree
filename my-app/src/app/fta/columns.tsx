@@ -122,7 +122,7 @@ export const createColumns = ({
     },
     {
       accessorKey: "applicableTariffLines",
-      header: () => <div className="text-center">Applicable<br/>Tariff Lines</div>,
+      header: () => <div className="text-center">Number of HS Code</div>,
       // header: ({ column }) => (<DataTableColumnHeader column={column} title="Applicable Tariff Lines" />),
       cell: ({ row }) => (
         <div className="text-center font-mono">

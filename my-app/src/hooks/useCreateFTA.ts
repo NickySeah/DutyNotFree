@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ftaService } from "@/lib/axios";
 import { formatDateToYYYYMMDD } from "@/utils/dateUtils";
+import { toast } from "sonner";
 
 export interface FTAInput {
   name: string;
@@ -37,5 +38,11 @@ export function useCreateFTA() {
       // Invalidate and refetch FTAs data
       queryClient.invalidateQueries({ queryKey: ['ftas'] });
     },
+    onError: (error) => {
+      // Optional: Add error handling
+      console.error("Failed to create FTA:", error);
+      // You could also add a toast notification here
+      toast.error("Failed to create FTA. Please try again.");
+    }
   });
 }
