@@ -25,7 +25,7 @@ export default function MainContent({
   } = useUserRole();
 
   useEffect(() => {
-    // Skip role checking for certain pages
+    // Skip role checking for certain pages.
     const skipRoleCheck = ["/", "/login", "/register", "/choose-role"].includes(
       pathname
     );
