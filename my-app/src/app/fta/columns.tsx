@@ -130,26 +130,6 @@ export const createColumns = ({
         </div>
       ),
     },
-    // {
-    //   accessorKey: "excludedTariffLines",
-    //   header: () => <div className="text-center">Excluded<br/>Tariff Lines</div>,
-    //   // header: ({ column }) => (<DataTableColumnHeader column={column} title="Excluded Tariff Lines" />),
-    //   cell: ({ row }) => (
-    //     <div className="text-center font-mono text-red-600">
-    //       {row.getValue("excludedTariffLines")?.toLocaleString()}
-    //     </div>
-    //   ),
-    // },
-    // {
-    //   accessorKey: "specialConcessionsCount",
-    //   header: () => <div className="text-center">Special<br/>Concessions</div>,
-    //   // header: ({ column }) => (<DataTableColumnHeader column={column} title="Special Concessions" />),
-    //   cell: ({ row }) => (
-    //     <div className="text-center font-mono text-green-600">
-    //       {row.getValue("specialConcessionsCount")?.toLocaleString()}
-    //     </div>
-    //   ),
-    // },
     {
       accessorKey: "effectiveDate",
       header: ({ column }) => {
@@ -238,32 +218,6 @@ export const createColumns = ({
       },
       enableSorting: true,
     },
-    // {
-    //   id: "details",
-    //   header: () => <div className="text-center">Details</div>,
-    //   cell: ({ row }) => {
-    //     const fta = row.original;
-
-    //     if (isPending) {
-    //       return null;
-    //     }
-
-    //     return (
-    //       <div className="flex items-center justify-center">
-    //         {/* View Details Button - Always visible */}
-    //         <Button
-    //           variant="outline"
-    //           size="sm"
-    //           onClick={() => onViewDetails(fta)}
-    //           className="flex items-center space-x-1"
-    //           title="View FTA Details"
-    //         >
-    //           <Eye className="h-4 w-4" />
-    //         </Button>
-    //       </div>
-    //     );
-    //   },
-    // },
     {
       id: "actions",
       cell: ({ row }) => {
