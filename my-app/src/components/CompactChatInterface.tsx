@@ -60,6 +60,11 @@ export function CompactChatInterface() {
     return hsCodes.filter(isValidHSCode);
   };
 
+  // Helper function to strip dots from HS code
+  const stripDots = (hsCode: string): string => {
+    return hsCode.replace(/\./g, '');
+  };
+
   return (
     <Card className="mb-6">
       <CardHeader className="pb-3">
@@ -140,7 +145,7 @@ export function CompactChatInterface() {
                         <div className="flex items-start justify-between mb-2">
                           <div className="flex items-center gap-2">
                             <span className="font-mono text-sm font-medium text-blue-600">
-                              {hsCode.hs_code}
+                              {stripDots(hsCode.hs_code)}
                             </span>
                             {hsCode.type_of_product !== "N/A" && (
                               <Badge variant="secondary" className="text-xs">
