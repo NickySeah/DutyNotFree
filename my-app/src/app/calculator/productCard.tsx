@@ -16,11 +16,7 @@ const ProductCard = ({
   tariffDetails,
 }: {
   product: Product;
-  updateProduct: (
-    id: number,
-    field: keyof Product,
-    value: string | number
-  ) => void;
+  updateProduct: (id: number, updates: Partial<Product>) => void;
   removeProduct: (id: number) => void;
   tariffDetails?: string;
 }) => {
@@ -45,16 +41,23 @@ const ProductCard = ({
   };
 
   const saveChanges = () => {
-    Object.entries(localState).forEach(([field, value]) => {
-      if (field === "hsCode") return; // skip hsCode if not string/number
-      if (product[field as keyof Product] !== value) {
-        updateProduct(
-          product.id,
-          field as keyof Product,
-          value as string | number
-        );
-      }
-    });
+    const updates: Partial<Product> = {};
+    
+    // Check each field and add to updates if changed
+    if (localState.name !== product.name) {
+      updates.name = localState.name;
+    }
+    if (localState.value !== product.value) {
+      updates.value = localState.value;
+    }
+    if (localState.quantity !== product.quantity) {
+      updates.quantity = localState.quantity;
+    }
+    
+    // Only call updateProduct if there are actual changes
+    if (Object.keys(updates).length > 0) {
+      updateProduct(product.id, updates);
+    }
   };
 
   // Generate unique ids for input linking to labels
@@ -79,67 +82,7 @@ const ProductCard = ({
         </button>
       </div>
 
-      {/* <div className="grid grid-cols-2 gap-2 text-sm">
-                <div>
-                    <span className="text-gray-600">Value:</span> ${(product.value || 0).toLocaleString()}
-                </div>
-                <div>
-                    <span className="text-gray-600">HS Code:</span> {product.hsCode}
-                </div>
-                <div>
-                    <span className="text-gray-600">Qty:</span> {product.quantity}
-                </div>
-                <div>
-                    <span className="text-gray-600">Rate:</span> {product.tariffRate}%
-                </div>
-            </div> */}
-
       <div className="mt-3 space-y-4">
-        {/* <div>
-                    <Label htmlFor={inputId('name')} className="block text-sm font-medium text-gray-700">
-                        Product Name
-                    </Label>
-                    <Input
-                        id={inputId('name')}
-                        type="text"
-                        value={localState.name}
-                        onChange={e => handleChange('name', e.target.value)}
-                        placeholder="Product name"
-                        className="w-full px-2 py-1 text-sm border rounded"
-                    />
-                    </div> */}
-
-        {/* <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <Label htmlFor={inputId('hsCode')} className="block text-sm font-medium text-gray-700">
-                            HS Code
-                        </Label>
-                        <Input
-                            id={inputId('hsCode')}
-                            type="text"
-                            value={localState.hsCode.code}
-                            placeholder="HS Code"
-                            className="w-full px-2 py-1 text-sm border rounded disabled"
-                            disabled
-                        />
-                    </div>
-                    <div>
-                        <Label htmlFor={inputId('tariffRate')} className="block text-sm font-medium text-gray-700">
-                            Rate %
-                        </Label>
-                        <Input
-                            id={inputId('tariffRate')}
-                            type="number"
-                            step="0.1"
-                            value={localState.tariffRate}
-                            onChange={e => handleChange('tariffRate', Number(e.target.value))}
-                            placeholder="Rate %"
-                            className="w-full px-2 py-1 text-sm border rounded"
-                            disabled
-                        />
-                    </div>
-                </div> */}
-
         <div className="grid grid-cols-1 gap-4">
           <div>
             <Label

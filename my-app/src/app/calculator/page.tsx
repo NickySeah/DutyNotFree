@@ -122,9 +122,9 @@ const TariffCalculator = () => {
         setSelectedProduct(null);
     };
 
-    const updateProduct = (id: number, field: keyof Product, value: string | number) => {
+    const updateProduct = (id: number, updates: Partial<Product>) => {
         setProducts(products.map(
-            product => product.id === id ? { ...product, [field]: value } : product
+            product => product.id === id ? { ...product, ...updates } : product
         ));
     };
 
