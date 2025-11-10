@@ -13,7 +13,7 @@ export const auth = betterAuth({
     jwt({
       jwks: {
         keyPairConfig: {
-          alg: "RS256" // Use an asymmetric algorithm
+          alg: "RS256"
         }
       },
       jwt: {
