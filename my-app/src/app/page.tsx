@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import Feature from "@/components/feature";
 import Link from "next/link";
 import { useUserRole } from "@/lib/checkRole";
+import { NewsFeed } from "@/components/NewsFeed";
 
 export default function HomePage() {
   const { isAuthenticated } = useUserRole();
@@ -64,6 +65,10 @@ export default function HomePage() {
           )}
         </div>
       </div>
+
+      <section>
+        <NewsFeed />
+      </section>
 
       <section className="relative w-full bg-gray-50">
         <Feature />
