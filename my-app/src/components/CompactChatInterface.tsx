@@ -28,30 +28,32 @@ export function CompactChatInterface() {
       setIsExpanded(true);
     } catch (error) {
       toast.error("Failed to classify product. Please try again.");
-      console.error('Classification error:', error);
+      console.error("Classification error:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSearch();
     }
   };
 
   const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
+    navigator.clipboard.writeText(stripDots(text));
     toast.success("Copied to clipboard!");
   };
 
   // Helper function to check if HS codes are valid
   const isValidHSCode = (hsCode: HSCode) => {
-    return hsCode.hs_code !== "N/A" && 
-           hsCode.hs_code !== "" && 
-           hsCode.hs_code !== null && 
-           hsCode.hs_code !== undefined;
+    return (
+      hsCode.hs_code !== "N/A" &&
+      hsCode.hs_code !== "" &&
+      hsCode.hs_code !== null &&
+      hsCode.hs_code !== undefined
+    );
   };
 
   // Filter out invalid HS codes
@@ -62,36 +64,36 @@ export function CompactChatInterface() {
 
   // Helper function to strip dots from HS code
   const stripDots = (hsCode: string): string => {
-    return hsCode.replace(/\./g, '');
+    return hsCode.replace(/\./g, "");
   };
 
   return (
-    <Card className="mb-6">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-lg">
-          <MessageSquare className="w-5 h-5 text-blue-500" />
+    <Card className="mb-4 md:mb-6">
+      <CardHeader className="pb-3 px-4 md:px-6">
+        <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+          <MessageSquare className="w-4 h-4 md:w-5 md:h-5 text-blue-500" />
           AI HS Code Assistant
         </CardTitle>
-        <p className="text-sm text-gray-600">
+        <p className="text-xs md:text-sm text-gray-600">
           Describe your product to get AI-powered HS code suggestions
         </p>
       </CardHeader>
-      
-      <CardContent className="space-y-4">
+
+      <CardContent className="space-y-3 md:space-y-4 px-4 md:px-6">
         {/* Search Input */}
         <div className="flex gap-2">
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Describe your product (e.g., 'cotton t-shirts', 'smartphone cases')..."
+            placeholder="Describe your product..."
             disabled={isLoading}
-            className="flex-1"
+            className="flex-1 text-sm"
           />
-          <Button 
-            onClick={handleSearch} 
+          <Button
+            onClick={handleSearch}
             disabled={!input.trim() || isLoading}
-            className="px-4"
+            className="px-3 md:px-4"
           >
             {isLoading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -103,10 +105,10 @@ export function CompactChatInterface() {
 
         {/* Loading State */}
         {isLoading && (
-          <div className="flex items-center justify-center py-4">
+          <div className="flex items-center justify-center py-3 md:py-4">
             <div className="flex items-center space-x-2 text-gray-600">
               <Loader2 className="w-4 h-4 animate-spin" />
-              <span className="text-sm">Analyzing product...</span>
+              <span className="text-xs md:text-sm">Analyzing product...</span>
             </div>
           </div>
         )}
@@ -114,14 +116,15 @@ export function CompactChatInterface() {
         {/* Results */}
         {response && isExpanded && (
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h4 className="font-medium text-gray-800">
+            <div className="flex items-center justify-between gap-2">
+              <h4 className="font-medium text-gray-800 text-sm md:text-base line-clamp-1">
                 Results for: {`"${response.query}"`}
               </h4>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsExpanded(false)}
+                className="shrink-0"
               >
                 <X className="w-4 h-4" />
               </Button>
@@ -129,59 +132,69 @@ export function CompactChatInterface() {
 
             {response.error ? (
               <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-red-600 text-sm">{response.error}</p>
+                <p className="text-red-600 text-xs md:text-sm">
+                  {response.error}
+                </p>
               </div>
-            ) : (() => {
-              const validHSCodes = getValidHSCodes(response.hs_codes);
-              
-              if (validHSCodes.length > 0) {
-                return (
-                  <div className="space-y-2 max-h-64 overflow-y-auto">
-                    {validHSCodes.map((hsCode, index) => (
-                      <div 
-                        key={index}
-                        className="p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                      >
-                        <div className="flex items-start justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono text-sm font-medium text-blue-600">
-                              {stripDots(hsCode.hs_code)}
-                            </span>
-                            {hsCode.type_of_product !== "N/A" && (
-                              <Badge variant="secondary" className="text-xs">
-                                {hsCode.type_of_product}
-                              </Badge>
-                            )}
+            ) : (
+              (() => {
+                const validHSCodes = getValidHSCodes(response.hs_codes);
+
+                if (validHSCodes.length > 0) {
+                  return (
+                    <div className="space-y-2 max-h-64 md:max-h-96 overflow-y-auto">
+                      {validHSCodes.map((hsCode, index) => (
+                        <div
+                          key={index}
+                          className="p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                        >
+                          <div className="flex items-start justify-between mb-2 gap-2">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 min-w-0">
+                              <span className="font-mono text-xs md:text-sm font-medium text-blue-600 break-all">
+                                {stripDots(hsCode.hs_code)}
+                              </span>
+                              {hsCode.type_of_product !== "N/A" && (
+                                <Badge
+                                  variant="secondary"
+                                  className="text-[10px] md:text-xs w-fit"
+                                >
+                                  {hsCode.type_of_product}
+                                </Badge>
+                              )}
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => copyToClipboard(hsCode.hs_code)}
+                              className="h-6 w-6 p-0 shrink-0"
+                              title="Copy HS Code"
+                            >
+                              <Copy className="w-3 h-3" />
+                            </Button>
                           </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => copyToClipboard(hsCode.hs_code)}
-                            className="h-6 w-6 p-0"
-                            title="Copy HS Code"
-                          >
-                            <Copy className="w-3 h-3" />
-                          </Button>
+                          {hsCode.hs_description !== "N/A" && (
+                            <p className="text-[11px] md:text-xs text-gray-600 leading-relaxed">
+                              {hsCode.hs_description}
+                            </p>
+                          )}
                         </div>
-                        {hsCode.hs_description !== "N/A" && (
-                          <p className="text-xs text-gray-600 leading-relaxed">
-                            {hsCode.hs_description}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                );
-              } else {
-                return (
-                  <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                    <p className="text-yellow-600 text-sm">
-                      No valid HS codes found for this product description. The AI couldn&apos;t find suitable matches in the database. Try using more specific terms or different keywords to describe your product.
-                    </p>
-                  </div>
-                );
-              }
-            })()}
+                      ))}
+                    </div>
+                  );
+                } else {
+                  return (
+                    <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                      <p className="text-yellow-600 text-xs md:text-sm">
+                        No valid HS codes found for this product description.
+                        The AI couldn&apos;t find suitable matches in the
+                        database. Try using more specific terms or different
+                        keywords to describe your product.
+                      </p>
+                    </div>
+                  );
+                }
+              })()
+            )}
           </div>
         )}
 
@@ -190,7 +203,7 @@ export function CompactChatInterface() {
           <Button
             variant="outline"
             onClick={() => setIsExpanded(true)}
-            className="w-full text-sm"
+            className="w-full text-xs md:text-sm"
           >
             Show {getValidHSCodes(response.hs_codes).length} HS Code Results
           </Button>

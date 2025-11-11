@@ -72,7 +72,9 @@ export default function ProductPage() {
 
   if (error) {
     return (
-      <div className="p-8 text-center text-red-500">Error loading tariffs</div>
+      <div className="p-4 md:p-8 text-center text-red-500">
+        Error loading tariffs
+      </div>
     );
   }
 
@@ -122,27 +124,32 @@ export default function ProductPage() {
 
   return (
     <div>
-      <div className="p-8 mx-auto text-center">
-        <h1 className="text-2xl font-bold">Tariff Definition</h1>
-        <h3 className="text-lg font-medium text-gray-500">
+      <div className="p-4 md:p-8 mx-auto text-center">
+        <h1 className="text-xl md:text-2xl font-bold">Tariff Definition</h1>
+        <h3 className="text-base md:text-lg font-medium text-gray-500">
           View, manage, and define tariffs and fees
         </h3>
       </div>
 
-      <Tabs defaultValue="all" className="container mx-auto p-5">
+      <Tabs defaultValue="all" className="container mx-auto p-3 md:p-5">
         <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto">
-          <TabsTrigger value="all">All Tariffs</TabsTrigger>
-          <TabsTrigger value="my_wishlist">My Wishlist</TabsTrigger>
+          <TabsTrigger value="all" className="text-sm md:text-base">
+            All Tariffs
+          </TabsTrigger>
+          <TabsTrigger value="my_wishlist" className="text-sm md:text-base">
+            My Watchlist
+          </TabsTrigger>
         </TabsList>
 
         {/* --- "All Tariffs" Tab --- */}
         <TabsContent value="all">
-          <div className="flex items-center justify-end py-4">
+          <div className="flex items-center justify-end py-3 md:py-4">
             {/* "Create" Button is now here, and only on this tab */}
             {!isPending && isAdmin && (
               <Button
                 variant="default"
                 onClick={() => setIsCreateModalOpen(true)}
+                className="text-sm md:text-base"
               >
                 Define New Tariff
               </Button>
@@ -157,7 +164,7 @@ export default function ProductPage() {
 
         {/* --- "My Wishlist" Tab --- */}
         <TabsContent value="my_wishlist">
-          <div className="text-center font-bold text-md text-muted-foreground p-4 bg-blue-200 border border-blue-200 rounded-md mb-4">
+          <div className="text-center font-bold text-xs md:text-sm text-muted-foreground p-3 md:p-4 bg-blue-200 border border-blue-200 rounded-md mb-4">
             You will receive an email notification for any creations, updates,
             or expirations for tariffs you are watching.
           </div>
@@ -169,15 +176,20 @@ export default function ProductPage() {
         </TabsContent>
       </Tabs>
 
-      <div className="p-8 mx-auto text-center">
-        <h1 className="text-2xl font-bold">Need help calculating tariffs?</h1>
-        <p className="text-lg font-medium text-gray-500 mb-4">
+      <div className="p-4 md:p-8 mx-auto text-center">
+        <h1 className="text-xl md:text-2xl font-bold">
+          Need help calculating tariffs?
+        </h1>
+        <p className="text-sm md:text-lg font-medium text-gray-500 mb-4">
           Our calculator can help you determine the correct tariffs and fees for
           your products.
         </p>
-        <Link href="/calculator">
+        <Link
+          href="/calculator"
+          className="inline-flex items-center text-sm md:text-base"
+        >
           Go to Calculator
-          <ArrowRight className="inline-block ml-2" />
+          <ArrowRight className="inline-block ml-2 h-4 w-4 md:h-5 md:w-5" />
         </Link>
       </div>
       {/* Create Tariff Modal */}

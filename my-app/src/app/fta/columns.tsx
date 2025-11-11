@@ -38,7 +38,7 @@ export const createColumns = ({
   onModify,
   onDelete,
   isAdmin,
-  isPending
+  isPending,
 }: CreateColumnsProps): ColumnDef<FTA>[] => {
   return [
     {
@@ -47,7 +47,7 @@ export const createColumns = ({
         <DataTableColumnHeader column={column} title="Name" />
       ),
       cell: ({ row }) => (
-        <div className="text-center font-medium">
+        <div className="text-center font-medium text-xs md:text-sm">
           {row.getValue("name")}
         </div>
       ),
@@ -58,26 +58,30 @@ export const createColumns = ({
         <DataTableColumnHeader column={column} title="Party A" />
       ),
       cell: ({ row }) => {
-        const partyA = row.getValue("partyA") as FTA['partyA'];
+        const partyA = row.getValue("partyA") as FTA["partyA"];
         return (
-          <div className="flex items-center justify-center space-x-2">
+          <div className="flex flex-col sm:flex-row items-center justify-center space-y-1 sm:space-y-0 sm:space-x-2">
             {/* Party is a country */}
-            {partyA.type === 'COUNTRY' && (
+            {partyA.type === "COUNTRY" && (
               <>
-                <span className='font-semibold'>{partyA.name}</span>
+                <span className="font-semibold text-xs md:text-sm">
+                  {partyA.name}
+                </span>
                 <ReactCountryFlag
                   countryCode={getCountryIsoCode(partyA.name)}
                   svg
-                  style={{ width: "3em", height: "3em" }}
+                  style={{ width: "2em", height: "2em" }}
+                  className="md:w-12 md:h-12"
                 />
               </>
-            )
-            }
+            )}
             {/* Party is a bloc */}
-            {partyA.type === 'BLOC' && (
+            {partyA.type === "BLOC" && (
               <>
-                <span className='font-semibold'>{partyA.bloc?.code}</span>
-                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                <span className="font-semibold text-xs md:text-sm">
+                  {partyA.bloc?.code}
+                </span>
+                <span className="text-[10px] md:text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
                   Bloc
                 </span>
               </>
@@ -92,26 +96,30 @@ export const createColumns = ({
         <DataTableColumnHeader column={column} title="Party B" />
       ),
       cell: ({ row }) => {
-        const partyB = row.getValue("partyB") as FTA['partyB'];
+        const partyB = row.getValue("partyB") as FTA["partyB"];
         return (
-          <div className="flex items-center justify-center space-x-2">
+          <div className="flex flex-col sm:flex-row items-center justify-center space-y-1 sm:space-y-0 sm:space-x-2">
             {/* Party is a country */}
-            {partyB.type === 'COUNTRY' && (
+            {partyB.type === "COUNTRY" && (
               <>
-                <span className='font-semibold'>{partyB.name}</span>
+                <span className="font-semibold text-xs md:text-sm">
+                  {partyB.name}
+                </span>
                 <ReactCountryFlag
                   countryCode={getCountryIsoCode(partyB.name)}
                   svg
-                  style={{ width: "3em", height: "3em" }}
+                  style={{ width: "2em", height: "2em" }}
+                  className="md:w-12 md:h-12"
                 />
               </>
-            )
-            }
+            )}
             {/* Party is a bloc */}
-            {partyB.type === 'BLOC' && (
+            {partyB.type === "BLOC" && (
               <>
-                <span className='font-semibold'>{partyB.bloc?.code}</span>
-                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                <span className="font-semibold text-xs md:text-sm">
+                  {partyB.bloc?.code}
+                </span>
+                <span className="text-[10px] md:text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
                   Bloc
                 </span>
               </>
@@ -122,10 +130,12 @@ export const createColumns = ({
     },
     {
       accessorKey: "applicableTariffLines",
-      header: () => <div className="text-center">Number of HS Code</div>,
+      header: () => (
+        <div className="text-center text-xs md:text-sm">Number of HS Code</div>
+      ),
       // header: ({ column }) => (<DataTableColumnHeader column={column} title="Applicable Tariff Lines" />),
       cell: ({ row }) => (
-        <div className="text-center font-mono">
+        <div className="text-center font-mono text-xs md:text-sm">
           {row.getValue("applicableTariffLines")?.toLocaleString()}
         </div>
       ),
@@ -138,7 +148,7 @@ export const createColumns = ({
       cell: ({ row }) => {
         const date = new Date(row.getValue("effectiveDate"));
         return (
-          <div className="text-center">
+          <div className="text-center text-xs md:text-sm">
             {date.toLocaleDateString("en-US", {
               year: "numeric",
               month: "2-digit",
@@ -164,28 +174,28 @@ export const createColumns = ({
         const currentDate = new Date();
         const effectiveDate = fta.effectiveDate;
         const expirationDate = fta.expirationDate;
-  
+
         let isActive = false;
-  
+
         if (effectiveDate) {
           const startOfEffectiveDay = new Date(effectiveDate);
-          startOfEffectiveDay.setHours(0, 0, 0, 0);       // Set to 00:00:00.000 
+          startOfEffectiveDay.setHours(0, 0, 0, 0); // Set to 00:00:00.000
           const isAfterEffective = currentDate >= startOfEffectiveDay;
-          
+
           let isBeforeExpiration = true;
           if (expirationDate) {
             const endOfExpirationDay = new Date(expirationDate);
             endOfExpirationDay.setHours(23, 59, 59, 999); // Set to 23:59:59.999
             isBeforeExpiration = currentDate <= endOfExpirationDay;
           }
-          
+
           isActive = isAfterEffective && isBeforeExpiration;
         }
-  
+
         return (
           <div className="text-center">
             <span
-              className={`px-2 py-1 rounded-full text-xs font-medium ${
+              className={`px-2 py-1 rounded-full text-[10px] md:text-xs font-medium ${
                 isActive
                   ? "bg-green-100 text-green-800"
                   : "bg-red-100 text-red-800"
@@ -198,21 +208,22 @@ export const createColumns = ({
       },
       sortingFn: (rowA, rowB) => {
         const currentDate = new Date();
-  
+
         const getIsActive = (row: Row<FTA>) => {
           const effectiveDate = row.original.effectiveDate;
           const expirationDate = row.original.expirationDate;
-  
+
           if (!effectiveDate) return false;
-  
+
           const isAfterEffective = currentDate >= new Date(effectiveDate);
-          const isBeforeExpiration = !expirationDate || currentDate <= new Date(expirationDate);
+          const isBeforeExpiration =
+            !expirationDate || currentDate <= new Date(expirationDate);
           return isAfterEffective && isBeforeExpiration;
         };
-  
+
         const aActive = getIsActive(rowA);
         const bActive = getIsActive(rowB);
-  
+
         // Active items first
         return bActive ? 1 : aActive ? -1 : 0;
       },
@@ -239,24 +250,31 @@ export const createColumns = ({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                  <DropdownMenuLabel className="text-sm">
+                    Actions
+                  </DropdownMenuLabel>
                   <DropdownMenuItem
-                    onClick={() =>
-                      navigator.clipboard.writeText(fta.name)
-                    }
+                    onClick={() => navigator.clipboard.writeText(fta.name)}
+                    className="text-xs md:text-sm"
                   >
                     Copy Name
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => onViewDetails(fta)}>
+                  <DropdownMenuItem
+                    onClick={() => onViewDetails(fta)}
+                    className="text-xs md:text-sm"
+                  >
                     View Details
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onModify(fta)}>
+                  <DropdownMenuItem
+                    onClick={() => onModify(fta)}
+                    className="text-xs md:text-sm"
+                  >
                     Modify FTA
                   </DropdownMenuItem>
-                  <DropdownMenuItem 
+                  <DropdownMenuItem
                     onClick={() => onDelete(fta)}
-                    className="text-red-600"
+                    className="text-red-600 text-xs md:text-sm"
                   >
                     Delete FTA
                   </DropdownMenuItem>
@@ -271,10 +289,10 @@ export const createColumns = ({
                   variant="outline"
                   size="sm"
                   onClick={() => onViewDetails(fta)}
-                  className="flex items-center space-x-1"
+                  className="flex items-center space-x-1 text-xs md:text-sm"
                   title="View FTA Details"
                 >
-                  <Eye className="h-4 w-4" />
+                  <Eye className="h-3 w-3 md:h-4 md:w-4" />
                 </Button>
               </div>
             )}

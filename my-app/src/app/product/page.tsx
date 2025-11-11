@@ -40,13 +40,13 @@ export default function ProductPage() {
     isAdmin,
     isPending
   );
-  
+
   if (!userId) return null;
   const { data: products = [], isLoading, error } = useUserProduct(userId);
 
   if (error) {
     return (
-      <div className="p-8 text-center text-red-500">
+      <div className="p-4 md:p-8 text-center text-red-500">
         Error loading products
       </div>
     );
@@ -58,18 +58,20 @@ export default function ProductPage() {
         <ProductTableSkeleton />
       ) : (
         <>
-          <div className="p-8 mx-auto text-center">
-            <h1 className="text-2xl font-bold">Product Catalog</h1>
-            <h3 className="text-lg font-medium text-gray-500">
+          <div className="p-4 md:p-8 mx-auto text-center">
+            <h1 className="text-xl md:text-2xl font-bold">Product Catalog</h1>
+            <h3 className="text-base md:text-lg font-medium text-gray-500">
               View, manage and register new products
             </h3>
           </div>
 
-          <div className="container mx-auto p-5">
+          <div className="container mx-auto p-3 md:p-5">
             {/* HS Code Assistant Section */}
-            <div className="mb-8">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold">Find HS Codes for Your Products</h2>
+            <div className="mb-6 md:mb-8">
+              <div className="flex items-center justify-between mb-3 md:mb-4">
+                <h2 className="text-lg md:text-xl font-semibold">
+                  Find HS Codes for Your Products
+                </h2>
               </div>
 
               {/* AI Assistant */}
@@ -78,21 +80,29 @@ export default function ProductPage() {
 
             {/* Existing Products Table */}
             <div>
-              <h2 className="text-xl font-semibold mb-4">Your Products</h2>
+              <h2 className="text-lg md:text-xl font-semibold mb-3 md:mb-4">
+                Your Products
+              </h2>
               <DataTable columns={columns} data={products} />
             </div>
           </div>
         </>
       )}
 
-      <div className="p-8 mx-auto text-center">
-        <h1 className="text-2xl font-bold">Need help calculating tariffs?</h1>
-        <p className="text-lg font-medium text-gray-500 mb-4">
-          Use our calculator to determine correct tariffs based on product HS codes.
+      <div className="p-4 md:p-8 mx-auto text-center">
+        <h1 className="text-xl md:text-2xl font-bold">
+          Need help calculating tariffs?
+        </h1>
+        <p className="text-sm md:text-lg font-medium text-gray-500 mb-4">
+          Use our calculator to determine correct tariffs based on product HS
+          codes.
         </p>
-        <Link href="/calculator" className="inline-flex items-center">
+        <Link
+          href="/calculator"
+          className="inline-flex items-center text-sm md:text-base"
+        >
           Go to Calculator
-          <ArrowRight className="ml-2" />
+          <ArrowRight className="ml-2 h-4 w-4 md:h-5 md:w-5" />
         </Link>
       </div>
 

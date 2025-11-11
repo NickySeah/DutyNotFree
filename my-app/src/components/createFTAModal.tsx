@@ -72,7 +72,8 @@ const initialFormData: FormData = {
 export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
   // Hooks
   const { data: hsCodes, isLoading: hsCodesLoading } = useHsCodes();
-  const { data: tradeParties, isLoading: tradePartiesLoading } = useTradeParties();
+  const { data: tradeParties, isLoading: tradePartiesLoading } =
+    useTradeParties();
   const { mutate, isPending } = useCreateFTA();
 
   // State
@@ -81,18 +82,21 @@ export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
   const [newExcludedHsCode, setNewExcludedHsCode] = useState("");
   const [effectiveDateText, setEffectiveDateText] = useState("");
   const [expirationDateText, setExpirationDateText] = useState("");
-  const [newConcession, setNewConcession] = useState<Omit<ConcessionForm, 'id'>>({ 
-    hsCode: "", 
+  const [newConcession, setNewConcession] = useState<
+    Omit<ConcessionForm, "id">
+  >({
+    hsCode: "",
     hsCodeDescription: "",
-    finalRate: 0 
+    finalRate: 0,
   });
 
   // Data transformations
-  const hsCodeOptions = hsCodes?.map((hsCode) => ({
-    value: hsCode.code,
-    label: `${hsCode.code} - ${hsCode.description}`,
-    description: hsCode.description
-  })) || [];
+  const hsCodeOptions =
+    hsCodes?.map((hsCode) => ({
+      value: hsCode.code,
+      label: `${hsCode.code} - ${hsCode.description}`,
+      description: hsCode.description,
+    })) || [];
 
   const tradePartyOptions = tradeParties || [];
 
@@ -110,7 +114,7 @@ export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
 
   // Excluded HS Codes handlers
   const addExcludedHsCode = (hsCodeValue: string) => {
-    const selectedHsCode = hsCodes?.find(hs => hs.code === hsCodeValue);
+    const selectedHsCode = hsCodes?.find((hs) => hs.code === hsCodeValue);
     if (!selectedHsCode) {
       toast.error("Please select a valid HS Code");
       return;
@@ -121,30 +125,31 @@ export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
       return;
     }
 
-    // Check if HS code is already in concessions
-    if (formData.concessions.some(c => c.hsCode === hsCodeValue)) {
+    if (formData.concessions.some((c) => c.hsCode === hsCodeValue)) {
       toast.error("HS Code already has a concession. Remove concession first.");
       return;
     }
 
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       excludedHsCodes: [...prev.excludedHsCodes, hsCodeValue],
       excludedHsCodeDescriptions: {
         ...prev.excludedHsCodeDescriptions,
-        [hsCodeValue]: selectedHsCode.description
-      }
+        [hsCodeValue]: selectedHsCode.description,
+      },
     }));
     setNewExcludedHsCode("");
   };
 
   const removeExcludedHsCode = (hsCode: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      excludedHsCodes: prev.excludedHsCodes.filter(code => code !== hsCode),
+      excludedHsCodes: prev.excludedHsCodes.filter((code) => code !== hsCode),
       excludedHsCodeDescriptions: Object.fromEntries(
-        Object.entries(prev.excludedHsCodeDescriptions).filter(([code]) => code !== hsCode)
-      )
+        Object.entries(prev.excludedHsCodeDescriptions).filter(
+          ([code]) => code !== hsCode
+        )
+      ),
     }));
   };
 
@@ -160,13 +165,11 @@ export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
       return;
     }
 
-    // Check if HS code is already in concessions
-    if (formData.concessions.some(c => c.hsCode === newConcession.hsCode)) {
+    if (formData.concessions.some((c) => c.hsCode === newConcession.hsCode)) {
       toast.error("HS Code already has a concession");
       return;
     }
 
-    // Check if HS code is already excluded
     if (formData.excludedHsCodes.includes(newConcession.hsCode)) {
       toast.error("HS Code is excluded. Remove from exclusions first.");
       return;
@@ -174,21 +177,21 @@ export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
 
     const concession: ConcessionForm = {
       id: Math.random().toString(36).substr(2, 9),
-      ...newConcession
+      ...newConcession,
     };
 
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      concessions: [...prev.concessions, concession]
+      concessions: [...prev.concessions, concession],
     }));
-    
+
     setNewConcession({ hsCode: "", hsCodeDescription: "", finalRate: 0 });
   };
 
   const removeConcession = (id: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      concessions: prev.concessions.filter(c => c.id !== id)
+      concessions: prev.concessions.filter((c) => c.id !== id),
     }));
   };
 
@@ -244,21 +247,28 @@ export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
       return false;
     }
 
-    if (!noExpiration && formData.expirationDate && formData.effectiveDate && 
-        formData.expirationDate <= formData.effectiveDate) {
+    if (
+      !noExpiration &&
+      formData.expirationDate &&
+      formData.effectiveDate &&
+      formData.expirationDate <= formData.effectiveDate
+    ) {
       toast.error("Expiration date must be after effective date");
       return false;
     }
 
-    // Validate concessions
     for (const concession of formData.concessions) {
       if (concession.finalRate < 0) {
-        toast.error(`Concession rate for ${concession.hsCode} cannot be negative`);
+        toast.error(
+          `Concession rate for ${concession.hsCode} cannot be negative`
+        );
         return false;
       }
 
       if (concession.finalRate == formData.defaultRate) {
-        toast.error(`Concession for ${concession.hsCode} is redundant as it has the same rate (${formData.defaultRate}%) as FTA's default rate`);
+        toast.error(
+          `Concession for ${concession.hsCode} is redundant as it has the same rate (${formData.defaultRate}%) as FTA's default rate`
+        );
         return false;
       }
     }
@@ -277,9 +287,9 @@ export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
       expirationDate: noExpiration ? undefined : formData.expirationDate!,
       defaultRate: formData.defaultRate,
       excludedHsCodes: formData.excludedHsCodes,
-      concessions: formData.concessions.map(c => ({
+      concessions: formData.concessions.map((c) => ({
         hsCode: c.hsCode,
-        finalRate: c.finalRate
+        finalRate: c.finalRate,
       })),
     };
 
@@ -302,7 +312,7 @@ export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
     disabled = false
   ) => (
     <div className="space-y-2">
-      <Label className="text-sm font-medium text-gray-700">
+      <Label className="text-xs md:text-sm font-medium text-gray-700">
         {label}
       </Label>
       <Popover>
@@ -310,12 +320,14 @@ export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
           <Button
             variant="outline"
             disabled={disabled}
-            className={`w-full justify-start text-left font-normal ${
+            className={`w-full justify-start text-left font-normal text-xs md:text-sm ${
               disabled ? "opacity-50 cursor-not-allowed" : ""
             }`}
           >
-            <CalendarIcon className="mr-2 h-4 w-4" />
-            {value && !disabled ? format(value, "PPP") : `Select ${label.toLowerCase()}`}
+            <CalendarIcon className="mr-2 h-3 w-3 md:h-4 md:w-4" />
+            {value && !disabled
+              ? format(value, "PPP")
+              : `Select ${label.toLowerCase()}`}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0">
@@ -332,45 +344,52 @@ export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
   );
 
   const getPartyTypeIcon = (partyValue: string) => {
-    const party = tradePartyOptions.find(p => p.value === partyValue);
-    return party?.type === 'BLOC' ? <Users className="h-4 w-4" /> : <Globe className="h-4 w-4" />;
+    const party = tradePartyOptions.find((p) => p.value === partyValue);
+    return party?.type === "BLOC" ? (
+      <Users className="h-3 w-3 md:h-4 md:w-4" />
+    ) : (
+      <Globe className="h-3 w-3 md:h-4 md:w-4" />
+    );
   };
 
   const getPartyDescription = (partyValue: string) => {
-    const party = tradePartyOptions.find(p => p.value === partyValue);
-    return party?.description || '';
+    const party = tradePartyOptions.find((p) => p.value === partyValue);
+    return party?.description || "";
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-[60vw]! max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] max-w-[95vw] md:max-w-[60vw] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">
+          <DialogTitle className="text-lg md:text-xl font-semibold">
             Create New FTA
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6 py-4">
+        <div className="space-y-4 md:space-y-6 py-3 md:py-4">
           {/* Basic Information */}
           <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Basic Information</CardTitle>
+            <CardHeader className="pb-3 md:pb-4">
+              <CardTitle className="text-base md:text-lg">
+                Basic Information
+              </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3 md:space-y-4">
               <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700">
+                <Label className="text-xs md:text-sm font-medium text-gray-700">
                   Name
                 </Label>
                 <Input
                   placeholder="Enter name for free trade agreement"
                   value={formData.name}
                   onChange={(e) => handleChange("name", e.target.value)}
+                  className="text-sm"
                 />
               </div>
-              {/* Party A Input */}
-              <div className="grid grid-cols-2 gap-4">
+              {/* Party A & B Inputs */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium text-gray-700">
+                  <Label className="text-xs md:text-sm font-medium text-gray-700">
                     Party A
                   </Label>
                   <Combobox
@@ -384,15 +403,14 @@ export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
                     loading={tradePartiesLoading}
                   />
                   {formData.partyA && (
-                    <div className="flex items-center space-x-2 text-sm text-gray-600 mt-1">
+                    <div className="flex items-center space-x-2 text-xs md:text-sm text-gray-600 mt-1">
                       {getPartyTypeIcon(formData.partyA)}
                       <span>{getPartyDescription(formData.partyA)}</span>
                     </div>
                   )}
                 </div>
-                {/* Party B Input */}
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium text-gray-700">
+                  <Label className="text-xs md:text-sm font-medium text-gray-700">
                     Party B
                   </Label>
                   <Combobox
@@ -406,26 +424,36 @@ export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
                     loading={tradePartiesLoading}
                   />
                   {formData.partyB && (
-                    <div className="flex items-center space-x-2 text-sm text-gray-600 mt-1">
+                    <div className="flex items-center space-x-2 text-xs md:text-sm text-gray-600 mt-1">
                       {getPartyTypeIcon(formData.partyB)}
                       <span>{getPartyDescription(formData.partyB)}</span>
                     </div>
                   )}
                 </div>
-                <p className="text-sm text-gray-600"><i>Note: Order of parties does not matter.</i></p>
               </div>
+              <p className="text-xs md:text-sm text-gray-600">
+                <i>Note: Order of parties does not matter.</i>
+              </p>
               {/* Default Rate Input */}
               <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700">
+                <Label className="text-xs md:text-sm font-medium text-gray-700">
                   Default Rate (%)
                 </Label>
                 <Input
                   type="number"
                   placeholder="Enter default rate"
-                  value={formData.defaultRate === 0 ? "0" : formData.defaultRate}
-                  onChange={(e) => handleChange("defaultRate", e.target.value === "" ? 0 : Number(e.target.value))}
+                  value={
+                    formData.defaultRate === 0 ? "0" : formData.defaultRate
+                  }
+                  onChange={(e) =>
+                    handleChange(
+                      "defaultRate",
+                      e.target.value === "" ? 0 : Number(e.target.value)
+                    )
+                  }
                   min="0"
                   step="0.01"
+                  className="text-sm"
                 />
               </div>
             </CardContent>
@@ -433,14 +461,16 @@ export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
 
           {/* Date Configuration */}
           <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Date Configuration</CardTitle>
+            <CardHeader className="pb-3 md:pb-4">
+              <CardTitle className="text-base md:text-lg">
+                Date Configuration
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                 {/* Effective Date */}
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium text-gray-700">
+                  <Label className="text-xs md:text-sm font-medium text-gray-700">
                     Effective Date
                   </Label>
                   <div className="flex gap-2">
@@ -450,27 +480,34 @@ export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
                       value={effectiveDateText}
                       onChange={(e) => {
                         const value = e.target.value;
-                        
-                        // Allow only numbers and dashes
-                        const sanitizedValue = value.replace(/[^\d-]/g, '');
-                        
-                        // Auto-format as user types
+                        const sanitizedValue = value.replace(/[^\d-]/g, "");
                         let formattedValue = sanitizedValue;
-                        if (sanitizedValue.length > 4 && sanitizedValue.charAt(4) !== '-') {
-                          formattedValue = sanitizedValue.slice(0, 4) + '-' + sanitizedValue.slice(4);
+                        if (
+                          sanitizedValue.length > 4 &&
+                          sanitizedValue.charAt(4) !== "-"
+                        ) {
+                          formattedValue =
+                            sanitizedValue.slice(0, 4) +
+                            "-" +
+                            sanitizedValue.slice(4);
                         }
-                        if (formattedValue.length > 7 && formattedValue.charAt(7) !== '-') {
-                          formattedValue = formattedValue.slice(0, 7) + '-' + formattedValue.slice(7);
+                        if (
+                          formattedValue.length > 7 &&
+                          formattedValue.charAt(7) !== "-"
+                        ) {
+                          formattedValue =
+                            formattedValue.slice(0, 7) +
+                            "-" +
+                            formattedValue.slice(7);
                         }
-                        
-                        // Limit to 10 characters (YYYY-MM-DD)
                         formattedValue = formattedValue.slice(0, 10);
-                        
                         setEffectiveDateText(formattedValue);
-                        
-                        // Try to parse when we have a complete date
                         if (formattedValue.length === 10) {
-                          const parsedDate = parse(formattedValue, "yyyy-MM-dd", new Date());
+                          const parsedDate = parse(
+                            formattedValue,
+                            "yyyy-MM-dd",
+                            new Date()
+                          );
                           if (isValid(parsedDate)) {
                             handleChange("effectiveDate", parsedDate);
                           }
@@ -479,47 +516,57 @@ export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
                         }
                       }}
                       onBlur={() => {
-                        // When input loses focus, validate and format
                         if (effectiveDateText.length === 10) {
-                          const parsedDate = parse(effectiveDateText, "yyyy-MM-dd", new Date());
+                          const parsedDate = parse(
+                            effectiveDateText,
+                            "yyyy-MM-dd",
+                            new Date()
+                          );
                           if (isValid(parsedDate)) {
-                            setEffectiveDateText(format(parsedDate, "yyyy-MM-dd"));
+                            setEffectiveDateText(
+                              format(parsedDate, "yyyy-MM-dd")
+                            );
                             handleChange("effectiveDate", parsedDate);
                           } else {
-                            // Invalid date, clear it
                             setEffectiveDateText("");
                             handleChange("effectiveDate", undefined);
                           }
-                        } else if (effectiveDateText.length > 0 && effectiveDateText.length < 10) {
-                          // Incomplete date, clear it
+                        } else if (
+                          effectiveDateText.length > 0 &&
+                          effectiveDateText.length < 10
+                        ) {
                           setEffectiveDateText("");
                           handleChange("effectiveDate", undefined);
                         }
                       }}
-                      className="font-mono"
+                      className="font-mono text-sm"
                     />
                     <Popover>
                       <PopoverTrigger asChild>
-                        <Button variant="outline" className="px-3">
-                          <CalendarIcon className="h-4 w-4" />
+                        <Button variant="outline" className="px-2 md:px-3">
+                          <CalendarIcon className="h-3 w-3 md:h-4 md:w-4" />
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0">
                         <Calendar
                           mode="single"
                           selected={formData.effectiveDate}
-                          onSelect={(date) => handleChange("effectiveDate", date)}
+                          onSelect={(date) =>
+                            handleChange("effectiveDate", date)
+                          }
                           initialFocus
                         />
                       </PopoverContent>
                     </Popover>
                   </div>
-                  <p className="text-xs text-gray-500">Enter date as YYYY-MM-DD or use calendar</p>
+                  <p className="text-[10px] md:text-xs text-gray-500">
+                    Enter date as YYYY-MM-DD or use calendar
+                  </p>
                 </div>
 
                 {/* Expiration Date */}
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium text-gray-700">
+                  <Label className="text-xs md:text-sm font-medium text-gray-700">
                     Expiration Date
                   </Label>
                   <div className="flex gap-2">
@@ -529,80 +576,98 @@ export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
                       value={expirationDateText}
                       onChange={(e) => {
                         const value = e.target.value;
-                        
-                        // Allow only numbers and dashes
-                        const sanitizedValue = value.replace(/[^\d-]/g, '');
-                        
-                        // Auto-format as user types
+                        const sanitizedValue = value.replace(/[^\d-]/g, "");
                         let formattedValue = sanitizedValue;
-                        if (sanitizedValue.length > 4 && sanitizedValue.charAt(4) !== '-') {
-                          formattedValue = sanitizedValue.slice(0, 4) + '-' + sanitizedValue.slice(4);
+                        if (
+                          sanitizedValue.length > 4 &&
+                          sanitizedValue.charAt(4) !== "-"
+                        ) {
+                          formattedValue =
+                            sanitizedValue.slice(0, 4) +
+                            "-" +
+                            sanitizedValue.slice(4);
                         }
-                        if (formattedValue.length > 7 && formattedValue.charAt(7) !== '-') {
-                          formattedValue = formattedValue.slice(0, 7) + '-' + formattedValue.slice(7);
+                        if (
+                          formattedValue.length > 7 &&
+                          formattedValue.charAt(7) !== "-"
+                        ) {
+                          formattedValue =
+                            formattedValue.slice(0, 7) +
+                            "-" +
+                            formattedValue.slice(7);
                         }
-                        
-                        // Limit to 10 characters (YYYY-MM-DD)
                         formattedValue = formattedValue.slice(0, 10);
-                        
                         setExpirationDateText(formattedValue);
-                        
-                        // Try to parse when we have a complete date
                         if (formattedValue.length === 10) {
-                          const parsedDate = parse(formattedValue, "yyyy-MM-dd", new Date());
+                          const parsedDate = parse(
+                            formattedValue,
+                            "yyyy-MM-dd",
+                            new Date()
+                          );
                           if (isValid(parsedDate)) {
-                            handleChange("effectiveDate", parsedDate);
+                            handleChange("expirationDate", parsedDate);
                           }
                         } else if (formattedValue.length === 0) {
-                          handleChange("effectiveDate", undefined);
+                          handleChange("expirationDate", undefined);
                         }
                       }}
                       onBlur={() => {
-                        // When input loses focus, validate and format
                         if (expirationDateText.length === 10) {
-                          const parsedDate = parse(expirationDateText, "yyyy-MM-dd", new Date());
+                          const parsedDate = parse(
+                            expirationDateText,
+                            "yyyy-MM-dd",
+                            new Date()
+                          );
                           if (isValid(parsedDate)) {
-                            setExpirationDateText(format(parsedDate, "yyyy-MM-dd"));
-                            handleChange("effectiveDate", parsedDate);
+                            setExpirationDateText(
+                              format(parsedDate, "yyyy-MM-dd")
+                            );
+                            handleChange("expirationDate", parsedDate);
                           } else {
-                            // Invalid date, clear it
                             setExpirationDateText("");
-                            handleChange("effectiveDate", undefined);
+                            handleChange("expirationDate", undefined);
                           }
-                        } else if (expirationDateText.length > 0 && expirationDateText.length < 10) {
-                          // Incomplete date, clear it
+                        } else if (
+                          expirationDateText.length > 0 &&
+                          expirationDateText.length < 10
+                        ) {
                           setExpirationDateText("");
-                          handleChange("effectiveDate", undefined);
+                          handleChange("expirationDate", undefined);
                         }
                       }}
-                      className="font-mono"
+                      className="font-mono text-sm"
+                      disabled={noExpiration}
                     />
                     <Popover>
                       <PopoverTrigger asChild>
-                        <Button 
-                          variant="outline" 
-                          className="px-3"
+                        <Button
+                          variant="outline"
+                          className="px-2 md:px-3"
                           disabled={noExpiration}
                         >
-                          <CalendarIcon className="h-4 w-4" />
+                          <CalendarIcon className="h-3 w-3 md:h-4 md:w-4" />
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0">
                         <Calendar
                           mode="single"
                           selected={formData.expirationDate}
-                          onSelect={(date) => handleChange("expirationDate", date)}
+                          onSelect={(date) =>
+                            handleChange("expirationDate", date)
+                          }
                           initialFocus
                           disabled={noExpiration}
                         />
                       </PopoverContent>
                     </Popover>
                   </div>
-                  <p className="text-xs text-gray-500">Enter date as YYYY-MM-DD or use calendar</p>
+                  <p className="text-[10px] md:text-xs text-gray-500">
+                    Enter date as YYYY-MM-DD or use calendar
+                  </p>
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-gray-100">
+              <div className="pt-3 md:pt-4 border-t border-gray-100">
                 <div className="flex items-center space-x-3">
                   <Checkbox
                     id="no-expiration"
@@ -612,7 +677,7 @@ export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
                   />
                   <Label
                     htmlFor="no-expiration"
-                    className="text-sm font-medium text-gray-700 cursor-pointer"
+                    className="text-xs md:text-sm font-medium text-gray-700 cursor-pointer"
                   >
                     This FTA has no expiration date
                   </Label>
@@ -623,13 +688,17 @@ export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
 
           {/* Excluded HS Codes */}
           <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Excluded HS Codes</CardTitle>
-              <p className="text-sm text-gray-600">Select HS Codes to exclude from FTA's benefits</p>
+            <CardHeader className="pb-3 md:pb-4">
+              <CardTitle className="text-base md:text-lg">
+                Excluded HS Codes
+              </CardTitle>
+              <p className="text-xs md:text-sm text-gray-600">
+                Select HS Codes to exclude from FTA's benefits
+              </p>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3 md:space-y-4">
               <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700">
+                <Label className="text-xs md:text-sm font-medium text-gray-700">
                   HS Code
                 </Label>
                 <Combobox
@@ -642,29 +711,34 @@ export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
                   width="w-full"
                   loading={hsCodesLoading}
                 />
-                <Button 
-                  onClick={() => addExcludedHsCode(newExcludedHsCode)} 
-                  variant="outline" 
-                  className="w-full mt-2"
+                <Button
+                  onClick={() => addExcludedHsCode(newExcludedHsCode)}
+                  variant="outline"
+                  className="w-full mt-2 text-xs md:text-sm"
                   disabled={!newExcludedHsCode}
                 >
-                  <Plus className="h-4 w-4 mr-2" />
+                  <Plus className="h-3 w-3 md:h-4 md:w-4 mr-2" />
                   Add Excluded HS Code
                 </Button>
               </div>
-              
+
               {formData.excludedHsCodes.length > 0 && (
-                <div className="space-y-3">
-                  <Label className="text-sm font-medium text-gray-700">
+                <div className="space-y-2 md:space-y-3">
+                  <Label className="text-xs md:text-sm font-medium text-gray-700">
                     Excluded HS Codes ({formData.excludedHsCodes.length})
                   </Label>
                   <div className="space-y-2">
                     {formData.excludedHsCodes.map((hsCode) => (
-                      <div key={hsCode} className="flex items-center justify-between p-3 bg-red-50 rounded-lg border border-red-200">
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-3">
-                            <span className="font-mono text-sm font-medium">{hsCode}</span>
-                            <span className="text-red-700 text-sm">
+                      <div
+                        key={hsCode}
+                        className="flex items-center justify-between p-2 md:p-3 bg-red-50 rounded-lg border border-red-200"
+                      >
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-3 space-y-1 sm:space-y-0">
+                            <span className="font-mono text-xs md:text-sm font-medium">
+                              {hsCode}
+                            </span>
+                            <span className="text-red-700 text-xs md:text-sm break-words">
                               {formData.excludedHsCodeDescriptions[hsCode]}
                             </span>
                           </div>
@@ -673,9 +747,9 @@ export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
                           variant="ghost"
                           size="sm"
                           onClick={() => removeExcludedHsCode(hsCode)}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-100"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-100 ml-2"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-3 w-3 md:h-4 md:w-4" />
                         </Button>
                       </div>
                     ))}
@@ -687,26 +761,32 @@ export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
 
           {/* Special Concessions */}
           <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Special Concessions</CardTitle>
-              <p className="text-sm text-gray-600">Define special reduced rates for specific HS Codes</p>
+            <CardHeader className="pb-3 md:pb-4">
+              <CardTitle className="text-base md:text-lg">
+                Special Concessions
+              </CardTitle>
+              <p className="text-xs md:text-sm text-gray-600">
+                Define special reduced rates for specific HS Codes
+              </p>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <CardContent className="space-y-3 md:space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium text-gray-700">
+                  <Label className="text-xs md:text-sm font-medium text-gray-700">
                     HS Code
                   </Label>
                   <Combobox
                     options={hsCodeOptions}
                     value={newConcession.hsCode}
                     onValueChange={(value) => {
-                      const selectedHsCode = hsCodes?.find(hs => hs.code === value);
-                      setNewConcession(prev => ({ 
-                        ...prev, 
+                      const selectedHsCode = hsCodes?.find(
+                        (hs) => hs.code === value
+                      );
+                      setNewConcession((prev) => ({
+                        ...prev,
                         hsCode: value,
-                        hsCodeDescription: selectedHsCode?.description || ""
-                      }))
+                        hsCodeDescription: selectedHsCode?.description || "",
+                      }));
                     }}
                     placeholder="Select HS Code"
                     searchPlaceholder="Search HS Codes..."
@@ -715,61 +795,78 @@ export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
                     loading={hsCodesLoading}
                   />
                 </div>
-                
+
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium text-gray-700">
+                  <Label className="text-xs md:text-sm font-medium text-gray-700">
                     Final Rate (%)
                   </Label>
                   <Input
                     type="number"
                     placeholder="Enter final rate"
-                    value={newConcession.finalRate === 0 ? "" : newConcession.finalRate}
-                    onChange={(e) => setNewConcession(prev => ({ 
-                      ...prev, 
-                      finalRate: e.target.value === "" ? 0 : Number(e.target.value) 
-                    }))}
+                    value={
+                      newConcession.finalRate === 0
+                        ? ""
+                        : newConcession.finalRate
+                    }
+                    onChange={(e) =>
+                      setNewConcession((prev) => ({
+                        ...prev,
+                        finalRate:
+                          e.target.value === "" ? 0 : Number(e.target.value),
+                      }))
+                    }
                     min="0"
                     step="0.01"
+                    className="text-sm"
                   />
                 </div>
               </div>
-              
-              <Button 
-                onClick={addConcession} 
-                variant="outline" 
-                className="w-full"
-                disabled={!newConcession.hsCode || newConcession.finalRate === 0}
+
+              <Button
+                onClick={addConcession}
+                variant="outline"
+                className="w-full text-xs md:text-sm"
+                disabled={
+                  !newConcession.hsCode || newConcession.finalRate === 0
+                }
               >
-                <Plus className="h-4 w-4 mr-2" />
+                <Plus className="h-3 w-3 md:h-4 md:w-4 mr-2" />
                 Add Concession
               </Button>
 
               {formData.concessions.length > 0 && (
-                <div className="space-y-3">
-                  <Label className="text-sm font-medium text-gray-700">
+                <div className="space-y-2 md:space-y-3">
+                  <Label className="text-xs md:text-sm font-medium text-gray-700">
                     Special Concessions ({formData.concessions.length})
                   </Label>
                   <div className="space-y-2">
                     {formData.concessions.map((concession) => (
-                      <div key={concession.id} className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-4">
-                            <div>
-                              <span className="font-mono text-sm font-medium block">{concession.hsCode}</span>
-                              <span className="text-green-700 text-xs block">
+                      <div
+                        key={concession.id}
+                        className="flex items-center justify-between p-2 md:p-3 bg-green-50 rounded-lg border border-green-200"
+                      >
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-1 sm:space-y-0">
+                            <div className="flex-1 min-w-0">
+                              <span className="font-mono text-xs md:text-sm font-medium block">
+                                {concession.hsCode}
+                              </span>
+                              <span className="text-green-700 text-[10px] md:text-xs block break-words">
                                 {concession.hsCodeDescription}
                               </span>
                             </div>
-                            <span className="text-green-700 font-medium text-lg">{concession.finalRate}%</span>
+                            <span className="text-green-700 font-medium text-sm md:text-lg">
+                              {concession.finalRate}%
+                            </span>
                           </div>
                         </div>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => removeConcession(concession.id)}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50 ml-2"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-3 w-3 md:h-4 md:w-4" />
                         </Button>
                       </div>
                     ))}
@@ -780,11 +877,19 @@ export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
           </Card>
         </div>
 
-        <DialogFooter className="flex gap-3">
-          <Button variant="outline" onClick={() => handleClose(false)}>
+        <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3">
+          <Button
+            variant="outline"
+            onClick={() => handleClose(false)}
+            className="w-full sm:w-auto text-sm"
+          >
             Cancel
           </Button>
-          <Button disabled={isPending} onClick={handleSave}>
+          <Button
+            disabled={isPending}
+            onClick={handleSave}
+            className="w-full sm:w-auto text-sm"
+          >
             {isPending ? "Creating..." : "Create FTA"}
           </Button>
         </DialogFooter>

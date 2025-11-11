@@ -65,21 +65,26 @@ export default function RegisterPage() {
 
   return (
     <div>
-      <div className="flex flex-row border-2 m-8 rounded-4xl shadow-lg overflow-hidden">
-        <div className="w-2/5 p-10 flex flex-col justify-center items-center mt-8">
-          <h1 className="text-3xl font-bold text-center mb-2">Register</h1>
-          <h3 className="text-center text-gray-500 mb-4">
+      <div className="flex flex-col md:flex-row border-2 m-4 md:m-8 rounded-4xl shadow-lg overflow-hidden">
+        <div className="w-full md:w-2/5 p-6 md:p-10 flex flex-col justify-center items-center mt-4 md:mt-8">
+          <h1 className="text-2xl md:text-3xl font-bold text-center mb-2">
+            Register
+          </h1>
+          <h3 className="text-sm md:text-base text-center text-gray-500 mb-4 px-2">
             Create a new account
           </h3>
 
-          <form onSubmit={handleSubmit} className="max-w-md w-full space-y-4">
+          <form
+            onSubmit={handleSubmit}
+            className="max-w-md w-full space-y-4 px-4 md:px-0"
+          >
             <div className="space-y-4">
-              <label htmlFor="name" className="font-bold">
+              <label htmlFor="name" className="font-bold text-sm md:text-base">
                 Name
               </label>
               <div className="relative">
                 <input
-                  className="border-2 w-full p-2 rounded-md text-lg"
+                  className="border-2 w-full p-2 rounded-md text-base md:text-lg"
                   type="text"
                   id="name"
                   name="name"
@@ -88,12 +93,12 @@ export default function RegisterPage() {
               </div>
             </div>
             <div>
-              <label htmlFor="email" className="font-bold">
+              <label htmlFor="email" className="font-bold text-sm md:text-base">
                 Email
               </label>
               <div className="relative">
                 <input
-                  className="border-2 w-full p-2 rounded-md text-lg"
+                  className="border-2 w-full p-2 rounded-md text-base md:text-lg"
                   type="email"
                   id="email"
                   name="email"
@@ -102,12 +107,15 @@ export default function RegisterPage() {
               </div>
             </div>
             <div>
-              <label htmlFor="password" className="font-bold">
+              <label
+                htmlFor="password"
+                className="font-bold text-sm md:text-base"
+              >
                 Password
               </label>
               <div className="relative">
                 <input
-                  className="border-2 w-full p-2 rounded-md text-lg"
+                  className="border-2 w-full p-2 rounded-md text-base md:text-lg"
                   type="password"
                   id="password"
                   name="password"
@@ -116,12 +124,15 @@ export default function RegisterPage() {
               </div>
             </div>
             <div>
-              <label htmlFor="confirm-password" className="font-bold">
+              <label
+                htmlFor="confirm-password"
+                className="font-bold text-sm md:text-base"
+              >
                 Confirm Password
               </label>
               <div className="relative">
                 <input
-                  className="border-2 w-full p-2 rounded-md text-lg"
+                  className="border-2 w-full p-2 rounded-md text-base md:text-lg"
                   type="password"
                   id="confirm-password"
                   name="confirm-password"
@@ -132,7 +143,7 @@ export default function RegisterPage() {
 
             <Button
               type="submit"
-              className="w-full mt-8 mb-8"
+              className="w-full mt-6 md:mt-8 mb-6 md:mb-8"
               disabled={loading} // Disable button when loading
             >
               {loading ? (
@@ -145,7 +156,7 @@ export default function RegisterPage() {
               )}
             </Button>
           </form>
-          <div className="flex justify-center w-full border-t py-4">
+          <div className="flex justify-center w-full border-t py-4 mt-8 md:mt-0">
             <p className="text-center text-xs text-neutral-500">
               Already have account?{" "}
               <Link href="/login" className="text-orange-400">
@@ -154,12 +165,13 @@ export default function RegisterPage() {
             </p>
           </div>
         </div>
-        <div className="w-3/5 flex items-center justify-center relative rounded-r-4xl overflow-hidden">
+        <div className="w-full md:w-3/5 h-64 md:h-auto flex items-center justify-center relative rounded-b-4xl md:rounded-r-4xl md:rounded-bl-none overflow-hidden">
           <Image
             src="/images/register.jpg"
             alt="Login with Google"
             fill
             sizes="(max-width: 768px) 100vw, 50vw"
+            className="object-cover"
           />
         </div>
       </div>

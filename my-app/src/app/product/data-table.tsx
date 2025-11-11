@@ -39,8 +39,9 @@ interface DataTableProps<TData, TValue> {
 export function DataTable<TData, TValue>({
   columns,
   data,
-}: DataTableProps<TData, TValue>) {  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-    const { userId, isSupplier, isAdmin, isPending } = useUserRole();
+}: DataTableProps<TData, TValue>) {
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const { userId, isSupplier, isAdmin, isPending } = useUserRole();
 
   // Global search only for Product fields
   const globalFilter = (row: any, columnId: string, value: string) => {
@@ -50,9 +51,8 @@ export function DataTable<TData, TValue>({
     const searchValue = value.toLowerCase();
 
     return (
-    //   name.includes(searchValue) ||
-      hsCode.includes(searchValue) ||
-      description.includes(searchValue)
+      //   name.includes(searchValue) ||
+      hsCode.includes(searchValue) || description.includes(searchValue)
     );
   };
 
@@ -78,37 +78,48 @@ export function DataTable<TData, TValue>({
   return (
     <div>
       {/* Search + Create button */}
-      <div className="flex items-center py-4 justify-between">
-        <div className="flex items-center space-x-2 w-md">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center py-3 md:py-4 justify-between gap-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
           <Input
-            placeholder="Filter by product name, HS Code or description..."
+            placeholder="Filter by HS Code or description..."
             value={table.getState().globalFilter ?? ""}
             onChange={(e) => table.setGlobalFilter(e.target.value)}
-            className="max-w-sm"
+            className="w-full sm:max-w-sm text-sm"
           />
-          <Button variant="ghost" onClick={() => table.setGlobalFilter("")}>
+          <Button
+            variant="ghost"
+            onClick={() => table.setGlobalFilter("")}
+            className="text-sm"
+          >
             Clear
           </Button>
         </div>
 
         {!isPending && isSupplier && (
-          <Button variant="default" onClick={() => setIsCreateModalOpen(true)}>
+          <Button
+            variant="default"
+            onClick={() => setIsCreateModalOpen(true)}
+            className="text-sm md:text-base w-full sm:w-auto"
+          >
             Create Product
           </Button>
         )}
       </div>
 
       {/* Table */}
-      <div className="overflow-hidden rounded-md border">
+      <div className="overflow-x-auto rounded-md border">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
+                  <TableHead key={header.id} className="text-xs md:text-sm">
                     {header.isPlaceholder
                       ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                   </TableHead>
                 ))}
               </TableRow>
@@ -119,15 +130,21 @@ export function DataTable<TData, TValue>({
               table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id}>
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    <TableCell key={cell.id} className="text-xs md:text-sm">
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center text-sm"
+                >
                   No products found.
                 </TableCell>
               </TableRow>
@@ -140,7 +157,7 @@ export function DataTable<TData, TValue>({
 
       {/* Create Product Modal */}
       <CreateProductModal
-        userId={userId || ''}
+        userId={userId || ""}
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
       />

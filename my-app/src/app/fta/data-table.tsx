@@ -15,7 +15,7 @@ import {
   getSortedRowModel,
   getCoreRowModel,
   useReactTable,
-  Row
+  Row,
 } from "@tanstack/react-table";
 
 import { useUserRole } from "@/lib/checkRole";
@@ -47,12 +47,12 @@ export function DataTable<TData, TValue>({
   // What can be filtered
   const globalFilter = (row: Row<TData>, columnId: string, value: string) => {
     const name = String(row.getValue("name")).toLowerCase();
-    const partyA = row.getValue("partyA") as FTA['partyA'];
-    const partyB = row.getValue("partyB") as FTA['partyB'];
-    
+    const partyA = row.getValue("partyA") as FTA["partyA"];
+    const partyB = row.getValue("partyB") as FTA["partyB"];
+
     const partyAName = partyA.name.toLowerCase();
     const partyBName = partyB.name.toLowerCase();
-    
+
     const searchValue = value.toLowerCase();
 
     return (
@@ -85,25 +85,25 @@ export function DataTable<TData, TValue>({
     },
   });
 
-
   return (
     <div>
-      <div className="flex items-center py-4 justify-between">
-        <div className="flex items-center space-x-2 w-md">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center py-3 md:py-4 justify-between gap-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
           {/*Search Bar*/}
           <Input
-            placeholder="Filter by description or HsCode or Country..."
+            placeholder="Filter by name or party..."
             value={table.getState().globalFilter ?? ""}
             onChange={(event) => {
               table.setGlobalFilter(event.target.value);
             }}
-            className="max-w-sm"
+            className="w-full sm:max-w-sm text-sm"
           />
           <Button
             variant="ghost"
             onClick={() => {
               table.setGlobalFilter("");
             }}
+            className="text-sm"
           >
             Clear
           </Button>
@@ -114,19 +114,20 @@ export function DataTable<TData, TValue>({
             onClick={() => {
               setIsCreateModalOpen(true);
             }}
+            className="text-sm md:text-base w-full sm:w-auto"
           >
             Define New FTA
           </Button>
         )}
       </div>
-      <div className="overflow-hidden rounded-md border">
+      <div className="overflow-x-auto rounded-md border">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id}>
+                    <TableHead key={header.id} className="text-xs md:text-sm">
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -147,7 +148,7 @@ export function DataTable<TData, TValue>({
                   data-state={row.getIsSelected() && "selected"}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell key={cell.id} className="text-xs md:text-sm">
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
@@ -160,7 +161,7 @@ export function DataTable<TData, TValue>({
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className="h-24 text-center"
+                  className="h-24 text-center text-sm"
                 >
                   No results.
                 </TableCell>

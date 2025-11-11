@@ -45,7 +45,8 @@ interface ConcessionForm {
 export function UpdateFTAModal({ isOpen, onClose, fta }: UpdateFTAModalProps) {
   // Hooks
   const { data: hsCodes, isLoading: hsCodesLoading } = useHsCodes();
-  const { data: tradeParties = [], isLoading: tradePartiesLoading } = useTradeParties();
+  const { data: tradeParties = [], isLoading: tradePartiesLoading } =
+    useTradeParties();
   const { mutate, isPending } = useUpdateFTA();
 
   // Form state
@@ -59,15 +60,17 @@ export function UpdateFTAModal({ isOpen, onClose, fta }: UpdateFTAModalProps) {
     addConcessions: [] as ConcessionForm[],
     removeConcessions: [] as string[],
   });
-  
+
   // UI state
   const [noExpiration, setNoExpiration] = useState(false);
   const [newIncludeHsCode, setNewIncludeHsCode] = useState("");
   const [newExcludeHsCode, setNewExcludeHsCode] = useState("");
-  const [newConcession, setNewConcession] = useState<Omit<ConcessionForm, 'id'>>({ 
-    hsCode: "", 
+  const [newConcession, setNewConcession] = useState<
+    Omit<ConcessionForm, "id">
+  >({
+    hsCode: "",
     hsCodeDescription: "",
-    finalRate: 0 
+    finalRate: 0,
   });
   const [effectiveDateText, setEffectiveDateText] = useState("");
   const [expirationDateText, setExpirationDateText] = useState("");
@@ -76,27 +79,30 @@ export function UpdateFTAModal({ isOpen, onClose, fta }: UpdateFTAModalProps) {
   const hsCodeOptions = (hsCodes || []).map((hsCode) => ({
     value: hsCode.code,
     label: `${hsCode.code} - ${hsCode.description}`,
-    description: hsCode.description
+    description: hsCode.description,
   }));
 
   // For Include HS Codes - only show currently excluded HS codes
-  const excludedHsCodeOptions = (fta?.excludedHsCodes || []).map(hsCode => {
-    const hsCodeData = hsCodes?.find(hs => hs.code === hsCode.code);
+  const excludedHsCodeOptions = (fta?.excludedHsCodes || []).map((hsCode) => {
+    const hsCodeData = hsCodes?.find((hs) => hs.code === hsCode.code);
     return {
       value: hsCode.code,
       label: `${hsCode.code} - ${hsCodeData?.description || hsCode.description}`,
-      description: hsCodeData?.description || hsCode.description
+      description: hsCodeData?.description || hsCode.description,
     };
   });
 
   // For Exclude HS Codes - show all HS codes except already excluded ones
-  const availableHsCodeOptions = (hsCodes || []).filter(hsCode => 
-    !fta?.excludedHsCodes?.some(excluded => excluded.code === hsCode.code)
-  ).map(hsCode => ({
-    value: hsCode.code,
-    label: `${hsCode.code} - ${hsCode.description}`,
-    description: hsCode.description
-  }));
+  const availableHsCodeOptions = (hsCodes || [])
+    .filter(
+      (hsCode) =>
+        !fta?.excludedHsCodes?.some((excluded) => excluded.code === hsCode.code)
+    )
+    .map((hsCode) => ({
+      value: hsCode.code,
+      label: `${hsCode.code} - ${hsCode.description}`,
+      description: hsCode.description,
+    }));
 
   // Populate form data when fta prop changes
   useEffect(() => {
@@ -105,15 +111,27 @@ export function UpdateFTAModal({ isOpen, onClose, fta }: UpdateFTAModalProps) {
       setNoExpiration(hasNoExpiration);
 
       // Set date texts
-      setEffectiveDateText(fta.effectiveDate ? format(new Date(fta.effectiveDate), "yyyy-MM-dd") : "");
-      setExpirationDateText(fta.expirationDate ? format(new Date(fta.expirationDate), "yyyy-MM-dd") : "");
+      setEffectiveDateText(
+        fta.effectiveDate
+          ? format(new Date(fta.effectiveDate), "yyyy-MM-dd")
+          : ""
+      );
+      setExpirationDateText(
+        fta.expirationDate
+          ? format(new Date(fta.expirationDate), "yyyy-MM-dd")
+          : ""
+      );
 
       // Map the FTA properties to form data
       setFormData({
         name: fta.name || "",
         defaultRate: fta.defaultRate || 0,
-        effectiveDate: fta.effectiveDate ? new Date(fta.effectiveDate) : undefined,
-        expirationDate: fta.expirationDate ? new Date(fta.expirationDate) : undefined,
+        effectiveDate: fta.effectiveDate
+          ? new Date(fta.effectiveDate)
+          : undefined,
+        expirationDate: fta.expirationDate
+          ? new Date(fta.expirationDate)
+          : undefined,
         includeHSCodes: [],
         excludeHSCodes: [],
         addConcessions: [],
@@ -154,16 +172,22 @@ export function UpdateFTAModal({ isOpen, onClose, fta }: UpdateFTAModalProps) {
 
     if (!noExpiration) {
       if (!formData.expirationDate) {
-        toast.error("Please select expiration date when 'no expiration' is unchecked");
+        toast.error(
+          "Please select expiration date when 'no expiration' is unchecked"
+        );
         return false;
       }
-      
+
       if (!isValid(formData.expirationDate)) {
         toast.error("Please enter a valid expiration date");
         return false;
       }
 
-      if (formData.expirationDate && formData.effectiveDate && formData.expirationDate <= formData.effectiveDate) {
+      if (
+        formData.expirationDate &&
+        formData.effectiveDate &&
+        formData.expirationDate <= formData.effectiveDate
+      ) {
         toast.error("Expiration date must be after effective date");
         return false;
       }
@@ -172,7 +196,9 @@ export function UpdateFTAModal({ isOpen, onClose, fta }: UpdateFTAModalProps) {
     // Validate new concessions
     for (const concession of formData.addConcessions) {
       if (concession.finalRate < 0) {
-        toast.error(`Concession rate for ${concession.hsCode} cannot be negative`);
+        toast.error(
+          `Concession rate for ${concession.hsCode} cannot be negative`
+        );
         return false;
       }
     }
@@ -211,17 +237,17 @@ export function UpdateFTAModal({ isOpen, onClose, fta }: UpdateFTAModalProps) {
       return;
     }
 
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      includeHSCodes: [...prev.includeHSCodes, hsCodeValue]
+      includeHSCodes: [...prev.includeHSCodes, hsCodeValue],
     }));
     setNewIncludeHsCode("");
   };
 
   const removeIncludeHsCode = (hsCode: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      includeHSCodes: prev.includeHSCodes.filter(code => code !== hsCode)
+      includeHSCodes: prev.includeHSCodes.filter((code) => code !== hsCode),
     }));
   };
 
@@ -237,17 +263,17 @@ export function UpdateFTAModal({ isOpen, onClose, fta }: UpdateFTAModalProps) {
       return;
     }
 
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      excludeHSCodes: [...prev.excludeHSCodes, hsCodeValue]
+      excludeHSCodes: [...prev.excludeHSCodes, hsCodeValue],
     }));
     setNewExcludeHsCode("");
   };
 
   const removeExcludeHsCode = (hsCode: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      excludeHSCodes: prev.excludeHSCodes.filter(code => code !== hsCode)
+      excludeHSCodes: prev.excludeHSCodes.filter((code) => code !== hsCode),
     }));
   };
 
@@ -264,35 +290,37 @@ export function UpdateFTAModal({ isOpen, onClose, fta }: UpdateFTAModalProps) {
     }
 
     // Check if HS code is already in new concessions
-    if (formData.addConcessions.some(c => c.hsCode === newConcession.hsCode)) {
+    if (
+      formData.addConcessions.some((c) => c.hsCode === newConcession.hsCode)
+    ) {
       toast.error("HS Code already has a concession to be added");
       return;
     }
 
     const concession: ConcessionForm = {
       id: Math.random().toString(36).substr(2, 9),
-      ...newConcession
+      ...newConcession,
     };
 
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      addConcessions: [...prev.addConcessions, concession]
+      addConcessions: [...prev.addConcessions, concession],
     }));
-    
+
     setNewConcession({ hsCode: "", hsCodeDescription: "", finalRate: 0 });
   };
 
   const removeAddedConcession = (id: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      addConcessions: prev.addConcessions.filter(c => c.id !== id)
+      addConcessions: prev.addConcessions.filter((c) => c.id !== id),
     }));
   };
 
   const removeExistingConcession = (concessionId: number) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      removeConcessions: [...prev.removeConcessions, concessionId.toString()]
+      removeConcessions: [...prev.removeConcessions, concessionId.toString()],
     }));
   };
 
@@ -318,11 +346,16 @@ export function UpdateFTAModal({ isOpen, onClose, fta }: UpdateFTAModalProps) {
     if (formData.defaultRate !== fta.defaultRate) {
       updatePayload.defaultRate = formData.defaultRate;
     }
-    if (formData.effectiveDate && formData.effectiveDate !== fta.effectiveDate) {
+    if (
+      formData.effectiveDate &&
+      formData.effectiveDate !== fta.effectiveDate
+    ) {
       updatePayload.effectiveDate = formData.effectiveDate;
     }
     if (formData.expirationDate !== fta.expirationDate) {
-      updatePayload.expirationDate = noExpiration ? null : formData.expirationDate;
+      updatePayload.expirationDate = noExpiration
+        ? null
+        : formData.expirationDate;
     }
     if (formData.includeHSCodes.length > 0) {
       updatePayload.includeHSCodes = formData.includeHSCodes;
@@ -331,9 +364,9 @@ export function UpdateFTAModal({ isOpen, onClose, fta }: UpdateFTAModalProps) {
       updatePayload.excludeHSCodes = formData.excludeHSCodes;
     }
     if (formData.addConcessions.length > 0) {
-      updatePayload.addConcessions = formData.addConcessions.map(c => ({
+      updatePayload.addConcessions = formData.addConcessions.map((c) => ({
         hsCode: c.hsCode,
-        finalRate: c.finalRate
+        finalRate: c.finalRate,
       }));
     }
     if (formData.removeConcessions.length > 0) {
@@ -355,8 +388,8 @@ export function UpdateFTAModal({ isOpen, onClose, fta }: UpdateFTAModalProps) {
 
   if (!fta) return null;
 
-  const getPartyDisplayName = (party: FTA['partyA']) => {
-    if (party.type === 'COUNTRY') {
+  const getPartyDisplayName = (party: FTA["partyA"]) => {
+    if (party.type === "COUNTRY") {
       return `${party.country?.name} (Country)`;
     } else {
       return `${party.bloc?.name} (Bloc - ${party.bloc?.memberCountries.length || 0} members)`;
@@ -365,67 +398,84 @@ export function UpdateFTAModal({ isOpen, onClose, fta }: UpdateFTAModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-[60vw]! max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] max-w-[95vw] md:max-w-[60vw] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-semibold text-gray-900">
+          <DialogTitle className="text-lg md:text-2xl font-semibold text-gray-900">
             Update FTA: {fta.name}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-4 md:space-y-6">
           {/* Basic Information */}
           <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Basic Information</CardTitle>
+            <CardHeader className="pb-3 md:pb-4">
+              <CardTitle className="text-base md:text-lg">
+                Basic Information
+              </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3 md:space-y-4">
               {/* Display Parties (Read-only) */}
-              <div className="grid grid-cols-2 gap-4 p-3 bg-gray-50 rounded-lg">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 p-3 bg-gray-50 rounded-lg">
                 <div>
-                  <Label className="text-sm font-medium text-gray-700">Party A</Label>
+                  <Label className="text-xs md:text-sm font-medium text-gray-700">
+                    Party A
+                  </Label>
                   <div className="flex items-center space-x-2 mt-1">
-                    {fta.partyA.type === 'COUNTRY' ? (
-                      <Globe className="h-4 w-4 text-blue-600" />
+                    {fta.partyA.type === "COUNTRY" ? (
+                      <Globe className="h-3 w-3 md:h-4 md:w-4 text-blue-600" />
                     ) : (
-                      <Users className="h-4 w-4 text-green-600" />
+                      <Users className="h-3 w-3 md:h-4 md:w-4 text-green-600" />
                     )}
-                    <span className="font-medium">{getPartyDisplayName(fta.partyA)}</span>
+                    <span className="font-medium text-xs md:text-sm">
+                      {getPartyDisplayName(fta.partyA)}
+                    </span>
                   </div>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-gray-700">Party B</Label>
+                  <Label className="text-xs md:text-sm font-medium text-gray-700">
+                    Party B
+                  </Label>
                   <div className="flex items-center space-x-2 mt-1">
-                    {fta.partyB.type === 'COUNTRY' ? (
-                      <Globe className="h-4 w-4 text-blue-600" />
+                    {fta.partyB.type === "COUNTRY" ? (
+                      <Globe className="h-3 w-3 md:h-4 md:w-4 text-blue-600" />
                     ) : (
-                      <Users className="h-4 w-4 text-green-600" />
+                      <Users className="h-3 w-3 md:h-4 md:w-4 text-green-600" />
                     )}
-                    <span className="font-medium">{getPartyDisplayName(fta.partyB)}</span>
+                    <span className="font-medium text-xs md:text-sm">
+                      {getPartyDisplayName(fta.partyB)}
+                    </span>
                   </div>
                 </div>
               </div>
 
               <div>
-                <Label className="text-sm font-medium text-gray-700">
+                <Label className="text-xs md:text-sm font-medium text-gray-700">
                   FTA Name
                 </Label>
                 <Input
                   value={formData.name}
                   onChange={(e) => handleChange("name", e.target.value)}
-                  className="mt-1"
+                  className="mt-1 text-sm"
                   placeholder={fta.name}
                 />
               </div>
-              
+
               <div>
-                <Label className="text-sm font-medium text-gray-700">
+                <Label className="text-xs md:text-sm font-medium text-gray-700">
                   Default Rate (%)
                 </Label>
                 <Input
                   type="number"
-                  value={formData.defaultRate === 0 ? "0" : formData.defaultRate}
-                  onChange={(e) => handleChange("defaultRate", e.target.value === "" ? 0 : Number(e.target.value))}
-                  className="mt-1"
+                  value={
+                    formData.defaultRate === 0 ? "0" : formData.defaultRate
+                  }
+                  onChange={(e) =>
+                    handleChange(
+                      "defaultRate",
+                      e.target.value === "" ? 0 : Number(e.target.value)
+                    )
+                  }
+                  className="mt-1 text-sm"
                   min="0"
                   step="0.01"
                   placeholder={fta.defaultRate?.toString()}
@@ -436,14 +486,16 @@ export function UpdateFTAModal({ isOpen, onClose, fta }: UpdateFTAModalProps) {
 
           {/* Date Configuration */}
           <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Date Configuration</CardTitle>
+            <CardHeader className="pb-3 md:pb-4">
+              <CardTitle className="text-base md:text-lg">
+                Date Configuration
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                 {/* Effective Date */}
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium text-gray-700">
+                  <Label className="text-xs md:text-sm font-medium text-gray-700">
                     Effective Date
                   </Label>
                   <div className="flex gap-2">
@@ -453,21 +505,37 @@ export function UpdateFTAModal({ isOpen, onClose, fta }: UpdateFTAModalProps) {
                       value={effectiveDateText}
                       onChange={(e) => {
                         const value = e.target.value;
-                        const sanitizedValue = value.replace(/[^\d-]/g, '');
+                        const sanitizedValue = value.replace(/[^\d-]/g, "");
                         let formattedValue = sanitizedValue;
-                        
-                        if (sanitizedValue.length > 4 && sanitizedValue.charAt(4) !== '-') {
-                          formattedValue = sanitizedValue.slice(0, 4) + '-' + sanitizedValue.slice(4);
+
+                        if (
+                          sanitizedValue.length > 4 &&
+                          sanitizedValue.charAt(4) !== "-"
+                        ) {
+                          formattedValue =
+                            sanitizedValue.slice(0, 4) +
+                            "-" +
+                            sanitizedValue.slice(4);
                         }
-                        if (formattedValue.length > 7 && formattedValue.charAt(7) !== '-') {
-                          formattedValue = formattedValue.slice(0, 7) + '-' + formattedValue.slice(7);
+                        if (
+                          formattedValue.length > 7 &&
+                          formattedValue.charAt(7) !== "-"
+                        ) {
+                          formattedValue =
+                            formattedValue.slice(0, 7) +
+                            "-" +
+                            formattedValue.slice(7);
                         }
                         formattedValue = formattedValue.slice(0, 10);
-                        
+
                         setEffectiveDateText(formattedValue);
-                        
+
                         if (formattedValue.length === 10) {
-                          const parsedDate = parse(formattedValue, "yyyy-MM-dd", new Date());
+                          const parsedDate = parse(
+                            formattedValue,
+                            "yyyy-MM-dd",
+                            new Date()
+                          );
                           if (isValid(parsedDate)) {
                             handleChange("effectiveDate", parsedDate);
                           }
@@ -475,9 +543,15 @@ export function UpdateFTAModal({ isOpen, onClose, fta }: UpdateFTAModalProps) {
                       }}
                       onBlur={() => {
                         if (effectiveDateText.length === 10) {
-                          const parsedDate = parse(effectiveDateText, "yyyy-MM-dd", new Date());
+                          const parsedDate = parse(
+                            effectiveDateText,
+                            "yyyy-MM-dd",
+                            new Date()
+                          );
                           if (isValid(parsedDate)) {
-                            setEffectiveDateText(format(parsedDate, "yyyy-MM-dd"));
+                            setEffectiveDateText(
+                              format(parsedDate, "yyyy-MM-dd")
+                            );
                             handleChange("effectiveDate", parsedDate);
                           } else {
                             setEffectiveDateText("");
@@ -485,12 +559,12 @@ export function UpdateFTAModal({ isOpen, onClose, fta }: UpdateFTAModalProps) {
                           }
                         }
                       }}
-                      className="font-mono"
+                      className="font-mono text-sm"
                     />
                     <Popover>
                       <PopoverTrigger asChild>
-                        <Button variant="outline" className="px-3">
-                          <CalendarIcon className="h-4 w-4" />
+                        <Button variant="outline" className="px-2 md:px-3">
+                          <CalendarIcon className="h-3 w-3 md:h-4 md:w-4" />
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0">
@@ -499,19 +573,23 @@ export function UpdateFTAModal({ isOpen, onClose, fta }: UpdateFTAModalProps) {
                           selected={formData.effectiveDate}
                           onSelect={(date) => {
                             handleChange("effectiveDate", date);
-                            setEffectiveDateText(date ? format(date, "yyyy-MM-dd") : "");
+                            setEffectiveDateText(
+                              date ? format(date, "yyyy-MM-dd") : ""
+                            );
                           }}
                           initialFocus
                         />
                       </PopoverContent>
                     </Popover>
                   </div>
-                  <p className="text-xs text-gray-500">Enter date as YYYY-MM-DD or use calendar</p>
+                  <p className="text-[10px] md:text-xs text-gray-500">
+                    Enter date as YYYY-MM-DD or use calendar
+                  </p>
                 </div>
 
                 {/* Expiration Date */}
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium text-gray-700">
+                  <Label className="text-xs md:text-sm font-medium text-gray-700">
                     Expiration Date
                   </Label>
                   <div className="flex gap-2">
@@ -521,21 +599,37 @@ export function UpdateFTAModal({ isOpen, onClose, fta }: UpdateFTAModalProps) {
                       value={expirationDateText}
                       onChange={(e) => {
                         const value = e.target.value;
-                        const sanitizedValue = value.replace(/[^\d-]/g, '');
+                        const sanitizedValue = value.replace(/[^\d-]/g, "");
                         let formattedValue = sanitizedValue;
-                        
-                        if (sanitizedValue.length > 4 && sanitizedValue.charAt(4) !== '-') {
-                          formattedValue = sanitizedValue.slice(0, 4) + '-' + sanitizedValue.slice(4);
+
+                        if (
+                          sanitizedValue.length > 4 &&
+                          sanitizedValue.charAt(4) !== "-"
+                        ) {
+                          formattedValue =
+                            sanitizedValue.slice(0, 4) +
+                            "-" +
+                            sanitizedValue.slice(4);
                         }
-                        if (formattedValue.length > 7 && formattedValue.charAt(7) !== '-') {
-                          formattedValue = formattedValue.slice(0, 7) + '-' + formattedValue.slice(7);
+                        if (
+                          formattedValue.length > 7 &&
+                          formattedValue.charAt(7) !== "-"
+                        ) {
+                          formattedValue =
+                            formattedValue.slice(0, 7) +
+                            "-" +
+                            formattedValue.slice(7);
                         }
                         formattedValue = formattedValue.slice(0, 10);
-                        
+
                         setExpirationDateText(formattedValue);
-                        
+
                         if (formattedValue.length === 10) {
-                          const parsedDate = parse(formattedValue, "yyyy-MM-dd", new Date());
+                          const parsedDate = parse(
+                            formattedValue,
+                            "yyyy-MM-dd",
+                            new Date()
+                          );
                           if (isValid(parsedDate)) {
                             handleChange("expirationDate", parsedDate);
                           }
@@ -543,9 +637,15 @@ export function UpdateFTAModal({ isOpen, onClose, fta }: UpdateFTAModalProps) {
                       }}
                       onBlur={() => {
                         if (expirationDateText.length === 10) {
-                          const parsedDate = parse(expirationDateText, "yyyy-MM-dd", new Date());
+                          const parsedDate = parse(
+                            expirationDateText,
+                            "yyyy-MM-dd",
+                            new Date()
+                          );
                           if (isValid(parsedDate)) {
-                            setExpirationDateText(format(parsedDate, "yyyy-MM-dd"));
+                            setExpirationDateText(
+                              format(parsedDate, "yyyy-MM-dd")
+                            );
                             handleChange("expirationDate", parsedDate);
                           } else {
                             setExpirationDateText("");
@@ -554,16 +654,16 @@ export function UpdateFTAModal({ isOpen, onClose, fta }: UpdateFTAModalProps) {
                         }
                       }}
                       disabled={noExpiration}
-                      className={`font-mono ${noExpiration ? "opacity-50 cursor-not-allowed" : ""}`}
+                      className={`font-mono text-sm ${noExpiration ? "opacity-50 cursor-not-allowed" : ""}`}
                     />
                     <Popover>
                       <PopoverTrigger asChild>
-                        <Button 
-                          variant="outline" 
-                          className="px-3"
+                        <Button
+                          variant="outline"
+                          className="px-2 md:px-3"
                           disabled={noExpiration}
                         >
-                          <CalendarIcon className="h-4 w-4" />
+                          <CalendarIcon className="h-3 w-3 md:h-4 md:w-4" />
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0">
@@ -572,7 +672,9 @@ export function UpdateFTAModal({ isOpen, onClose, fta }: UpdateFTAModalProps) {
                           selected={formData.expirationDate}
                           onSelect={(date) => {
                             handleChange("expirationDate", date);
-                            setExpirationDateText(date ? format(date, "yyyy-MM-dd") : "");
+                            setExpirationDateText(
+                              date ? format(date, "yyyy-MM-dd") : ""
+                            );
                           }}
                           initialFocus
                           disabled={noExpiration}
@@ -580,12 +682,14 @@ export function UpdateFTAModal({ isOpen, onClose, fta }: UpdateFTAModalProps) {
                       </PopoverContent>
                     </Popover>
                   </div>
-                  <p className="text-xs text-gray-500">Enter date as YYYY-MM-DD or use calendar</p>
+                  <p className="text-[10px] md:text-xs text-gray-500">
+                    Enter date as YYYY-MM-DD or use calendar
+                  </p>
                 </div>
               </div>
 
               {/* No Expiration Checkbox */}
-              <div className="mt-4 pt-4 border-t border-gray-100">
+              <div className="mt-3 md:mt-4 pt-3 md:pt-4 border-t border-gray-100">
                 <div className="flex items-center space-x-3">
                   <Checkbox
                     id="no-expiration"
@@ -595,7 +699,7 @@ export function UpdateFTAModal({ isOpen, onClose, fta }: UpdateFTAModalProps) {
                   />
                   <Label
                     htmlFor="no-expiration"
-                    className="text-sm font-medium text-gray-700 cursor-pointer"
+                    className="text-xs md:text-sm font-medium text-gray-700 cursor-pointer"
                   >
                     This FTA has no expiration date
                   </Label>
@@ -606,17 +710,17 @@ export function UpdateFTAModal({ isOpen, onClose, fta }: UpdateFTAModalProps) {
 
           {/* Include HS Codes - Move from excluded to included */}
           <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">
+            <CardHeader className="pb-3 md:pb-4">
+              <CardTitle className="text-base md:text-lg">
                 Add HS Codes in FTA
               </CardTitle>
-              <p className="text-sm text-gray-600">
+              <p className="text-xs md:text-sm text-gray-600">
                 Select currently excluded HS codes to add to FTA benefits
               </p>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3 md:space-y-4">
               <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700">
+                <Label className="text-xs md:text-sm font-medium text-gray-700">
                   Select Excluded HS Code to Include
                 </Label>
                 <Combobox
@@ -629,32 +733,40 @@ export function UpdateFTAModal({ isOpen, onClose, fta }: UpdateFTAModalProps) {
                   width="w-full"
                   loading={hsCodesLoading}
                 />
-                <Button 
-                  onClick={() => addIncludeHsCode(newIncludeHsCode)} 
-                  variant="outline" 
-                  className="w-full mt-2"
+                <Button
+                  onClick={() => addIncludeHsCode(newIncludeHsCode)}
+                  variant="outline"
+                  className="w-full mt-2 text-xs md:text-sm"
                   disabled={!newIncludeHsCode}
                 >
-                  <Plus className="h-4 w-4 mr-2" />
+                  <Plus className="h-3 w-3 md:h-4 md:w-4 mr-2" />
                   Include Selected HS Code
                 </Button>
               </div>
-              
+
               {formData.includeHSCodes.length > 0 && (
-                <div className="space-y-3">
-                  <Label className="text-sm font-medium text-gray-700">
+                <div className="space-y-2 md:space-y-3">
+                  <Label className="text-xs md:text-sm font-medium text-gray-700">
                     HS Codes to Include ({formData.includeHSCodes.length})
                   </Label>
                   <div className="space-y-2">
                     {formData.includeHSCodes.map((hsCode) => {
-                      const hsCodeData = excludedHsCodeOptions.find(opt => opt.value === hsCode);
+                      const hsCodeData = excludedHsCodeOptions.find(
+                        (opt) => opt.value === hsCode
+                      );
                       return (
-                        <div key={hsCode} className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
-                          <div className="flex-1">
-                            <div className="flex items-center space-x-3">
-                              <span className="font-mono text-sm font-medium">{hsCode}</span>
-                              <span className="text-green-700 text-sm">
-                                {hsCodeData?.description || "No description available"}
+                        <div
+                          key={hsCode}
+                          className="flex items-center justify-between p-2 md:p-3 bg-green-50 rounded-lg border border-green-200"
+                        >
+                          <div className="flex-1 min-w-0">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-3 space-y-1 sm:space-y-0">
+                              <span className="font-mono text-xs md:text-sm font-medium">
+                                {hsCode}
+                              </span>
+                              <span className="text-green-700 text-xs md:text-sm break-words">
+                                {hsCodeData?.description ||
+                                  "No description available"}
                               </span>
                             </div>
                           </div>
@@ -662,9 +774,9 @@ export function UpdateFTAModal({ isOpen, onClose, fta }: UpdateFTAModalProps) {
                             variant="ghost"
                             size="sm"
                             onClick={() => removeIncludeHsCode(hsCode)}
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50 ml-2"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 className="h-3 w-3 md:h-4 md:w-4" />
                           </Button>
                         </div>
                       );
@@ -677,17 +789,17 @@ export function UpdateFTAModal({ isOpen, onClose, fta }: UpdateFTAModalProps) {
 
           {/* Exclude HS Codes - Add new exclusions */}
           <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">
+            <CardHeader className="pb-3 md:pb-4">
+              <CardTitle className="text-base md:text-lg">
                 Remove HS Codes from FTA
               </CardTitle>
-              <p className="text-sm text-gray-600">
+              <p className="text-xs md:text-sm text-gray-600">
                 Add new HS Codes to exclude from FTA benefits
               </p>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3 md:space-y-4">
               <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700">
+                <Label className="text-xs md:text-sm font-medium text-gray-700">
                   Select HS Code to Exclude
                 </Label>
                 <Combobox
@@ -700,32 +812,40 @@ export function UpdateFTAModal({ isOpen, onClose, fta }: UpdateFTAModalProps) {
                   width="w-full"
                   loading={hsCodesLoading}
                 />
-                <Button 
-                  onClick={() => addExcludeHsCode(newExcludeHsCode)} 
-                  variant="outline" 
-                  className="w-full mt-2"
+                <Button
+                  onClick={() => addExcludeHsCode(newExcludeHsCode)}
+                  variant="outline"
+                  className="w-full mt-2 text-xs md:text-sm"
                   disabled={!newExcludeHsCode}
                 >
-                  <Plus className="h-4 w-4 mr-2" />
+                  <Plus className="h-3 w-3 md:h-4 md:w-4 mr-2" />
                   Exclude Selected HS Code
                 </Button>
               </div>
-              
+
               {formData.excludeHSCodes.length > 0 && (
-                <div className="space-y-3">
-                  <Label className="text-sm font-medium text-gray-700">
+                <div className="space-y-2 md:space-y-3">
+                  <Label className="text-xs md:text-sm font-medium text-gray-700">
                     New HS Codes to Exclude ({formData.excludeHSCodes.length})
                   </Label>
                   <div className="space-y-2">
                     {formData.excludeHSCodes.map((hsCode) => {
-                      const hsCodeData = availableHsCodeOptions.find(opt => opt.value === hsCode);
+                      const hsCodeData = availableHsCodeOptions.find(
+                        (opt) => opt.value === hsCode
+                      );
                       return (
-                        <div key={hsCode} className="flex items-center justify-between p-3 bg-red-50 rounded-lg border border-red-200">
-                          <div className="flex-1">
-                            <div className="flex items-center space-x-3">
-                              <span className="font-mono text-sm font-medium">{hsCode}</span>
-                              <span className="text-red-700 text-sm">
-                                {hsCodeData?.description || "No description available"}
+                        <div
+                          key={hsCode}
+                          className="flex items-center justify-between p-2 md:p-3 bg-red-50 rounded-lg border border-red-200"
+                        >
+                          <div className="flex-1 min-w-0">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-3 space-y-1 sm:space-y-0">
+                              <span className="font-mono text-xs md:text-sm font-medium">
+                                {hsCode}
+                              </span>
+                              <span className="text-red-700 text-xs md:text-sm break-words">
+                                {hsCodeData?.description ||
+                                  "No description available"}
                               </span>
                             </div>
                           </div>
@@ -733,9 +853,9 @@ export function UpdateFTAModal({ isOpen, onClose, fta }: UpdateFTAModalProps) {
                             variant="ghost"
                             size="sm"
                             onClick={() => removeExcludeHsCode(hsCode)}
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50 ml-2"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 className="h-3 w-3 md:h-4 md:w-4" />
                           </Button>
                         </div>
                       );
@@ -748,28 +868,36 @@ export function UpdateFTAModal({ isOpen, onClose, fta }: UpdateFTAModalProps) {
 
           {/* Special Concessions */}
           <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Special Concessions</CardTitle>
+            <CardHeader className="pb-3 md:pb-4">
+              <CardTitle className="text-base md:text-lg">
+                Special Concessions
+              </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4 md:space-y-6">
               {/* Add New Concessions */}
-              <div className="space-y-4">
-                <h4 className="font-medium text-gray-700">Add New Concessions</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-3 md:space-y-4">
+                <h4 className="font-medium text-gray-700 text-sm md:text-base">
+                  Add New Concessions
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                   <div className="space-y-2">
-                    <Label className="text-sm font-medium text-gray-700">
+                    <Label className="text-xs md:text-sm font-medium text-gray-700">
                       HS Code
                     </Label>
                     <Combobox
                       options={availableHsCodeOptions}
                       value={newConcession.hsCode}
                       onValueChange={(value) => {
-                        const selectedHsCode = (hsCodes || []).find(hs => hs.code === value);
-                        setNewConcession(prev => ({ 
-                          ...prev, 
+                        const selectedHsCode = (hsCodes || []).find(
+                          (hs) => hs.code === value
+                        );
+                        setNewConcession((prev) => ({
+                          ...prev,
                           hsCode: value,
-                          hsCodeDescription: selectedHsCode?.description || "No description available"
-                        }))
+                          hsCodeDescription:
+                            selectedHsCode?.description ||
+                            "No description available",
+                        }));
                       }}
                       placeholder="Select HS Code"
                       searchPlaceholder="Search HS Codes..."
@@ -778,61 +906,78 @@ export function UpdateFTAModal({ isOpen, onClose, fta }: UpdateFTAModalProps) {
                       loading={hsCodesLoading}
                     />
                   </div>
-                  
+
                   <div className="space-y-2">
-                    <Label className="text-sm font-medium text-gray-700">
+                    <Label className="text-xs md:text-sm font-medium text-gray-700">
                       Final Rate (%)
                     </Label>
                     <Input
                       type="number"
                       placeholder="Enter final rate"
-                      value={newConcession.finalRate === 0 ? "0" : newConcession.finalRate}
-                      onChange={(e) => setNewConcession(prev => ({ 
-                        ...prev, 
-                        finalRate: e.target.value === "" ? 0 : Number(e.target.value) 
-                      }))}
+                      value={
+                        newConcession.finalRate === 0
+                          ? "0"
+                          : newConcession.finalRate
+                      }
+                      onChange={(e) =>
+                        setNewConcession((prev) => ({
+                          ...prev,
+                          finalRate:
+                            e.target.value === "" ? 0 : Number(e.target.value),
+                        }))
+                      }
                       min="0"
                       step="0.01"
+                      className="text-sm"
                     />
                   </div>
                 </div>
-                
-                <Button 
-                  onClick={addConcession} 
-                  variant="outline" 
-                  className="w-full"
-                  disabled={!newConcession.hsCode || newConcession.finalRate === 0}
+
+                <Button
+                  onClick={addConcession}
+                  variant="outline"
+                  className="w-full text-xs md:text-sm"
+                  disabled={
+                    !newConcession.hsCode || newConcession.finalRate === 0
+                  }
                 >
-                  <Plus className="h-4 w-4 mr-2" />
+                  <Plus className="h-3 w-3 md:h-4 md:w-4 mr-2" />
                   Add Concession
                 </Button>
 
                 {formData.addConcessions.length > 0 && (
-                  <div className="space-y-3">
-                    <Label className="text-sm font-medium text-gray-700">
+                  <div className="space-y-2 md:space-y-3">
+                    <Label className="text-xs md:text-sm font-medium text-gray-700">
                       New Concessions to Add ({formData.addConcessions.length})
                     </Label>
                     <div className="space-y-2">
                       {formData.addConcessions.map((concession) => (
-                        <div key={concession.id} className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
-                          <div className="flex-1">
-                            <div className="flex items-center space-x-4">
-                              <div>
-                                <span className="font-mono text-sm font-medium block">{concession.hsCode}</span>
-                                <span className="text-green-700 text-xs block">
+                        <div
+                          key={concession.id}
+                          className="flex items-center justify-between p-2 md:p-3 bg-green-50 rounded-lg border border-green-200"
+                        >
+                          <div className="flex-1 min-w-0">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-1 sm:space-y-0">
+                              <div className="flex-1 min-w-0">
+                                <span className="font-mono text-xs md:text-sm font-medium block">
+                                  {concession.hsCode}
+                                </span>
+                                <span className="text-green-700 text-[10px] md:text-xs block break-words">
                                   {concession.hsCodeDescription}
                                 </span>
                               </div>
-                              <span className="text-green-700 font-medium text-lg">{concession.finalRate}%</span>
+                              <span className="text-green-700 font-medium text-sm md:text-lg">
+                                {concession.finalRate}%
+                              </span>
                             </div>
                           </div>
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => removeAddedConcession(concession.id)}
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50 ml-2"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 className="h-3 w-3 md:h-4 md:w-4" />
                           </Button>
                         </div>
                       ))}
@@ -843,42 +988,60 @@ export function UpdateFTAModal({ isOpen, onClose, fta }: UpdateFTAModalProps) {
 
               {/* Remove Existing Concessions */}
               {fta.specialConcessions.length > 0 && (
-                <div className="space-y-4 pt-4 border-t border-gray-200">
-                  <h4 className="font-medium text-gray-700">Existing Concessions</h4>
+                <div className="space-y-3 md:space-y-4 pt-3 md:pt-4 border-t border-gray-200">
+                  <h4 className="font-medium text-gray-700 text-sm md:text-base">
+                    Existing Concessions
+                  </h4>
                   <div className="space-y-2">
                     {fta.specialConcessions.map((concession) => {
-                      const isMarkedForRemoval = formData.removeConcessions.includes(concession.id.toString());
+                      const isMarkedForRemoval =
+                        formData.removeConcessions.includes(
+                          concession.id.toString()
+                        );
                       return (
-                        <div 
-                          key={concession.id} 
-                          className={`flex items-center justify-between p-3 rounded-lg border ${
-                            isMarkedForRemoval ? 'bg-red-50 border-red-200' : 'bg-gray-50'
+                        <div
+                          key={concession.id}
+                          className={`flex items-center justify-between p-2 md:p-3 rounded-lg border ${
+                            isMarkedForRemoval
+                              ? "bg-red-50 border-red-200"
+                              : "bg-gray-50"
                           }`}
                         >
-                          <div className="flex items-center space-x-4">
-                            <div>
-                              <span className="font-mono text-sm font-medium block">{concession.hsCode.code}</span>
-                              <span className="text-gray-600 text-xs block">
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-1 sm:space-y-0 flex-1 min-w-0">
+                            <div className="flex-1 min-w-0">
+                              <span className="font-mono text-xs md:text-sm font-medium block">
+                                {concession.hsCode.code}
+                              </span>
+                              <span className="text-gray-600 text-[10px] md:text-xs block break-words">
                                 {concession.hsCode.description}
                               </span>
                             </div>
-                            <span className={`font-medium text-lg ${isMarkedForRemoval ? 'text-red-700' : 'text-gray-700'}`}>
-                              {concession.finalRate}%
-                            </span>
-                            {isMarkedForRemoval && (
-                              <Badge variant="destructive" className="text-xs">
-                                Will be removed
-                              </Badge>
-                            )}
+                            <div className="flex items-center space-x-2">
+                              <span
+                                className={`font-medium text-sm md:text-lg ${isMarkedForRemoval ? "text-red-700" : "text-gray-700"}`}
+                              >
+                                {concession.finalRate}%
+                              </span>
+                              {isMarkedForRemoval && (
+                                <Badge
+                                  variant="destructive"
+                                  className="text-[10px] md:text-xs"
+                                >
+                                  Will be removed
+                                </Badge>
+                              )}
+                            </div>
                           </div>
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => removeExistingConcession(concession.id)}
+                            onClick={() =>
+                              removeExistingConcession(concession.id)
+                            }
                             disabled={isMarkedForRemoval}
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50 ml-2"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 className="h-3 w-3 md:h-4 md:w-4" />
                           </Button>
                         </div>
                       );
@@ -890,19 +1053,19 @@ export function UpdateFTAModal({ isOpen, onClose, fta }: UpdateFTAModalProps) {
           </Card>
         </div>
 
-        <DialogFooter className="pt-4 border-t border-gray-100">
-          <div className="flex space-x-3 w-full sm:w-auto">
+        <DialogFooter className="pt-3 md:pt-4 border-t border-gray-100">
+          <div className="flex flex-col-reverse sm:flex-row space-y-2 space-y-reverse sm:space-y-0 sm:space-x-3 w-full sm:w-auto">
             <Button
               variant="outline"
               onClick={() => handleClose(false)}
-              className="flex-1 sm:flex-none"
+              className="w-full sm:w-auto text-sm"
             >
               Cancel
             </Button>
             <Button
               disabled={isPending}
               onClick={handleUpdate}
-              className="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
+              className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-sm"
             >
               {isPending ? (
                 <>

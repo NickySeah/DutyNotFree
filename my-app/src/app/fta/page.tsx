@@ -50,11 +50,11 @@ export default function ProductPage() {
   if (error) {
     console.error("FTA Error:", error);
     return (
-      <div className="p-8 text-center">
-        <div className="text-red-500 font-bold mb-2">
+      <div className="p-4 md:p-8 text-center">
+        <div className="text-red-500 font-bold mb-2 text-sm md:text-base">
           Error loading free trade agreements
         </div>
-        <div className="text-sm text-gray-600">
+        <div className="text-xs md:text-sm text-gray-600">
           {error instanceof Error ? error.message : "Unknown error"}
         </div>
       </div>
@@ -67,27 +67,34 @@ export default function ProductPage() {
         <FtaTableSkeleton />
       ) : (
         <>
-          <div className="p-8 mx-auto text-center">
-            <h1 className="text-2xl font-bold">Free Trade Agreements</h1>
-            <h3 className="text-lg font-medium text-gray-500">
-              View, manage, and define free trade agremeents
+          <div className="p-4 md:p-8 mx-auto text-center">
+            <h1 className="text-xl md:text-2xl font-bold">
+              Free Trade Agreements
+            </h1>
+            <h3 className="text-base md:text-lg font-medium text-gray-500">
+              View, manage, and define free trade agreements
             </h3>
           </div>
-          <div className="container mx-auto p-5">
+          <div className="container mx-auto p-3 md:p-5">
             <DataTable columns={columns} data={ftas} />
           </div>
         </>
       )}
 
-      <div className="p-8 mx-auto text-center">
-        <h1 className="text-2xl font-bold">Need help calculating tariffs?</h1>
-        <p className="text-lg font-medium text-gray-500 mb-4">
+      <div className="p-4 md:p-8 mx-auto text-center">
+        <h1 className="text-xl md:text-2xl font-bold">
+          Need help calculating tariffs?
+        </h1>
+        <p className="text-sm md:text-lg font-medium text-gray-500 mb-4">
           Our calculator can help you determine the correct tariffs and fees for
           your products.
         </p>
-        <Link href="/calculator">
+        <Link
+          href="/calculator"
+          className="inline-flex items-center text-sm md:text-base"
+        >
           Go to Calculator
-          <ArrowRight className="inline-block ml-2" />
+          <ArrowRight className="inline-block ml-2 h-4 w-4 md:h-5 md:w-5" />
         </Link>
       </div>
 
