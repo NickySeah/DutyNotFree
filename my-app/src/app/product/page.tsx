@@ -6,6 +6,7 @@ import { createColumns } from "./columns";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { useUserProduct } from "@/hooks/useUserProduct";
+import { useProducts } from "@/hooks/useProducts"; // Add this import
 import { UpdateProductModal } from "@/components/updateProductModal";
 import { DeleteProductModal } from "@/components/deleteProductModal";
 import { CompactChatInterface } from "@/components/CompactChatInterface";
@@ -18,7 +19,28 @@ export default function ProductPage() {
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const { userId, isSupplier, isAdmin, isPending } = useUserRole();
+  const { userId, isSupplier, isImporter, isAdmin, isPending } = useUserRole();
+
+
+    // Early return after all hooks are called
+  if (!userId) return null;
+  // Always call both hooks (React rules of hooks)
+  const {
+    data: userProducts = [],
+    isLoading: isLoadingUserProducts,
+    error: userProductsError,
+  } = useUserProduct(userId);
+
+  const {
+    data: allProducts = [],
+    isLoading: isLoadingAllProducts,
+    error: allProductsError,
+  } = useProducts(userId);
+
+  // Determine which data to use based on role
+  const products = isSupplier ? (userProducts || []) : (allProducts || []) as Product[];
+  const isLoading = isSupplier ? isLoadingUserProducts : isLoadingAllProducts;
+  const error = isSupplier ? userProductsError : allProductsError;
 
   // Column functions
   const handleModifyProduct = (product: Product) => {
@@ -37,12 +59,8 @@ export default function ProductPage() {
     handleModifyProduct,
     handleDeleteProduct,
     isSupplier,
-    isAdmin,
     isPending
   );
-
-  if (!userId) return null;
-  const { data: products = [], isLoading, error } = useUserProduct(userId);
 
   if (error) {
     return (
@@ -81,7 +99,7 @@ export default function ProductPage() {
             {/* Existing Products Table */}
             <div>
               <h2 className="text-lg md:text-xl font-semibold mb-3 md:mb-4">
-                Your Products
+                {isSupplier ? "Your Products" : "All Products"}
               </h2>
               <DataTable columns={columns} data={products} />
             </div>

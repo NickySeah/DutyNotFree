@@ -19,7 +19,6 @@ export const createColumns = (
   onModify: (product: Product) => void,
   onDelete: (product: Product) => void,
   isSupplier: boolean,
-  isAdmin: boolean,
   isPending: boolean
 ): ColumnDef<Product>[] => {
   return [
