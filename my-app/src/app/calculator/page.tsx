@@ -462,7 +462,7 @@ const TariffCalculator = () => {
         <div className="border-t pt-3">
           <h5 className="font-medium text-gray-700 mb-2 flex items-center gap-2 text-xs md:text-sm">
             <FileText className="h-3 w-3 md:h-4 md:w-4 text-blue-600" />
-            Applied Tariffs:
+            Tariffs:
           </h5>
           <div className="space-y-2">
             {breakdown.appliedTariffs.map((tariff, index) => (
