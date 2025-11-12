@@ -79,11 +79,11 @@ public class CountryService {
     @Transactional
     public void deleteCountry(String code) {
         // Check if country exists before attempting to delete
-        if (!countries.existsByCode(code)) {
-            throw new RuntimeException("No country found with code " + code);
-        }
+        // if (!countries.existsByCode(code)) {
+        //     throw new RuntimeException("No country found with code " + code);
+        // }
         Country country = countries.findByCode(code)
-        .orElseThrow(() -> new RuntimeException("No bloc found with code " + code));
+        .orElseThrow(() -> new RuntimeException("No country found with code " + code));
 
         TradeParty countryTP = country.getTradeParty();
         if (!countryTP.getFtasAsPartyA().isEmpty() || !countryTP.getFtasAsPartyB().isEmpty()) {

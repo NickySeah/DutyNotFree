@@ -66,10 +66,10 @@ public class BlocService {
         }
 
         // Check if bloc with same code or bloc with same name exists
-        if (blocs.existsByCode(code)) {    
-            throw new RuntimeException("Bloc with code " + code + " already exists");
-        }
-        else if (blocs.existsByName(name)) {     
+        // if (blocs.existsByCode(code)) {    
+        //     throw new RuntimeException("Bloc with code " + code + " already exists");
+        // } else   // Redundant because already checked at start of method
+        if (blocs.existsByName(name)) {     
             throw new RuntimeException("Bloc with name " + name + " already exists");
         }
 
