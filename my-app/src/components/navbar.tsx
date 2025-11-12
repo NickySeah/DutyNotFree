@@ -175,7 +175,7 @@ export default function Navbar() {
                 >
                   Browse FTA
                 </Link>
-                {isSupplier && (
+                {(isAdmin || isSupplier) && (
                   <Link
                     href="/product"
                     className="text-base font-semibold text-white hover:text-gray-300"
