@@ -86,7 +86,7 @@ export default function Navbar() {
                 <Link href="/fta" className="text-lg font-semibold text-white">
                   Browse FTA
                 </Link>
-                {isSupplier && (
+                {(isAdmin || isSupplier) && (
                   <Link
                     href="/product"
                     className="text-lg font-semibold text-white"
