@@ -1,51 +1,41 @@
 package com.example.CSD.test.fta;
 
-import com.example.CSD.bloc.Bloc;
-import com.example.CSD.concession.Concession;
-import com.example.CSD.concession.ConcessionRepository;
-import com.example.CSD.country.Country;
-import com.example.CSD.fta.FTA;
-import com.example.CSD.fta.FTACreateRequest;
-import com.example.CSD.fta.FTAConcessionRequest;
-import com.example.CSD.fta.FTARepository;
-import com.example.CSD.fta.FTAService;
-import com.example.CSD.fta.FTAUpdateRequest;
-import com.example.CSD.hscode.HSCode;
-import com.example.CSD.hscode.HSCodeRepository;
-import com.example.CSD.tradeParty.TradeParty;
-import com.example.CSD.tradeParty.TradePartyRepository;
+import java.time.LocalDate;
+import java.util.*;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+import com.example.CSD.bloc.Bloc;
+import com.example.CSD.concession.Concession;
+import com.example.CSD.concession.ConcessionRepository;
+import com.example.CSD.country.Country;
+import com.example.CSD.hscode.HSCode;
+import com.example.CSD.hscode.HSCodeRepository;
+import com.example.CSD.tradeParty.TradeParty;
+import com.example.CSD.tradeParty.TradePartyRepository;
+import com.example.CSD.fta.*;
+
 @ExtendWith(MockitoExtension.class)
 public class FTAServiceTest {
     @Mock
-    private FTARepository ftaRepository;
+    private FTARepository agreements;
 
     @Mock
-    private TradePartyRepository tradePartyRepository;
+    private TradePartyRepository parties;
 
     @Mock
-    private HSCodeRepository hsCodeRepository;
+    private HSCodeRepository hsCodes;
 
     @Mock
-    private ConcessionRepository concessionRepository;
+    private ConcessionRepository concessions;
 
     @InjectMocks
     private FTAService ftaService;
@@ -99,14 +89,13 @@ public class FTAServiceTest {
         testFTA.setSpecialConcessions(new HashSet<>());
     }
 
-    // ========== Basic CRUD Tests ==========
-
+    // ========== getFTA() Tests ==========
     @Test
-    public void should_ReturnAllFTAs_WhenListFTAsCalled() {
+    public void listFTAs_ShouldReturnAllFTAs_WhenListFTAsCalled() {
         // Arrange
         List<FTA> ftas = new ArrayList<>();
         ftas.add(testFTA);
-        when(ftaRepository.findAll()).thenReturn(ftas);
+        when(agreements.findAll()).thenReturn(ftas);
 
         // Act
         List<FTA> result = ftaService.listFTAs();
@@ -115,13 +104,13 @@ public class FTAServiceTest {
         assertNotNull(result);
         assertEquals(1, result.size());
         assertEquals(5.0, result.get(0).getDefaultRate());
-        verify(ftaRepository).findAll();
+        verify(agreements).findAll();
     }
 
     @Test
-    public void should_ReturnFTA_WhenGetFTAByIDCalled() {
+    public void getFTAByID_ShouldReturnFTA_WhenGetFTAByIDCalled() {
         // Arrange
-        when(ftaRepository.findById(1L)).thenReturn(Optional.of(testFTA));
+        when(agreements.findById(1L)).thenReturn(Optional.of(testFTA));
 
         // Act
         FTA result = ftaService.getFTAByID(1L);
@@ -130,58 +119,29 @@ public class FTAServiceTest {
         assertNotNull(result);
         assertEquals(1L, result.getId());
         assertEquals(5.0, result.getDefaultRate());
-        verify(ftaRepository).findById(1L);
+        verify(agreements).findById(1L);
     }
 
     @Test
-    public void should_ThrowException_WhenFTANotFound() {
+    public void getFTAByID_ShouldThrowException_WhenFTANotFound() {
         // Arrange
-        when(ftaRepository.findById(999L)).thenReturn(Optional.empty());
+        when(agreements.findById(999L)).thenReturn(Optional.empty());
 
         // Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
             ftaService.getFTAByID(999L));
 
         assertTrue(exception.getMessage().contains("No FTA with id 999 exist"));
-        verify(ftaRepository).findById(999L);
+        verify(agreements).findById(999L);
     }
 
-    @Test
-    public void should_DeleteFTA_WhenExists() {
-        // Arrange
-        when(ftaRepository.existsById(1L)).thenReturn(true);
-        doNothing().when(ftaRepository).deleteById(1L);
-
-        // Act
-        ftaService.deleteFTA(1L);
-
-        // Assert
-        verify(ftaRepository).existsById(1L);
-        verify(ftaRepository).deleteById(1L);
-    }
 
     @Test
-    public void should_ThrowException_WhenDeleteFTANotFound() {
-        // Arrange
-        when(ftaRepository.existsById(999L)).thenReturn(false);
-
-        // Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class, () ->
-            ftaService.deleteFTA(999L));
-
-        assertTrue(exception.getMessage().contains("No FTA found with id 999"));
-        verify(ftaRepository).existsById(999L);
-        verify(ftaRepository, never()).deleteById(any());
-    }
-
-    // ========== getFTA() Tests ==========
-
-    @Test
-    public void should_ReturnAllFTAs_WhenNoFiltersProvided() {
+    public void getFTA_ShouldReturnAllFTAs_WhenNoFiltersProvided() {
         // Arrange
         List<FTA> ftas = new ArrayList<>();
         ftas.add(testFTA);
-        when(ftaRepository.findAll()).thenReturn(ftas);
+        when(agreements.findAll()).thenReturn(ftas);
 
         // Act
         List<FTA> result = ftaService.getFTA(null, null, null);
@@ -189,15 +149,15 @@ public class FTAServiceTest {
         // Assert
         assertNotNull(result);
         assertEquals(1, result.size());
-        verify(ftaRepository).findAll();
+        verify(agreements).findAll();
     }
 
     @Test
-    public void should_FilterByType_WhenTypeProvided() {
+    public void getFTA_ShouldFilterByType_WhenTypeProvided() {
         // Arrange
         List<FTA> bilateralFTAs = new ArrayList<>();
         bilateralFTAs.add(testFTA);
-        when(ftaRepository.findAllByType(FTA.FTAType.BILATERAL)).thenReturn(bilateralFTAs);
+        when(agreements.findAllByType(FTA.FTAType.BILATERAL)).thenReturn(bilateralFTAs);
 
         // Act
         List<FTA> result = ftaService.getFTA("BILATERAL", null, null);
@@ -205,11 +165,11 @@ public class FTAServiceTest {
         // Assert
         assertNotNull(result);
         assertEquals(1, result.size());
-        verify(ftaRepository).findAllByType(FTA.FTAType.BILATERAL);
+        verify(agreements).findAllByType(FTA.FTAType.BILATERAL);
     }
 
     @Test
-    public void should_ThrowException_WhenInvalidTypeProvided() {
+    public void getFTA_ShouldThrowException_WhenInvalidTypeProvided() {
         // Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
             ftaService.getFTA("INVALID", null, null));
@@ -218,14 +178,14 @@ public class FTAServiceTest {
     }
 
     @Test
-    public void should_FilterByParties_WhenPartiesProvided() {
+    public void getFTA_ShouldFilterByParties_WhenPartiesProvided() {
         // Arrange
-        when(tradePartyRepository.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
-        when(tradePartyRepository.findByCountryCode("840")).thenReturn(Optional.of(testPartyB));
+        when(parties.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
+        when(parties.findByCountryCode("840")).thenReturn(Optional.of(testPartyB));
         
         List<FTA> allFTAs = new ArrayList<>();
         allFTAs.add(testFTA);
-        when(ftaRepository.findAll()).thenReturn(allFTAs);
+        when(agreements.findAll()).thenReturn(allFTAs);
 
         // Act
         List<FTA> result = ftaService.getFTA(null, "702", "840");
@@ -233,14 +193,14 @@ public class FTAServiceTest {
         // Assert
         assertNotNull(result);
         assertEquals(1, result.size());
-        verify(tradePartyRepository).findByCountryCode("702");
-        verify(tradePartyRepository).findByCountryCode("840");
+        verify(parties).findByCountryCode("702");
+        verify(parties).findByCountryCode("840");
     }
 
     @Test
-    public void should_ThrowException_WhenSamePartyProvided() {
+    public void getFTA_ShouldThrowException_WhenSamePartyProvided() {
         // Arrange
-        when(tradePartyRepository.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
+        when(parties.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
 
         // Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
@@ -250,9 +210,9 @@ public class FTAServiceTest {
     }
 
     @Test
-    public void should_ThrowException_WhenPartyNotFound() {
+    public void getFTA_ShouldThrowException_WhenPartyNotFound() {
         // Arrange: "XX" is not 3 digits, so it will be treated as a bloc code
-        when(tradePartyRepository.findByBlocCode("XX")).thenReturn(Optional.empty());
+        when(parties.findByBlocCode("XX")).thenReturn(Optional.empty());
 
         // Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
@@ -262,13 +222,13 @@ public class FTAServiceTest {
     }
 
     @Test
-    public void should_FilterByTypeAndPartyA_WhenTypeAndPartyAProvided() {
+    public void getFTA_ShouldFilterByTypeAndPartyA_WhenTypeAndPartyAProvided() {
         // Arrange
-        when(tradePartyRepository.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
+        when(parties.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
         
         List<FTA> bilateralFTAs = new ArrayList<>();
         bilateralFTAs.add(testFTA);
-        when(ftaRepository.findAllByType(FTA.FTAType.BILATERAL)).thenReturn(bilateralFTAs);
+        when(agreements.findAllByType(FTA.FTAType.BILATERAL)).thenReturn(bilateralFTAs);
 
         // Act
         List<FTA> result = ftaService.getFTA("BILATERAL", "702", null);
@@ -276,18 +236,18 @@ public class FTAServiceTest {
         // Assert
         assertNotNull(result);
         assertEquals(1, result.size());
-        verify(ftaRepository).findAllByType(FTA.FTAType.BILATERAL);
-        verify(tradePartyRepository).findByCountryCode("702");
+        verify(agreements).findAllByType(FTA.FTAType.BILATERAL);
+        verify(parties).findByCountryCode("702");
     }
 
     @Test
-    public void should_FilterByTypeAndPartyB_WhenTypeAndPartyBProvided() {
+    public void getFTA_ShouldFilterByTypeAndPartyB_WhenTypeAndPartyBProvided() {
         // Arrange
-        when(tradePartyRepository.findByCountryCode("840")).thenReturn(Optional.of(testPartyB));
+        when(parties.findByCountryCode("840")).thenReturn(Optional.of(testPartyB));
         
         List<FTA> bilateralFTAs = new ArrayList<>();
         bilateralFTAs.add(testFTA);
-        when(ftaRepository.findAllByType(FTA.FTAType.BILATERAL)).thenReturn(bilateralFTAs);
+        when(agreements.findAllByType(FTA.FTAType.BILATERAL)).thenReturn(bilateralFTAs);
 
         // Act
         List<FTA> result = ftaService.getFTA("BILATERAL", null, "840");
@@ -295,18 +255,18 @@ public class FTAServiceTest {
         // Assert
         assertNotNull(result);
         assertEquals(1, result.size());
-        verify(ftaRepository).findAllByType(FTA.FTAType.BILATERAL);
-        verify(tradePartyRepository).findByCountryCode("840");
+        verify(agreements).findAllByType(FTA.FTAType.BILATERAL);
+        verify(parties).findByCountryCode("840");
     }
 
     @Test
-    public void should_FilterByPartyAOnly_WhenOnlyPartyAProvided() {
+    public void getFTA_ShouldFilterByPartyAOnly_WhenOnlyPartyAProvided() {
         // Arrange
-        when(tradePartyRepository.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
+        when(parties.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
         
         List<FTA> allFTAs = new ArrayList<>();
         allFTAs.add(testFTA);
-        when(ftaRepository.findAll()).thenReturn(allFTAs);
+        when(agreements.findAll()).thenReturn(allFTAs);
 
         // Act
         List<FTA> result = ftaService.getFTA(null, "702", null);
@@ -314,18 +274,18 @@ public class FTAServiceTest {
         // Assert
         assertNotNull(result);
         assertEquals(1, result.size());
-        verify(ftaRepository).findAll();
-        verify(tradePartyRepository).findByCountryCode("702");
+        verify(agreements).findAll();
+        verify(parties).findByCountryCode("702");
     }
 
     @Test
-    public void should_FilterByPartyBOnly_WhenOnlyPartyBProvided() {
+    public void getFTA_ShouldFilterByPartyBOnly_WhenOnlyPartyBProvided() {
         // Arrange
-        when(tradePartyRepository.findByCountryCode("840")).thenReturn(Optional.of(testPartyB));
+        when(parties.findByCountryCode("840")).thenReturn(Optional.of(testPartyB));
         
         List<FTA> allFTAs = new ArrayList<>();
         allFTAs.add(testFTA);
-        when(ftaRepository.findAll()).thenReturn(allFTAs);
+        when(agreements.findAll()).thenReturn(allFTAs);
 
         // Act
         List<FTA> result = ftaService.getFTA(null, null, "840");
@@ -333,12 +293,12 @@ public class FTAServiceTest {
         // Assert
         assertNotNull(result);
         assertEquals(1, result.size());
-        verify(ftaRepository).findAll();
-        verify(tradePartyRepository).findByCountryCode("840");
+        verify(agreements).findAll();
+        verify(parties).findByCountryCode("840");
     }
 
     @Test
-    public void should_FilterOutNonMatchingFTAs_WhenPartyDoesNotMatch() {
+    public void getFTA_ShouldFilterOutNonMatchingFTAs_WhenPartyDoesNotMatch() {
         // Arrange: Create a different FTA that won't match
         TradeParty otherParty = new TradeParty();
         otherParty.setId(3L);
@@ -358,12 +318,12 @@ public class FTAServiceTest {
         otherFTA.setEffectiveDate(LocalDate.of(2025, 1, 1));
         otherFTA.setExpirationDate(LocalDate.of(2025, 12, 31));
 
-        when(tradePartyRepository.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
+        when(parties.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
         
         List<FTA> allFTAs = new ArrayList<>();
         allFTAs.add(testFTA);
         allFTAs.add(otherFTA);
-        when(ftaRepository.findAll()).thenReturn(allFTAs);
+        when(agreements.findAll()).thenReturn(allFTAs);
 
         // Act: Filter by partyA = "702"
         List<FTA> result = ftaService.getFTA(null, "702", null);
@@ -375,7 +335,7 @@ public class FTAServiceTest {
     }
 
     @Test
-    public void should_ReturnEmptyList_WhenNoFTAsMatchFilters() {
+    public void getFTA_ShouldReturnEmptyList_WhenNoFTAsMatchFilters() {
         // Arrange: Create a completely different party that won't match
         TradeParty differentParty = new TradeParty();
         differentParty.setId(3L);
@@ -386,7 +346,7 @@ public class FTAServiceTest {
         differentCountry.setAlpha3("AUS");
         differentParty.setCountry(differentCountry);
 
-        when(tradePartyRepository.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
+        when(parties.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
         
         List<FTA> allFTAs = new ArrayList<>();
         // Add an FTA with completely different parties
@@ -396,7 +356,7 @@ public class FTAServiceTest {
         nonMatchingFTA.setPartyA(differentParty); // Different party
         nonMatchingFTA.setPartyB(differentParty); // Different party
         allFTAs.add(nonMatchingFTA);
-        when(ftaRepository.findAll()).thenReturn(allFTAs);
+        when(agreements.findAll()).thenReturn(allFTAs);
 
         // Act: Filter by partyA = "702" but FTA has completely different parties
         List<FTA> result = ftaService.getFTA(null, "702", null);
@@ -407,7 +367,7 @@ public class FTAServiceTest {
     }
 
     @Test
-    public void should_MatchBlocMembership_ForPartyAWhenBlocContainsCountry() {
+    public void getFTA_ShouldMatchBlocMembership_ForPartyAWhenBlocContainsCountry() {
         // Arrange: Create a bloc that includes testCountryA
         TradeParty blocParty = new TradeParty();
         blocParty.setId(3L);
@@ -436,8 +396,8 @@ public class FTAServiceTest {
         List<FTA> ftas = new ArrayList<>();
         ftas.add(blocFTA);
 
-        when(tradePartyRepository.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
-        when(ftaRepository.findAll()).thenReturn(ftas);
+        when(parties.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
+        when(agreements.findAll()).thenReturn(ftas);
 
         // Act: Query by the country code that belongs to the bloc
         List<FTA> result = ftaService.getFTA(null, "702", null);
@@ -449,7 +409,7 @@ public class FTAServiceTest {
     }
 
     @Test
-    public void should_MatchBlocMembership_ForPartyBWhenBlocContainsCountry() {
+    public void getFTA_ShouldMatchBlocMembership_ForPartyBWhenBlocContainsCountry() {
         // Arrange: Create a bloc that includes testCountryB
         TradeParty blocParty = new TradeParty();
         blocParty.setId(4L);
@@ -478,8 +438,8 @@ public class FTAServiceTest {
         List<FTA> ftas = new ArrayList<>();
         ftas.add(blocFTA);
 
-        when(tradePartyRepository.findByCountryCode("840")).thenReturn(Optional.of(testPartyB));
-        when(ftaRepository.findAll()).thenReturn(ftas);
+        when(parties.findByCountryCode("840")).thenReturn(Optional.of(testPartyB));
+        when(agreements.findAll()).thenReturn(ftas);
 
         // Act: Query by the country code that belongs to the bloc
         List<FTA> result = ftaService.getFTA(null, null, "840");
@@ -493,14 +453,14 @@ public class FTAServiceTest {
     // ========== getActiveFTA() Tests ==========
 
     @Test
-    public void should_ReturnActiveFTAs_WhenDateProvided() {
+    public void getActiveFTA_ShouldReturnActiveFTAs_WhenDateProvided() {
         // Arrange
-        when(tradePartyRepository.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
-        when(tradePartyRepository.findByCountryCode("840")).thenReturn(Optional.of(testPartyB));
+        when(parties.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
+        when(parties.findByCountryCode("840")).thenReturn(Optional.of(testPartyB));
         
         List<FTA> allFTAs = new ArrayList<>();
         allFTAs.add(testFTA);
-        when(ftaRepository.findAll()).thenReturn(allFTAs);
+        when(agreements.findAll()).thenReturn(allFTAs);
 
         // Act
         List<FTA> result = ftaService.getActiveFTA(null, "702", "840", "2025-06-01");
@@ -508,18 +468,18 @@ public class FTAServiceTest {
         // Assert
         assertNotNull(result);
         assertEquals(1, result.size()); // FTA is active on 2025-06-01
-        verify(ftaRepository).findAll();
+        verify(agreements).findAll();
     }
 
     @Test
-    public void should_FilterOutInactiveFTAs_WhenDateBeforeEffective() {
+    public void getActiveFTA_ShouldFilterOutInactiveFTAs_WhenDateBeforeEffective() {
         // Arrange
-        when(tradePartyRepository.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
-        when(tradePartyRepository.findByCountryCode("840")).thenReturn(Optional.of(testPartyB));
+        when(parties.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
+        when(parties.findByCountryCode("840")).thenReturn(Optional.of(testPartyB));
         
         List<FTA> allFTAs = new ArrayList<>();
         allFTAs.add(testFTA);
-        when(ftaRepository.findAll()).thenReturn(allFTAs);
+        when(agreements.findAll()).thenReturn(allFTAs);
 
         // Act: Query date before effective date
         List<FTA> result = ftaService.getActiveFTA(null, "702", "840", "2024-12-31");
@@ -530,14 +490,14 @@ public class FTAServiceTest {
     }
 
     @Test
-    public void should_FilterOutInactiveFTAs_WhenDateAfterExpiration() {
+    public void getActiveFTA_ShouldFilterOutInactiveFTAs_WhenDateAfterExpiration() {
         // Arrange
-        when(tradePartyRepository.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
-        when(tradePartyRepository.findByCountryCode("840")).thenReturn(Optional.of(testPartyB));
+        when(parties.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
+        when(parties.findByCountryCode("840")).thenReturn(Optional.of(testPartyB));
         
         List<FTA> allFTAs = new ArrayList<>();
         allFTAs.add(testFTA);
-        when(ftaRepository.findAll()).thenReturn(allFTAs);
+        when(agreements.findAll()).thenReturn(allFTAs);
 
         // Act: Query date after expiration date
         List<FTA> result = ftaService.getActiveFTA(null, "702", "840", "2026-01-01");
@@ -548,7 +508,7 @@ public class FTAServiceTest {
     }
 
     @Test
-    public void should_ThrowException_WhenInvalidDateFormat() {
+    public void getActiveFTA_ShouldThrowException_WhenInvalidDateFormat() {
         // Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
             ftaService.getActiveFTA(null, null, null, "invalid-date"));
@@ -557,7 +517,7 @@ public class FTAServiceTest {
     }
 
     @Test
-    public void should_ThrowException_WhenDateIsNull() {
+    public void getActiveFTA_ShouldThrowException_WhenDateIsNull() {
         // Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
             ftaService.getActiveFTA(null, null, null, null));
@@ -568,7 +528,7 @@ public class FTAServiceTest {
     // ========== createFTA() Tests ==========
 
     @Test
-    public void should_CreateFTA_WhenValidRequest() {
+    public void createFTA_ShouldCreateFTA_WhenValidRequest() {
         // Arrange
         FTACreateRequest request = new FTACreateRequest();
         request.setPartyA("702");
@@ -577,10 +537,10 @@ public class FTAServiceTest {
         request.setEffectiveDate("2025-01-01");
         request.setExpirationDate("2025-12-31");
 
-        when(tradePartyRepository.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
-        when(tradePartyRepository.findByCountryCode("840")).thenReturn(Optional.of(testPartyB));
-        when(ftaRepository.findByParties(testPartyA, testPartyB)).thenReturn(new ArrayList<>());
-        when(ftaRepository.save(any(FTA.class))).thenReturn(testFTA);
+        when(parties.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
+        when(parties.findByCountryCode("840")).thenReturn(Optional.of(testPartyB));
+        when(agreements.findByParties(testPartyA, testPartyB)).thenReturn(new ArrayList<>());
+        when(agreements.save(any(FTA.class))).thenReturn(testFTA);
 
         // Act
         FTA result = ftaService.createFTA(request);
@@ -588,13 +548,13 @@ public class FTAServiceTest {
         // Assert
         assertNotNull(result);
         assertEquals(5.0, result.getDefaultRate());
-        verify(tradePartyRepository).findByCountryCode("702");
-        verify(tradePartyRepository).findByCountryCode("840");
-        verify(ftaRepository).save(any(FTA.class));
+        verify(parties).findByCountryCode("702");
+        verify(parties).findByCountryCode("840");
+        verify(agreements).save(any(FTA.class));
     }
 
     @Test
-    public void should_ThrowException_WhenPartyAMissing() {
+    public void createFTA_ShouldThrowException_WhenPartyAMissing() {
         // Arrange
         FTACreateRequest request = new FTACreateRequest();
         request.setPartyA(null);
@@ -602,7 +562,7 @@ public class FTAServiceTest {
         request.setDefaultRate(5.0);
         request.setEffectiveDate("2025-01-01");
 
-        when(tradePartyRepository.findByCountryCode("840")).thenReturn(Optional.of(testPartyB));
+        when(parties.findByCountryCode("840")).thenReturn(Optional.of(testPartyB));
 
         // Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
@@ -610,10 +570,11 @@ public class FTAServiceTest {
 
         assertTrue(exception.getMessage().contains("FTA cannot have no/one party involved") ||
                    exception.getMessage().contains("No country/bloc found"));
+        verify(parties, never()).save(any(TradeParty.class));
     }
 
     @Test
-    public void should_ThrowException_WhenSamePartiesProvided() {
+    public void createFTA_ShouldThrowException_WhenSamePartiesProvided() {
         // Arrange
         FTACreateRequest request = new FTACreateRequest();
         request.setPartyA("702");
@@ -621,7 +582,7 @@ public class FTAServiceTest {
         request.setDefaultRate(5.0);
         request.setEffectiveDate("2025-01-01");
 
-        when(tradePartyRepository.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
+        when(parties.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
 
         // Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
@@ -629,10 +590,11 @@ public class FTAServiceTest {
 
         assertTrue(exception.getMessage().contains("Same country/bloc cannot have a FTA with itself") ||
                    exception.getMessage().contains("two valid parties"));
+        verify(parties, never()).save(any(TradeParty.class));
     }
 
     @Test
-    public void should_ThrowException_WhenNegativeDefaultRate() {
+    public void createFTA_ShouldThrowException_WhenNegativeDefaultRate() {
         // Arrange
         FTACreateRequest request = new FTACreateRequest();
         request.setPartyA("702");
@@ -640,18 +602,19 @@ public class FTAServiceTest {
         request.setDefaultRate(-5.0);
         request.setEffectiveDate("2025-01-01");
 
-        when(tradePartyRepository.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
-        when(tradePartyRepository.findByCountryCode("840")).thenReturn(Optional.of(testPartyB));
+        when(parties.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
+        when(parties.findByCountryCode("840")).thenReturn(Optional.of(testPartyB));
 
         // Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
             ftaService.createFTA(request));
 
         assertTrue(exception.getMessage().contains("Default rate under FTA cannot be negative"));
+        verify(parties, never()).save(any(TradeParty.class));
     }
 
     @Test
-    public void should_ThrowException_WhenEffectiveDateAfterExpirationDate() {
+    public void createFTA_ShouldThrowException_WhenEffectiveDateAfterExpirationDate() {
         // Arrange
         FTACreateRequest request = new FTACreateRequest();
         request.setPartyA("702");
@@ -660,19 +623,20 @@ public class FTAServiceTest {
         request.setEffectiveDate("2025-12-31");
         request.setExpirationDate("2025-01-01"); // Before effective date
 
-        when(tradePartyRepository.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
-        when(tradePartyRepository.findByCountryCode("840")).thenReturn(Optional.of(testPartyB));
-        lenient().when(ftaRepository.findByParties(testPartyA, testPartyB)).thenReturn(new ArrayList<>());
+        when(parties.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
+        when(parties.findByCountryCode("840")).thenReturn(Optional.of(testPartyB));
+        lenient().when(agreements.findByParties(testPartyA, testPartyB)).thenReturn(new ArrayList<>());
 
         // Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
             ftaService.createFTA(request));
 
         assertTrue(exception.getMessage().contains("Effective date cannot be after expiration date"));
+        verify(parties, never()).save(any(TradeParty.class));
     }
 
     @Test
-    public void should_CreatePlurilateralFTA_WhenBlocInvolved() {
+    public void createFTA_ShouldCreatePlurilateralFTA_WhenBlocInvolved() {
         // Arrange
         TradeParty blocParty = new TradeParty();
         blocParty.setId(3L);
@@ -684,10 +648,10 @@ public class FTAServiceTest {
         request.setDefaultRate(5.0);
         request.setEffectiveDate("2025-01-01");
 
-        when(tradePartyRepository.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
-        when(tradePartyRepository.findByBlocCode("ASEAN")).thenReturn(Optional.of(blocParty));
-        when(ftaRepository.findByParties(testPartyA, blocParty)).thenReturn(new ArrayList<>());
-        when(ftaRepository.save(any(FTA.class))).thenAnswer(invocation -> {
+        when(parties.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
+        when(parties.findByBlocCode("ASEAN")).thenReturn(Optional.of(blocParty));
+        when(agreements.findByParties(testPartyA, blocParty)).thenReturn(new ArrayList<>());
+        when(agreements.save(any(FTA.class))).thenAnswer(invocation -> {
             FTA fta = invocation.getArgument(0);
             fta.setId(1L);
             return fta;
@@ -699,10 +663,11 @@ public class FTAServiceTest {
         // Assert
         assertNotNull(result);
         assertEquals(FTA.FTAType.PLURILATERAL, result.getType());
+        verify(agreements).save(any(FTA.class));
     }
 
     @Test
-    public void should_ThrowException_WhenDateOverlapsWithExistingFTA() {
+    public void createFTA_ShouldThrowException_WhenDateOverlapsWithExistingFTA() {
         // Arrange
         FTACreateRequest request = new FTACreateRequest();
         request.setPartyA("702");
@@ -711,22 +676,23 @@ public class FTAServiceTest {
         request.setEffectiveDate("2025-06-01");
         request.setExpirationDate("2025-12-31");
 
-        when(tradePartyRepository.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
-        when(tradePartyRepository.findByCountryCode("840")).thenReturn(Optional.of(testPartyB));
+        when(parties.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
+        when(parties.findByCountryCode("840")).thenReturn(Optional.of(testPartyB));
         
         List<FTA> existingFTAs = new ArrayList<>();
         existingFTAs.add(testFTA); // Existing FTA: 2025-01-01 to 2025-12-31
-        when(ftaRepository.findByParties(testPartyA, testPartyB)).thenReturn(existingFTAs);
+        when(agreements.findByParties(testPartyA, testPartyB)).thenReturn(existingFTAs);
 
         // Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
             ftaService.createFTA(request));
 
         assertTrue(exception.getMessage().contains("overlaps"));
+        verify(parties, never()).save(any(TradeParty.class));
     }
 
     @Test
-    public void should_CreateFTAWithExcludedHSCodes_WhenExcludedCodesProvided() {
+    public void createFTA_ShouldCreateFTAWithExcludedHSCodes_WhenExcludedCodesProvided() {
         // Arrange
         FTACreateRequest request = new FTACreateRequest();
         request.setPartyA("702");
@@ -737,11 +703,11 @@ public class FTAServiceTest {
         excludedCodes.add("847130");
         request.setExcludedHsCodes(excludedCodes);
 
-        when(tradePartyRepository.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
-        when(tradePartyRepository.findByCountryCode("840")).thenReturn(Optional.of(testPartyB));
-        when(hsCodeRepository.findByCode("847130")).thenReturn(Optional.of(testHsCode));
-        when(ftaRepository.findByParties(testPartyA, testPartyB)).thenReturn(new ArrayList<>());
-        when(ftaRepository.save(any(FTA.class))).thenAnswer(invocation -> {
+        when(parties.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
+        when(parties.findByCountryCode("840")).thenReturn(Optional.of(testPartyB));
+        when(hsCodes.findByCode("847130")).thenReturn(Optional.of(testHsCode));
+        when(agreements.findByParties(testPartyA, testPartyB)).thenReturn(new ArrayList<>());
+        when(agreements.save(any(FTA.class))).thenAnswer(invocation -> {
             FTA fta = invocation.getArgument(0);
             fta.setId(1L);
             return fta;
@@ -753,11 +719,11 @@ public class FTAServiceTest {
         // Assert
         assertNotNull(result);
         assertTrue(result.getExcludedHsCodes().contains(testHsCode));
-        verify(hsCodeRepository).findByCode("847130");
+        verify(hsCodes).findByCode("847130");
     }
 
     @Test
-    public void should_ThrowException_WhenExcludedHSCodeNotFound() {
+    public void createFTA_ShouldThrowException_WhenExcludedHSCodeNotFound() {
         // Arrange
         FTACreateRequest request = new FTACreateRequest();
         request.setPartyA("702");
@@ -768,19 +734,20 @@ public class FTAServiceTest {
         excludedCodes.add("999999");
         request.setExcludedHsCodes(excludedCodes);
 
-        when(tradePartyRepository.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
-        when(tradePartyRepository.findByCountryCode("840")).thenReturn(Optional.of(testPartyB));
-        when(hsCodeRepository.findByCode("999999")).thenReturn(Optional.empty());
+        when(parties.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
+        when(parties.findByCountryCode("840")).thenReturn(Optional.of(testPartyB));
+        when(hsCodes.findByCode("999999")).thenReturn(Optional.empty());
 
         // Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
             ftaService.createFTA(request));
 
         assertTrue(exception.getMessage().contains("HS Code '999999' not found"));
+        verify(parties, never()).save(any(TradeParty.class));
     }
 
     @Test
-    public void should_CreateFTAWithConcessions_WhenConcessionsProvided() {
+    public void createFTA_ShouldCreateFTAWithConcessions_WhenConcessionsProvided() {
         // Arrange
         FTACreateRequest request = new FTACreateRequest();
         request.setPartyA("702");
@@ -795,11 +762,11 @@ public class FTAServiceTest {
         concessions.add(concessionRequest);
         request.setConcessions(concessions);
 
-        when(tradePartyRepository.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
-        when(tradePartyRepository.findByCountryCode("840")).thenReturn(Optional.of(testPartyB));
-        when(hsCodeRepository.findByCode("847130")).thenReturn(Optional.of(testHsCode));
-        when(ftaRepository.findByParties(testPartyA, testPartyB)).thenReturn(new ArrayList<>());
-        when(ftaRepository.save(any(FTA.class))).thenAnswer(invocation -> {
+        when(parties.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
+        when(parties.findByCountryCode("840")).thenReturn(Optional.of(testPartyB));
+        when(hsCodes.findByCode("847130")).thenReturn(Optional.of(testHsCode));
+        when(agreements.findByParties(testPartyA, testPartyB)).thenReturn(new ArrayList<>());
+        when(agreements.save(any(FTA.class))).thenAnswer(invocation -> {
             FTA fta = invocation.getArgument(0);
             fta.setId(1L);
             return fta;
@@ -811,28 +778,29 @@ public class FTAServiceTest {
         // Assert
         assertNotNull(result);
         assertEquals(1, result.getSpecialConcessions().size());
-        verify(hsCodeRepository).findByCode("847130");
+        verify(hsCodes).findByCode("847130");
     }
 
     @Test
-    public void should_ThrowException_WhenCreateFTAHasMissingPartyB() {
+    public void createFTA_ShouldThrowException_WhenCreateFTAHasMissingPartyB() {
         // Arrange
         FTACreateRequest request = new FTACreateRequest();
         request.setPartyA("702");
         request.setDefaultRate(5.0);
         request.setEffectiveDate("2025-01-01");
 
-        when(tradePartyRepository.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
+        when(parties.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
 
         // Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
             ftaService.createFTA(request));
 
         assertTrue(exception.getMessage().contains("FTA cannot have no/one party involved"));
+        verify(parties, never()).save(any(TradeParty.class));
     }
 
     @Test
-    public void should_ThrowException_WhenCreateFTAHasNegativeDefaultRate() {
+    public void createFTA_ShouldThrowException_WhenCreateFTAHasNegativeDefaultRate() {
         // Arrange
         FTACreateRequest request = new FTACreateRequest();
         request.setPartyA("702");
@@ -840,18 +808,19 @@ public class FTAServiceTest {
         request.setDefaultRate(-1.0);
         request.setEffectiveDate("2025-01-01");
 
-        when(tradePartyRepository.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
-        when(tradePartyRepository.findByCountryCode("840")).thenReturn(Optional.of(testPartyB));
+        when(parties.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
+        when(parties.findByCountryCode("840")).thenReturn(Optional.of(testPartyB));
 
         // Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
             ftaService.createFTA(request));
 
         assertTrue(exception.getMessage().contains("Default rate under FTA cannot be negative"));
+        verify(parties, never()).save(any(TradeParty.class));
     }
 
     @Test
-    public void should_ThrowException_WhenCreateFTADatesInvalid() {
+    public void createFTA_ShouldThrowException_WhenCreateFTADatesInvalid() {
         // Arrange
         FTACreateRequest request = new FTACreateRequest();
         request.setPartyA("702");
@@ -860,18 +829,19 @@ public class FTAServiceTest {
         request.setEffectiveDate("2025-12-31");
         request.setExpirationDate("2025-01-01");
 
-        when(tradePartyRepository.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
-        when(tradePartyRepository.findByCountryCode("840")).thenReturn(Optional.of(testPartyB));
+        when(parties.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
+        when(parties.findByCountryCode("840")).thenReturn(Optional.of(testPartyB));
 
         // Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
             ftaService.createFTA(request));
 
         assertTrue(exception.getMessage().contains("Effective date cannot be after expiration date"));
+        verify(parties, never()).save(any(TradeParty.class));
     }
 
     @Test
-    public void should_ThrowException_WhenCreateFTAConcessionRateNegative() {
+    public void createFTA_ShouldThrowException_WhenCreateFTAConcessionRateNegative() {
         // Arrange
         FTACreateRequest request = new FTACreateRequest();
         request.setPartyA("702");
@@ -886,19 +856,20 @@ public class FTAServiceTest {
         concessions.add(concessionRequest);
         request.setConcessions(concessions);
 
-        when(tradePartyRepository.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
-        when(tradePartyRepository.findByCountryCode("840")).thenReturn(Optional.of(testPartyB));
-        when(hsCodeRepository.findByCode("847130")).thenReturn(Optional.of(testHsCode));
+        when(parties.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
+        when(parties.findByCountryCode("840")).thenReturn(Optional.of(testPartyB));
+        when(hsCodes.findByCode("847130")).thenReturn(Optional.of(testHsCode));
 
         // Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
             ftaService.createFTA(request));
 
         assertTrue(exception.getMessage().contains("Final rate cannot be empty or negative"));
+        verify(parties, never()).save(any(TradeParty.class));
     }
 
     @Test
-    public void should_SwapParties_WhenExistingFTAPartiesReversed() {
+    public void createFTA_ShouldSwapParties_WhenExistingFTAPartiesReversed() {
         // Arrange
         FTACreateRequest request = new FTACreateRequest();
         request.setPartyA("702");
@@ -907,8 +878,8 @@ public class FTAServiceTest {
         request.setEffectiveDate("2026-01-01");
         request.setExpirationDate("2026-12-31");
 
-        when(tradePartyRepository.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
-        when(tradePartyRepository.findByCountryCode("840")).thenReturn(Optional.of(testPartyB));
+        when(parties.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
+        when(parties.findByCountryCode("840")).thenReturn(Optional.of(testPartyB));
 
         FTA existing = new FTA();
         existing.setId(10L);
@@ -923,20 +894,21 @@ public class FTAServiceTest {
 
         List<FTA> existingFTAs = new ArrayList<>();
         existingFTAs.add(existing);
-        when(ftaRepository.findByParties(testPartyA, testPartyB)).thenReturn(existingFTAs);
-        when(ftaRepository.save(any(FTA.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(agreements.findByParties(testPartyA, testPartyB)).thenReturn(existingFTAs);
+        when(agreements.save(any(FTA.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // Act
         FTA result = ftaService.createFTA(request);
 
         // Assert
         assertNotNull(result);
-        verify(ftaRepository).findByParties(testPartyA, testPartyB);
+        verify(agreements).findByParties(testPartyA, testPartyB);
         assertEquals(LocalDate.of(2026, 1, 1), result.getEffectiveDate());
+        verify(agreements).save(any(FTA.class));
     }
 
     @Test
-    public void should_ThrowException_WhenCreateFTADateOverlapsExisting() {
+    public void createFTA_ShouldThrowException_WhenCreateFTADateOverlapsExisting() {
         // Arrange
         FTACreateRequest request = new FTACreateRequest();
         request.setPartyA("702");
@@ -945,8 +917,8 @@ public class FTAServiceTest {
         request.setEffectiveDate("2025-06-01");
         request.setExpirationDate("2025-12-31");
 
-        when(tradePartyRepository.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
-        when(tradePartyRepository.findByCountryCode("840")).thenReturn(Optional.of(testPartyB));
+        when(parties.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
+        when(parties.findByCountryCode("840")).thenReturn(Optional.of(testPartyB));
 
         FTA existing = new FTA();
         existing.setId(11L);
@@ -961,17 +933,18 @@ public class FTAServiceTest {
 
         List<FTA> existingFTAs = new ArrayList<>();
         existingFTAs.add(existing);
-        when(ftaRepository.findByParties(testPartyA, testPartyB)).thenReturn(existingFTAs);
+        when(agreements.findByParties(testPartyA, testPartyB)).thenReturn(existingFTAs);
 
         // Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
             ftaService.createFTA(request));
 
         assertTrue(exception.getMessage().contains("overlap"));
+        verify(parties, never()).save(any(TradeParty.class));
     }
 
     @Test
-    public void should_ThrowException_WhenConcessionRateEqualsDefaultRate() {
+    public void createFTA_ShouldThrowException_WhenConcessionRateEqualsDefaultRate() {
         // Arrange
         FTACreateRequest request = new FTACreateRequest();
         request.setPartyA("702");
@@ -986,20 +959,21 @@ public class FTAServiceTest {
         concessions.add(concessionRequest);
         request.setConcessions(concessions);
 
-        when(tradePartyRepository.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
-        when(tradePartyRepository.findByCountryCode("840")).thenReturn(Optional.of(testPartyB));
-        when(hsCodeRepository.findByCode("847130")).thenReturn(Optional.of(testHsCode));
-        when(ftaRepository.findByParties(testPartyA, testPartyB)).thenReturn(new ArrayList<>());
+        when(parties.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
+        when(parties.findByCountryCode("840")).thenReturn(Optional.of(testPartyB));
+        when(hsCodes.findByCode("847130")).thenReturn(Optional.of(testHsCode));
+        when(agreements.findByParties(testPartyA, testPartyB)).thenReturn(new ArrayList<>());
 
         // Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
             ftaService.createFTA(request));
 
         assertTrue(exception.getMessage().contains("redundant as its rate matches default rate"));
+        verify(parties, never()).save(any(TradeParty.class));
     }
 
     @Test
-    public void should_ThrowException_WhenConcessionHSCodeIsExcluded() {
+    public void createFTA_ShouldThrowException_WhenConcessionHSCodeIsExcluded() {
         // Arrange
         FTACreateRequest request = new FTACreateRequest();
         request.setPartyA("702");
@@ -1018,110 +992,113 @@ public class FTAServiceTest {
         concessions.add(concessionRequest);
         request.setConcessions(concessions);
 
-        when(tradePartyRepository.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
-        when(tradePartyRepository.findByCountryCode("840")).thenReturn(Optional.of(testPartyB));
-        when(hsCodeRepository.findByCode("847130")).thenReturn(Optional.of(testHsCode));
-        when(ftaRepository.findByParties(testPartyA, testPartyB)).thenReturn(new ArrayList<>());
+        when(parties.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
+        when(parties.findByCountryCode("840")).thenReturn(Optional.of(testPartyB));
+        when(hsCodes.findByCode("847130")).thenReturn(Optional.of(testHsCode));
+        when(agreements.findByParties(testPartyA, testPartyB)).thenReturn(new ArrayList<>());
 
         // Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
             ftaService.createFTA(request));
 
         assertTrue(exception.getMessage().contains("cannot have a special concession as it is marked as excluded"));
+        verify(parties, never()).save(any(TradeParty.class));
     }
 
     // ========== updateFTA() Tests ==========
 
     @Test
-    public void should_UpdateDefaultRate_WhenDefaultRateProvided() {
+    public void updateFTA_ShouldUpdateDefaultRate_WhenDefaultRateProvided() {
         // Arrange
         FTAUpdateRequest request = new FTAUpdateRequest();
         request.setDefaultRate(6.0);
 
-        when(ftaRepository.findById(1L)).thenReturn(Optional.of(testFTA));
-        when(ftaRepository.save(any(FTA.class))).thenReturn(testFTA);
+        when(agreements.findById(1L)).thenReturn(Optional.of(testFTA));
+        when(agreements.save(any(FTA.class))).thenReturn(testFTA);
 
         // Act
         FTA result = ftaService.updateFTA(1L, request);
 
         // Assert
         assertNotNull(result);
-        verify(ftaRepository).findById(1L);
-        verify(ftaRepository).save(any(FTA.class));
+        verify(agreements).findById(1L);
+        verify(agreements).save(any(FTA.class));
     }
 
     @Test
-    public void should_ThrowException_WhenUpdateNegativeDefaultRate() {
+    public void updateFTA_ShouldThrowException_WhenUpdateNegativeDefaultRate() {
         // Arrange
         FTAUpdateRequest request = new FTAUpdateRequest();
         request.setDefaultRate(-5.0);
 
-        when(ftaRepository.findById(1L)).thenReturn(Optional.of(testFTA));
+        when(agreements.findById(1L)).thenReturn(Optional.of(testFTA));
 
         // Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
             ftaService.updateFTA(1L, request));
 
         assertTrue(exception.getMessage().contains("Default rate under FTA cannot be negative"));
+        verify(parties, never()).save(any(TradeParty.class));
     }
 
     @Test
-    public void should_UpdateEffectiveDate_WhenEffectiveDateProvided() {
+    public void updateFTA_ShouldUpdateEffectiveDate_WhenEffectiveDateProvided() {
         // Arrange
         FTAUpdateRequest request = new FTAUpdateRequest();
         request.setEffectiveDate("2025-02-01");
 
-        when(ftaRepository.findById(1L)).thenReturn(Optional.of(testFTA));
-        when(ftaRepository.findByParties(testPartyA, testPartyB)).thenReturn(new ArrayList<>());
-        when(ftaRepository.save(any(FTA.class))).thenReturn(testFTA);
+        when(agreements.findById(1L)).thenReturn(Optional.of(testFTA));
+        when(agreements.findByParties(testPartyA, testPartyB)).thenReturn(new ArrayList<>());
+        when(agreements.save(any(FTA.class))).thenReturn(testFTA);
 
         // Act
         FTA result = ftaService.updateFTA(1L, request);
 
         // Assert
         assertNotNull(result);
-        verify(ftaRepository).save(any(FTA.class));
+        verify(agreements).save(any(FTA.class));
     }
 
     @Test
-    public void should_ThrowException_WhenUpdateDateInvalid() {
+    public void updateFTA_ShouldThrowException_WhenUpdateDateInvalid() {
         // Arrange
         FTAUpdateRequest request = new FTAUpdateRequest();
         request.setEffectiveDate("2025-12-31");
         request.setExpirationDate("2025-01-01"); // Before effective date
 
-        when(ftaRepository.findById(1L)).thenReturn(Optional.of(testFTA));
+        when(agreements.findById(1L)).thenReturn(Optional.of(testFTA));
 
         // Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
             ftaService.updateFTA(1L, request));
 
         assertTrue(exception.getMessage().contains("start date") && exception.getMessage().contains("end date"));
+        verify(parties, never()).save(any(TradeParty.class));
     }
 
     @Test
-    public void should_AddHSCodeToExcluded_WhenExcludeHSCodesProvided() {
+    public void updateFTA_ShouldAddHSCodeToExcluded_WhenExcludeHSCodesProvided() {
         // Arrange
         FTAUpdateRequest request = new FTAUpdateRequest();
         Set<String> excludeCodes = new HashSet<>();
         excludeCodes.add("847130");
         request.setExcludeHSCodes(excludeCodes);
 
-        when(ftaRepository.findById(1L)).thenReturn(Optional.of(testFTA));
-        when(hsCodeRepository.findByCode("847130")).thenReturn(Optional.of(testHsCode));
-        when(ftaRepository.save(any(FTA.class))).thenReturn(testFTA);
+        when(agreements.findById(1L)).thenReturn(Optional.of(testFTA));
+        when(hsCodes.findByCode("847130")).thenReturn(Optional.of(testHsCode));
+        when(agreements.save(any(FTA.class))).thenReturn(testFTA);
 
         // Act
         FTA result = ftaService.updateFTA(1L, request);
 
         // Assert
         assertNotNull(result);
-        verify(hsCodeRepository).findByCode("847130");
-        verify(ftaRepository).save(any(FTA.class));
+        verify(hsCodes).findByCode("847130");
+        verify(agreements).save(any(FTA.class));
     }
 
     @Test
-    public void should_RemoveHSCodeFromExcluded_WhenIncludeHSCodesProvided() {
+    public void updateFTA_ShouldRemoveHSCodeFromExcluded_WhenIncludeHSCodesProvided() {
         // Arrange
         Set<HSCode> excludedCodes = new LinkedHashSet<>();
         excludedCodes.add(testHsCode);
@@ -1132,21 +1109,21 @@ public class FTAServiceTest {
         includeCodes.add("847130");
         request.setIncludeHSCodes(includeCodes);
 
-        when(ftaRepository.findById(1L)).thenReturn(Optional.of(testFTA));
-        when(hsCodeRepository.findByCode("847130")).thenReturn(Optional.of(testHsCode));
-        when(ftaRepository.save(any(FTA.class))).thenReturn(testFTA);
+        when(agreements.findById(1L)).thenReturn(Optional.of(testFTA));
+        when(hsCodes.findByCode("847130")).thenReturn(Optional.of(testHsCode));
+        when(agreements.save(any(FTA.class))).thenReturn(testFTA);
 
         // Act
         FTA result = ftaService.updateFTA(1L, request);
 
         // Assert
         assertNotNull(result);
-        verify(hsCodeRepository).findByCode("847130");
-        verify(ftaRepository).save(any(FTA.class));
+        verify(hsCodes).findByCode("847130");
+        verify(agreements).save(any(FTA.class));
     }
 
     @Test
-    public void should_AddConcession_WhenAddConcessionsProvided() {
+    public void updateFTA_ShouldAddConcession_WhenAddConcessionsProvided() {
         // Arrange
         FTAUpdateRequest request = new FTAUpdateRequest();
         FTAConcessionRequest concessionRequest = new FTAConcessionRequest();
@@ -1156,21 +1133,21 @@ public class FTAServiceTest {
         addConcessions.add(concessionRequest);
         request.setAddConcessions(addConcessions);
 
-        when(ftaRepository.findById(1L)).thenReturn(Optional.of(testFTA));
-        when(hsCodeRepository.findByCode("847130")).thenReturn(Optional.of(testHsCode));
-        when(ftaRepository.save(any(FTA.class))).thenReturn(testFTA);
+        when(agreements.findById(1L)).thenReturn(Optional.of(testFTA));
+        when(hsCodes.findByCode("847130")).thenReturn(Optional.of(testHsCode));
+        when(agreements.save(any(FTA.class))).thenReturn(testFTA);
 
         // Act
         FTA result = ftaService.updateFTA(1L, request);
 
         // Assert
         assertNotNull(result);
-        verify(hsCodeRepository).findByCode("847130");
-        verify(ftaRepository).save(any(FTA.class));
+        verify(hsCodes).findByCode("847130");
+        verify(agreements).save(any(FTA.class));
     }
 
     @Test
-    public void should_RemoveConcession_WhenRemoveConcessionsProvided() {
+    public void updateFTA_ShouldRemoveConcession_WhenRemoveConcessionsProvided() {
         // Arrange
         Concession concession = new Concession();
         concession.setId(1L);
@@ -1186,21 +1163,21 @@ public class FTAServiceTest {
         removeConcessions.add("847130");
         request.setRemoveConcessions(removeConcessions);
 
-        when(ftaRepository.findById(1L)).thenReturn(Optional.of(testFTA));
-        when(hsCodeRepository.findByCode("847130")).thenReturn(Optional.of(testHsCode));
-        when(ftaRepository.save(any(FTA.class))).thenReturn(testFTA);
+        when(agreements.findById(1L)).thenReturn(Optional.of(testFTA));
+        when(hsCodes.findByCode("847130")).thenReturn(Optional.of(testHsCode));
+        when(agreements.save(any(FTA.class))).thenReturn(testFTA);
 
         // Act
         FTA result = ftaService.updateFTA(1L, request);
 
         // Assert
         assertNotNull(result);
-        verify(hsCodeRepository).findByCode("847130");
-        verify(ftaRepository).save(any(FTA.class));
+        verify(hsCodes).findByCode("847130");
+        verify(agreements).save(any(FTA.class));
     }
 
     @Test
-    public void should_ThrowException_WhenUpdateDateOverlapsWithExisting() {
+    public void updateFTA_ShouldThrowException_WhenUpdateDateOverlapsWithExisting() {
         // Arrange: Create an existing FTA with overlapping dates
         FTA existingFTA = new FTA();
         existingFTA.setId(2L);
@@ -1218,39 +1195,40 @@ public class FTAServiceTest {
         List<FTA> existingFTAs = new ArrayList<>();
         existingFTAs.add(existingFTA);
 
-        when(ftaRepository.findById(1L)).thenReturn(Optional.of(testFTA));
-        when(ftaRepository.findByParties(testPartyA, testPartyB)).thenReturn(existingFTAs);
+        when(agreements.findById(1L)).thenReturn(Optional.of(testFTA));
+        when(agreements.findByParties(testPartyA, testPartyB)).thenReturn(existingFTAs);
 
         // Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
             ftaService.updateFTA(1L, request));
 
         assertTrue(exception.getMessage().contains("overlaps") || exception.getMessage().contains("overlap"));
-        verify(ftaRepository).findByParties(testPartyA, testPartyB);
+        verify(agreements).findByParties(testPartyA, testPartyB);
+        verify(parties, never()).save(any(TradeParty.class));
     }
 
     @Test
-    public void should_UpdateExpirationDateOnly_WhenOnlyExpirationDateProvided() {
+    public void updateFTA_ShouldUpdateExpirationDateOnly_WhenOnlyExpirationDateProvided() {
         // Arrange
         FTAUpdateRequest request = new FTAUpdateRequest();
         request.setExpirationDate("2026-12-31"); // Only expiration date
 
         List<FTA> existingFTAs = new ArrayList<>(); // No overlapping FTAs
 
-        when(ftaRepository.findById(1L)).thenReturn(Optional.of(testFTA));
-        when(ftaRepository.findByParties(testPartyA, testPartyB)).thenReturn(existingFTAs);
-        when(ftaRepository.save(any(FTA.class))).thenReturn(testFTA);
+        when(agreements.findById(1L)).thenReturn(Optional.of(testFTA));
+        when(agreements.findByParties(testPartyA, testPartyB)).thenReturn(existingFTAs);
+        when(agreements.save(any(FTA.class))).thenReturn(testFTA);
 
         // Act
         FTA result = ftaService.updateFTA(1L, request);
 
         // Assert
         assertNotNull(result);
-        verify(ftaRepository).save(any(FTA.class));
+        verify(agreements).save(any(FTA.class));
     }
 
     @Test
-    public void should_UpdateBothDates_WhenBothDatesProvided() {
+    public void updateFTA_ShouldUpdateBothDates_WhenBothDatesProvided() {
         // Arrange
         FTAUpdateRequest request = new FTAUpdateRequest();
         request.setEffectiveDate("2026-01-01");
@@ -1258,20 +1236,20 @@ public class FTAServiceTest {
 
         List<FTA> existingFTAs = new ArrayList<>(); // No overlapping FTAs
 
-        when(ftaRepository.findById(1L)).thenReturn(Optional.of(testFTA));
-        when(ftaRepository.findByParties(testPartyA, testPartyB)).thenReturn(existingFTAs);
-        when(ftaRepository.save(any(FTA.class))).thenReturn(testFTA);
+        when(agreements.findById(1L)).thenReturn(Optional.of(testFTA));
+        when(agreements.findByParties(testPartyA, testPartyB)).thenReturn(existingFTAs);
+        when(agreements.save(any(FTA.class))).thenReturn(testFTA);
 
         // Act
         FTA result = ftaService.updateFTA(1L, request);
 
         // Assert
         assertNotNull(result);
-        verify(ftaRepository).save(any(FTA.class));
+        verify(agreements).save(any(FTA.class));
     }
 
     @Test
-    public void should_ThrowException_WhenUpdateDateStartsBeforeExistingEnds() {
+    public void updateFTA_ShouldThrowException_WhenUpdateDateStartsBeforeExistingEnds() {
         // Arrange: Existing FTA ends on 2025-12-31, new FTA starts on 2025-12-01 (overlaps)
         FTA existingFTA = new FTA();
         existingFTA.setId(2L);
@@ -1289,18 +1267,19 @@ public class FTAServiceTest {
         List<FTA> existingFTAs = new ArrayList<>();
         existingFTAs.add(existingFTA);
 
-        when(ftaRepository.findById(1L)).thenReturn(Optional.of(testFTA));
-        when(ftaRepository.findByParties(testPartyA, testPartyB)).thenReturn(existingFTAs);
+        when(agreements.findById(1L)).thenReturn(Optional.of(testFTA));
+        when(agreements.findByParties(testPartyA, testPartyB)).thenReturn(existingFTAs);
 
         // Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
             ftaService.updateFTA(1L, request));
 
         assertTrue(exception.getMessage().contains("overlap") || exception.getMessage().contains("starts before"));
+        verify(parties, never()).save(any(TradeParty.class));
     }
 
     @Test
-    public void should_ThrowException_WhenUpdateDateEndsAfterExistingStarts() {
+    public void updateFTA_ShouldThrowException_WhenUpdateDateEndsAfterExistingStarts() {
         // Arrange: Existing FTA starts on 2026-01-01, new FTA ends on 2026-06-30 (overlaps)
         FTA existingFTA = new FTA();
         existingFTA.setId(2L);
@@ -1318,18 +1297,19 @@ public class FTAServiceTest {
         List<FTA> existingFTAs = new ArrayList<>();
         existingFTAs.add(existingFTA);
 
-        when(ftaRepository.findById(1L)).thenReturn(Optional.of(testFTA));
-        when(ftaRepository.findByParties(testPartyA, testPartyB)).thenReturn(existingFTAs);
+        when(agreements.findById(1L)).thenReturn(Optional.of(testFTA));
+        when(agreements.findByParties(testPartyA, testPartyB)).thenReturn(existingFTAs);
 
         // Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
             ftaService.updateFTA(1L, request));
 
         assertTrue(exception.getMessage().contains("overlap") || exception.getMessage().contains("ends after"));
+        verify(parties, never()).save(any(TradeParty.class));
     }
 
     @Test
-    public void should_ThrowException_WhenUpdateOverlapsWithOngoingFTA() {
+    public void updateFTA_ShouldThrowException_WhenUpdateOverlapsWithOngoingFTA() {
         // Arrange: Existing FTA with null expiration (ongoing)
         FTA ongoingFTA = new FTA();
         ongoingFTA.setId(2L);
@@ -1347,18 +1327,19 @@ public class FTAServiceTest {
         List<FTA> existingFTAs = new ArrayList<>();
         existingFTAs.add(ongoingFTA);
 
-        when(ftaRepository.findById(1L)).thenReturn(Optional.of(testFTA));
-        when(ftaRepository.findByParties(testPartyA, testPartyB)).thenReturn(existingFTAs);
+        when(agreements.findById(1L)).thenReturn(Optional.of(testFTA));
+        when(agreements.findByParties(testPartyA, testPartyB)).thenReturn(existingFTAs);
 
         // Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
             ftaService.updateFTA(1L, request));
 
         assertTrue(exception.getMessage().contains("overlap") || exception.getMessage().contains("Ongoing"));
+        verify(parties, never()).save(any(TradeParty.class));
     }
 
     @Test
-    public void should_RemoveExcludedHSCode_WhenIncludeHSCodesProvided() {
+    public void updateFTA_ShouldRemoveExcludedHSCode_WhenIncludeHSCodesProvided() {
         // Arrange
         LinkedHashSet<HSCode> excluded = new LinkedHashSet<>();
         excluded.add(testHsCode);
@@ -1369,9 +1350,9 @@ public class FTAServiceTest {
         includeCodes.add("847130");
         request.setIncludeHSCodes(includeCodes);
 
-        when(ftaRepository.findById(1L)).thenReturn(Optional.of(testFTA));
-        when(hsCodeRepository.findByCode("847130")).thenReturn(Optional.of(testHsCode));
-        when(ftaRepository.save(any(FTA.class))).thenReturn(testFTA);
+        when(agreements.findById(1L)).thenReturn(Optional.of(testFTA));
+        when(hsCodes.findByCode("847130")).thenReturn(Optional.of(testHsCode));
+        when(agreements.save(any(FTA.class))).thenReturn(testFTA);
 
         // Act
         FTA result = ftaService.updateFTA(1L, request);
@@ -1379,28 +1360,30 @@ public class FTAServiceTest {
         // Assert
         assertNotNull(result);
         assertFalse(result.getExcludedHsCodes().contains(testHsCode));
+        verify(agreements).save(any(FTA.class));
     }
 
     @Test
-    public void should_ThrowException_WhenIncludeHSCodeNotCurrentlyExcluded() {
+    public void updateFTA_ShouldThrowException_WhenIncludeHSCodeNotCurrentlyExcluded() {
         // Arrange: No excluded HS codes yet
         FTAUpdateRequest request = new FTAUpdateRequest();
         Set<String> includeCodes = new HashSet<>();
         includeCodes.add("847130");
         request.setIncludeHSCodes(includeCodes);
 
-        when(ftaRepository.findById(1L)).thenReturn(Optional.of(testFTA));
-        when(hsCodeRepository.findByCode("847130")).thenReturn(Optional.of(testHsCode));
+        when(agreements.findById(1L)).thenReturn(Optional.of(testFTA));
+        when(hsCodes.findByCode("847130")).thenReturn(Optional.of(testHsCode));
 
         // Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
             ftaService.updateFTA(1L, request));
 
         assertTrue(exception.getMessage().contains("is not excluded in this FTA"));
+        verify(parties, never()).save(any(TradeParty.class));
     }
 
     @Test
-    public void should_AddExcludedHSCode_WhenExcludeHSCodesProvided() {
+    public void updateFTA_ShouldAddExcludedHSCode_WhenExcludeHSCodesProvided() {
         // Arrange
         FTAUpdateRequest request = new FTAUpdateRequest();
         Set<String> excludeCodes = new HashSet<>();
@@ -1411,9 +1394,9 @@ public class FTAServiceTest {
         newHsCode.setCode("010190");
         newHsCode.setDescription("Live horses");
 
-        when(ftaRepository.findById(1L)).thenReturn(Optional.of(testFTA));
-        when(hsCodeRepository.findByCode("010190")).thenReturn(Optional.of(newHsCode));
-        when(ftaRepository.save(any(FTA.class))).thenReturn(testFTA);
+        when(agreements.findById(1L)).thenReturn(Optional.of(testFTA));
+        when(hsCodes.findByCode("010190")).thenReturn(Optional.of(newHsCode));
+        when(agreements.save(any(FTA.class))).thenReturn(testFTA);
 
         // Act
         FTA result = ftaService.updateFTA(1L, request);
@@ -1421,10 +1404,11 @@ public class FTAServiceTest {
         // Assert
         assertNotNull(result);
         assertTrue(result.getExcludedHsCodes().contains(newHsCode));
+        verify(agreements).save(any(FTA.class));
     }
 
     @Test
-    public void should_ThrowException_WhenExcludeHSCodeAlreadyExcluded() {
+    public void updateFTA_ShouldThrowException_WhenExcludeHSCodeAlreadyExcluded() {
         // Arrange
         LinkedHashSet<HSCode> excluded = new LinkedHashSet<>();
         excluded.add(testHsCode);
@@ -1435,18 +1419,19 @@ public class FTAServiceTest {
         excludeCodes.add("847130");
         request.setExcludeHSCodes(excludeCodes);
 
-        when(ftaRepository.findById(1L)).thenReturn(Optional.of(testFTA));
-        when(hsCodeRepository.findByCode("847130")).thenReturn(Optional.of(testHsCode));
+        when(agreements.findById(1L)).thenReturn(Optional.of(testFTA));
+        when(hsCodes.findByCode("847130")).thenReturn(Optional.of(testHsCode));
 
         // Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
             ftaService.updateFTA(1L, request));
 
         assertTrue(exception.getMessage().contains("has already been excluded"));
+        verify(agreements, never()).save(any(FTA.class));
     }
 
     @Test
-    public void should_ThrowException_WhenExcludeHSCodeHasSpecialConcession() {
+    public void updateFTA_ShouldThrowException_WhenExcludeHSCodeHasSpecialConcession() {
         // Arrange: Existing concession for the HS code prevents exclusion
         Concession concession = new Concession();
         concession.setId(5L);
@@ -1463,18 +1448,19 @@ public class FTAServiceTest {
         excludeCodes.add("847130");
         request.setExcludeHSCodes(excludeCodes);
 
-        when(ftaRepository.findById(1L)).thenReturn(Optional.of(testFTA));
-        when(hsCodeRepository.findByCode("847130")).thenReturn(Optional.of(testHsCode));
+        when(agreements.findById(1L)).thenReturn(Optional.of(testFTA));
+        when(hsCodes.findByCode("847130")).thenReturn(Optional.of(testHsCode));
 
         // Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
             ftaService.updateFTA(1L, request));
 
         assertTrue(exception.getMessage().contains("associated with a special concession"));
+        verify(parties, never()).save(any(TradeParty.class));
     }
 
     @Test
-    public void should_RemoveOnlySpecifiedConcession_WhenMultipleConcessionsExist() {
+    public void updateFTA_ShouldRemoveOnlySpecifiedConcession_WhenMultipleConcessionsExist() {
         // Arrange
         Concession concessionToRemove = new Concession();
         concessionToRemove.setId(6L);
@@ -1502,9 +1488,9 @@ public class FTAServiceTest {
         removeCodes.add("847130");
         request.setRemoveConcessions(removeCodes);
 
-        when(ftaRepository.findById(1L)).thenReturn(Optional.of(testFTA));
-        when(hsCodeRepository.findByCode("847130")).thenReturn(Optional.of(testHsCode));
-        when(ftaRepository.save(any(FTA.class))).thenReturn(testFTA);
+        when(agreements.findById(1L)).thenReturn(Optional.of(testFTA));
+        when(hsCodes.findByCode("847130")).thenReturn(Optional.of(testHsCode));
+        when(agreements.save(any(FTA.class))).thenReturn(testFTA);
 
         // Act
         FTA result = ftaService.updateFTA(1L, request);
@@ -1513,49 +1499,51 @@ public class FTAServiceTest {
         assertNotNull(result);
         assertEquals(1, result.getSpecialConcessions().size());
         assertTrue(result.getSpecialConcessions().stream().anyMatch(c -> c.getHsCode().equals(anotherHsCode)));
+        verify(agreements).save(any(FTA.class));
     }
 
     @Test
-    public void should_ThrowException_WhenRemoveConcessionNotFound() {
+    public void updateFTA_ShouldThrowException_WhenRemoveConcessionNotFound() {
         // Arrange: No concessions exist for the HS code
         FTAUpdateRequest request = new FTAUpdateRequest();
         Set<String> removeCodes = new HashSet<>();
         removeCodes.add("847130");
         request.setRemoveConcessions(removeCodes);
 
-        when(ftaRepository.findById(1L)).thenReturn(Optional.of(testFTA));
-        when(hsCodeRepository.findByCode("847130")).thenReturn(Optional.of(testHsCode));
+        when(agreements.findById(1L)).thenReturn(Optional.of(testFTA));
+        when(hsCodes.findByCode("847130")).thenReturn(Optional.of(testHsCode));
 
         // Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
             ftaService.updateFTA(1L, request));
 
         assertTrue(exception.getMessage().contains("No concession found"));
+        verify(parties, never()).save(any(TradeParty.class));
     }
 
     @Test
-    public void should_UpdateWithAddExcludedHSCodes_WhenAddExcludedCodesProvided() {
+    public void updateFTA_ShouldUpdateWithAddExcludedHSCodes_WhenAddExcludedCodesProvided() {
         // Arrange
         FTAUpdateRequest request = new FTAUpdateRequest();
         Set<String> addExcludedCodes = new HashSet<>();
         addExcludedCodes.add("847130");
         request.setExcludeHSCodes(addExcludedCodes);
 
-        when(ftaRepository.findById(1L)).thenReturn(Optional.of(testFTA));
-        when(hsCodeRepository.findByCode("847130")).thenReturn(Optional.of(testHsCode));
-        when(ftaRepository.save(any(FTA.class))).thenReturn(testFTA);
+        when(agreements.findById(1L)).thenReturn(Optional.of(testFTA));
+        when(hsCodes.findByCode("847130")).thenReturn(Optional.of(testHsCode));
+        when(agreements.save(any(FTA.class))).thenReturn(testFTA);
 
         // Act
         FTA result = ftaService.updateFTA(1L, request);
 
         // Assert
         assertNotNull(result);
-        verify(hsCodeRepository).findByCode("847130");
-        verify(ftaRepository).save(any(FTA.class));
+        verify(hsCodes).findByCode("847130");
+        verify(agreements).save(any(FTA.class));
     }
 
     @Test
-    public void should_UpdateWithAddConcessions_WhenAddConcessionsProvided() {
+    public void updateFTA_ShouldUpdateWithAddConcessions_WhenAddConcessionsProvided() {
         // Arrange
         FTAUpdateRequest request = new FTAUpdateRequest();
         FTAConcessionRequest concessionRequest = new FTAConcessionRequest();
@@ -1565,23 +1553,23 @@ public class FTAServiceTest {
         addConcessions.add(concessionRequest);
         request.setAddConcessions(addConcessions);
 
-        when(ftaRepository.findById(1L)).thenReturn(Optional.of(testFTA));
-        when(hsCodeRepository.findByCode("847130")).thenReturn(Optional.of(testHsCode));
-        when(ftaRepository.save(any(FTA.class))).thenReturn(testFTA);
+        when(agreements.findById(1L)).thenReturn(Optional.of(testFTA));
+        when(hsCodes.findByCode("847130")).thenReturn(Optional.of(testHsCode));
+        when(agreements.save(any(FTA.class))).thenReturn(testFTA);
 
         // Act
         FTA result = ftaService.updateFTA(1L, request);
 
         // Assert
         assertNotNull(result);
-        verify(hsCodeRepository).findByCode("847130");
-        verify(ftaRepository).save(any(FTA.class));
+        verify(hsCodes).findByCode("847130");
+        verify(agreements).save(any(FTA.class));
         // Verify concession was added to the FTA
         assertTrue(result.getSpecialConcessions().size() > 0 || testFTA.getSpecialConcessions().size() > 0);
     }
 
     @Test
-    public void should_AllowUpdate_WhenNewFTAEndsBeforeExistingStarts() {
+    public void updateFTA_ShouldAllowUpdate_WhenNewFTAEndsBeforeExistingStarts() {
         // Arrange: New FTA ends before existing starts (no overlap)
         FTA existingFTA = new FTA();
         existingFTA.setId(2L);
@@ -1599,20 +1587,20 @@ public class FTAServiceTest {
         List<FTA> existingFTAs = new ArrayList<>();
         existingFTAs.add(existingFTA);
 
-        when(ftaRepository.findById(1L)).thenReturn(Optional.of(testFTA));
-        when(ftaRepository.findByParties(testPartyA, testPartyB)).thenReturn(existingFTAs);
-        when(ftaRepository.save(any(FTA.class))).thenReturn(testFTA);
+        when(agreements.findById(1L)).thenReturn(Optional.of(testFTA));
+        when(agreements.findByParties(testPartyA, testPartyB)).thenReturn(existingFTAs);
+        when(agreements.save(any(FTA.class))).thenReturn(testFTA);
 
         // Act
         FTA result = ftaService.updateFTA(1L, request);
 
         // Assert: Should succeed (no overlap)
         assertNotNull(result);
-        verify(ftaRepository).save(any(FTA.class));
+        verify(agreements).save(any(FTA.class));
     }
 
     @Test
-    public void should_AllowUpdate_WhenNewFTAStartsAfterExistingEnds() {
+    public void updateFTA_ShouldAllowUpdate_WhenNewFTAStartsAfterExistingEnds() {
         // Arrange: New FTA starts after existing ends (no overlap)
         FTA existingFTA = new FTA();
         existingFTA.setId(2L);
@@ -1630,16 +1618,44 @@ public class FTAServiceTest {
         List<FTA> existingFTAs = new ArrayList<>();
         existingFTAs.add(existingFTA);
 
-        when(ftaRepository.findById(1L)).thenReturn(Optional.of(testFTA));
-        when(ftaRepository.findByParties(testPartyA, testPartyB)).thenReturn(existingFTAs);
-        when(ftaRepository.save(any(FTA.class))).thenReturn(testFTA);
+        when(agreements.findById(1L)).thenReturn(Optional.of(testFTA));
+        when(agreements.findByParties(testPartyA, testPartyB)).thenReturn(existingFTAs);
+        when(agreements.save(any(FTA.class))).thenReturn(testFTA);
 
         // Act
         FTA result = ftaService.updateFTA(1L, request);
 
         // Assert: Should succeed (no overlap)
         assertNotNull(result);
-        verify(ftaRepository).save(any(FTA.class));
+        verify(agreements).save(any(FTA.class));
+    }
+
+    // ========== deleteFTA() Tests ==========
+    @Test
+    public void deleteFTA_ShouldDeleteFTA_WhenExists() {
+        // Arrange
+        when(agreements.existsById(1L)).thenReturn(true);
+        doNothing().when(agreements).deleteById(1L);
+
+        // Act
+        ftaService.deleteFTA(1L);
+
+        // Assert
+        verify(agreements).existsById(1L);
+        verify(agreements).deleteById(1L);
+    }
+
+    @Test
+    public void deleteFTA_ShouldThrowException_WhenDeleteFTANotFound() {
+        // Arrange
+        when(agreements.existsById(999L)).thenReturn(false);
+
+        // Act & Assert
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+            ftaService.deleteFTA(999L));
+
+        assertTrue(exception.getMessage().contains("No FTA found with id 999"));
+        verify(agreements).existsById(999L);
+        verify(agreements, never()).deleteById(any());
     }
 }
-

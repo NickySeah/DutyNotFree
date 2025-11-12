@@ -1,5 +1,17 @@
 package com.example.CSD.test.calculator;
 
+import java.time.LocalDate;
+import java.util.*;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
 import com.example.CSD.calculator.CalculatorService;
 import com.example.CSD.concession.Concession;
 import com.example.CSD.country.Country;
@@ -10,28 +22,9 @@ import com.example.CSD.hscode.HSCodeService;
 import com.example.CSD.tariff.Tariff;
 import com.example.CSD.tariff.TariffService;
 import com.example.CSD.tradeParty.TradeParty;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class CalculatorServiceTest {
-
     @Mock
     private TariffService tariffService;
 
@@ -143,7 +136,7 @@ public class CalculatorServiceTest {
     // ========== FTA Integration Tests ==========
 
     @Test
-    public void should_ApplyFTARate_WhenValidFTAExists() {
+    public void calculateTariffedValue_ShouldApplyFTARate_WhenValidFTAExists() {
         // Arrange: Mock FTA service to return an applicable FTA
         List<FTA> ftas = new ArrayList<>();
         ftas.add(testFTA);
@@ -178,7 +171,7 @@ public class CalculatorServiceTest {
     }
 
     @Test
-    public void should_ApplyTariffRate_WhenNoFTAExists() {
+    public void calculateTariffedValue_ShouldApplyTariffRate_WhenNoFTAExists() {
         // Arrange: Mock FTA service to return empty list (no FTA)
         List<FTA> ftas = new ArrayList<>();
         
@@ -206,7 +199,7 @@ public class CalculatorServiceTest {
     }
 
     @Test
-    public void should_ApplyLowestFTARate_WhenMultipleFTAsExist() {
+    public void calculateTariffedValue_ShouldApplyLowestFTARate_WhenMultipleFTAsExist() {
         // Arrange: Create two FTAs with different rates
         FTA fta1 = new FTA();
         fta1.setId(1L);
@@ -256,7 +249,7 @@ public class CalculatorServiceTest {
     }
 
     @Test
-    public void should_ApplySpecialConcessionRate_WhenConcessionExistsForHSCode() {
+    public void calculateTariffedValue_ShouldApplySpecialConcessionRate_WhenConcessionExistsForHSCode() {
         // Arrange: FTA with special concession for the HS code
         List<FTA> ftas = new ArrayList<>();
         ftas.add(testFTAWithConcession);
@@ -283,7 +276,7 @@ public class CalculatorServiceTest {
     }
 
     @Test
-    public void should_SkipFTA_WhenHSCodeIsExcluded() {
+    public void calculateTariffedValue_ShouldSkipFTA_WhenHSCodeIsExcluded() {
         // Arrange: FTA with excluded HS code
         Set<HSCode> excludedHsCodes = new LinkedHashSet<>();
         excludedHsCodes.add(testHsCode);
@@ -313,7 +306,7 @@ public class CalculatorServiceTest {
     }
 
     @Test
-    public void should_ApplyTariff_WhenFTACostIsHigherThanTariffCost() {
+    public void calculateTariffedValue_ShouldApplyTariff_WhenFTACostIsHigherThanTariffCost() {
         // Arrange: FTA with higher rate than tariff
         FTA highRateFTA = new FTA();
         highRateFTA.setId(1L);
@@ -350,7 +343,7 @@ public class CalculatorServiceTest {
     }
 
     @Test
-    public void should_ApplyFTA_WhenFTACostEqualsTariffCost() {
+    public void calculateTariffedValue_ShouldApplyFTA_WhenFTACostEqualsTariffCost() {
         // Arrange: FTA rate equals tariff rate
         FTA equalRateFTA = new FTA();
         equalRateFTA.setId(1L);
@@ -387,7 +380,7 @@ public class CalculatorServiceTest {
     }
 
     @Test
-    public void should_HandleZeroFTARate_WhenFTAHasZeroRate() {
+    public void calculateTariffedValue_ShouldHandleZeroFTARate_WhenFTAHasZeroRate() {
         // Arrange: FTA with zero rate
         FTA zeroRateFTA = new FTA();
         zeroRateFTA.setId(1L);
@@ -427,7 +420,7 @@ public class CalculatorServiceTest {
     // ========== Error Handling Tests ==========
 
     @Test
-    public void should_DefaultToTariff_WhenFTAServiceThrowsException() {
+    public void calculateTariffedValue_ShouldDefaultToTariff_WhenFTAServiceThrowsException() {
         // Arrange: FTA service throws exception
         when(ftaService.getActiveFTA(null, "SG", "US", "2025-01-01"))
             .thenThrow(new RuntimeException("FTA lookup failed"));
@@ -441,7 +434,7 @@ public class CalculatorServiceTest {
     }
 
     @Test
-    public void should_HandleEmptyHSCodeList_WhenHSCodeNotFound() {
+    public void calculateTariffedValue_ShouldHandleEmptyHSCodeList_WhenHSCodeNotFound() {
         // Arrange: HS code service returns empty list
         List<FTA> ftas = new ArrayList<>();
         ftas.add(testFTA);
@@ -457,7 +450,7 @@ public class CalculatorServiceTest {
     }
 
     @Test
-    public void should_HandleNullConcession_WhenConcessionNotFound() {
+    public void calculateTariffedValue_ShouldHandleNullConcession_WhenConcessionNotFound() {
         // Arrange: FTA has special concessions set but concession for HS code is null
         Set<Concession> concessions = new HashSet<>();
         // Add a concession for a different HS code
@@ -496,7 +489,7 @@ public class CalculatorServiceTest {
     // ========== Integration with TariffService Tests ==========
 
     @Test
-    public void should_PassCorrectParameters_WhenCallingFTAService() {
+    public void calculateTariffedValue_ShouldPassCorrectParameters_WhenCallingFTAService() {
         // Arrange
         List<FTA> ftas = new ArrayList<>();
         List<HSCode> hsCodes = new ArrayList<>();
@@ -517,7 +510,7 @@ public class CalculatorServiceTest {
     }
 
     @Test
-    public void should_HandleMultipleTariffs_WhenBothFTAAndTariffsExist() {
+    public void calculateTariffedValue_ShouldHandleMultipleTariffs_WhenBothFTAAndTariffsExist() {
         // Arrange: FTA and multiple tariffs
         List<FTA> ftas = new ArrayList<>();
         ftas.add(testFTA); // 5% rate
@@ -546,7 +539,7 @@ public class CalculatorServiceTest {
     // ========== Edge Cases ==========
 
     @Test
-    public void should_HandleZeroOriginalValue_WhenFTAExists() {
+    public void calculateTariffedValue_ShouldHandleZeroOriginalValue_WhenFTAExists() {
         // Arrange
         List<FTA> ftas = new ArrayList<>();
         ftas.add(testFTA);
@@ -570,7 +563,7 @@ public class CalculatorServiceTest {
     }
 
     @Test
-    public void should_HandleLargeValues_WhenFTAExists() {
+    public void calculateTariffedValue_ShouldHandleLargeValues_WhenFTAExists() {
         // Arrange
         List<FTA> ftas = new ArrayList<>();
         ftas.add(testFTA);
@@ -594,7 +587,7 @@ public class CalculatorServiceTest {
     }
 
     @Test
-    public void should_HandleMultipleFTAsWithDifferentRates_WhenSelectingLowest() {
+    public void calculateTariffedValue_ShouldHandleMultipleFTAsWithDifferentRates_WhenSelectingLowest() {
         // Arrange: Three FTAs with different rates
         FTA fta1 = new FTA();
         fta1.setId(1L);
@@ -656,7 +649,7 @@ public class CalculatorServiceTest {
     // ========== Additional Branch Coverage Tests ==========
 
     @Test
-    public void should_HandleBlocParty_WhenCountryIsNull() {
+    public void calculateTariffedValue_ShouldHandleBlocParty_WhenCountryIsNull() {
         // Arrange: FTA with Bloc party (country is null)
         TradeParty blocParty = new TradeParty();
         blocParty.setId(3L);
@@ -699,7 +692,7 @@ public class CalculatorServiceTest {
     }
 
     @Test
-    public void should_HandleEqualFTARates_WhenMultipleFTAsHaveSameRate() {
+    public void calculateTariffedValue_ShouldHandleEqualFTARates_WhenMultipleFTAsHaveSameRate() {
         // Arrange: Two FTAs with the same rate (tests else-if branch when rates are equal)
         FTA fta1 = new FTA();
         fta1.setId(1L);
@@ -747,7 +740,7 @@ public class CalculatorServiceTest {
     }
 
     @Test
-    public void should_HandleTariffWithNullStandardRate_WhenOnlyFlatFeeExists() {
+    public void calculateTariffedValue_ShouldHandleTariffWithNullStandardRate_WhenOnlyFlatFeeExists() {
         // Arrange: Tariff with null standardRate (only flatFee)
         Tariff tariffWithOnlyFee = new Tariff();
         tariffWithOnlyFee.setId(1L);
@@ -783,7 +776,7 @@ public class CalculatorServiceTest {
     }
 
     @Test
-    public void should_HandleTariffWithBothNull_WhenNeitherRateNorFeeExists() {
+    public void calculateTariffedValue_ShouldHandleTariffWithBothNull_WhenNeitherRateNorFeeExists() {
         // Arrange: Tariff with both standardRate and flatFee as null
         Tariff emptyTariff = new Tariff();
         emptyTariff.setId(1L);
@@ -818,7 +811,7 @@ public class CalculatorServiceTest {
     }
 
     @Test
-    public void should_HandleAppliedFTANull_WhenNoMatchingFTAFound() {
+    public void calculateTariffedValue_ShouldHandleAppliedFTANull_WhenNoMatchingFTAFound() {
         // Arrange: FTA exists but appliedFTA becomes null (edge case in second loop)
         // This tests when curRate != lowestFTARate in the second loop
         FTA fta1 = new FTA();

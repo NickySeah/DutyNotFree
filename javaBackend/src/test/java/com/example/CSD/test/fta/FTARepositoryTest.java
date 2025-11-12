@@ -1,9 +1,14 @@
 package com.example.CSD.test.fta;
 
+import java.time.LocalDate;
+import java.util.*;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 import com.example.CSD.country.Country;
 import com.example.CSD.country.CountryRepository;
@@ -11,14 +16,6 @@ import com.example.CSD.fta.FTA;
 import com.example.CSD.fta.FTARepository;
 import com.example.CSD.tradeParty.TradeParty;
 import com.example.CSD.tradeParty.TradePartyRepository;
-
-import java.time.LocalDate;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 public class FTARepositoryTest {
