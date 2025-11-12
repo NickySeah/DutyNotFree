@@ -42,7 +42,8 @@ export default function LoginPage() {
           const isNotVerified =
             ctx.error.code === "EMAIL_NOT_VERIFIED" ||
             ctx.error.status === 403 ||
-            ctx.error.message.toLowerCase().includes("verify");
+            (ctx.error.message &&
+              ctx.error.message.toLowerCase().includes("verify"));
 
           if (isNotVerified) {
             try {
@@ -77,21 +78,26 @@ export default function LoginPage() {
 
   return (
     <div>
-      <div className="flex flex-row border-2 m-8 rounded-4xl shadow-lg overflow-hidden">
-        <div className="w-2/5 p-10 flex flex-col justify-center items-center mt-8">
-          <h1 className="text-3xl font-bold text-center mb-2">Login</h1>
-          <h3 className="text-center text-gray-500 mb-4">
+      <div className="flex flex-col md:flex-row border-2 m-4 md:m-8 rounded-4xl shadow-lg overflow-hidden">
+        <div className="w-full md:w-2/5 p-6 md:p-10 flex flex-col justify-center items-center mt-4 md:mt-8">
+          <h1 className="text-2xl md:text-3xl font-bold text-center mb-2">
+            Login
+          </h1>
+          <h3 className="text-sm md:text-base text-center text-gray-500 mb-4 px-2">
             Welcome back! Please enter your credentials.
           </h3>
 
-          <form onSubmit={handleSubmit} className="max-w-md w-full space-y-4">
+          <form
+            onSubmit={handleSubmit}
+            className="max-w-md w-full space-y-4 px-4 md:px-0"
+          >
             <div>
-              <label htmlFor="email" className="font-bold">
+              <label htmlFor="email" className="font-bold text-sm md:text-base">
                 Email
               </label>
               <div className="relative">
                 <input
-                  className="border-2 w-full p-2 rounded-md text-lg"
+                  className="border-2 w-full p-2 rounded-md text-base md:text-lg"
                   type="email"
                   id="email"
                   name="email"
@@ -100,19 +106,22 @@ export default function LoginPage() {
             </div>
             <div>
               <div className="flex items-center mb-1">
-                <label htmlFor="password" className="font-bold">
+                <label
+                  htmlFor="password"
+                  className="font-bold text-sm md:text-base"
+                >
                   Password
                 </label>
                 <Link
                   href="#"
-                  className="ml-auto inline-block text-sm underline"
+                  className="ml-auto inline-block text-xs md:text-sm underline"
                 >
                   Forgot your password?
                 </Link>
               </div>
               <div className="relative">
                 <input
-                  className="border-2 w-full p-2 rounded-md text-lg"
+                  className="border-2 w-full p-2 rounded-md text-base md:text-lg"
                   type="password"
                   id="password"
                   name="password"
@@ -123,7 +132,7 @@ export default function LoginPage() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full mt-8 mb-8"
+              className="w-full mt-6 md:mt-8 mb-6 md:mb-8"
             >
               {loading ? (
                 <Loader2 size={16} className="animate-spin" />
@@ -133,13 +142,13 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <div className="mb-8 text-sm text-center text-gray-500">
+          <div className="mb-6 md:mb-8 text-xs md:text-sm text-center text-gray-500">
             You can also sign in with
           </div>
           <Button
             variant="outline"
             className={cn(
-              "max-w-md gap-2 mb-7 w-full",
+              "max-w-md gap-2 mb-6 md:mb-7 w-full mx-4 md:mx-0",
               loading && "opacity-60"
             )}
             disabled={loading}
@@ -191,7 +200,7 @@ export default function LoginPage() {
             Sign in with Google
           </Button>
 
-          <div className="flex justify-center w-full border-t py-4 mt-15">
+          <div className="flex justify-center w-full border-t py-4 mt-8 md:mt-15">
             <p className="text-center text-xs text-neutral-500">
               Don&apos;t have an account?{" "}
               <Link href="/register" className="text-orange-400">
@@ -200,12 +209,13 @@ export default function LoginPage() {
             </p>
           </div>
         </div>
-        <div className="w-3/5 flex items-center justify-center relative rounded-r-4xl overflow-hidden">
+        <div className="w-full md:w-3/5 h-64 md:h-auto flex items-center justify-center relative rounded-b-4xl md:rounded-r-4xl md:rounded-bl-none overflow-hidden">
           <Image
             src="/images/shipyard.jpg"
             alt="Login with Google"
             fill
             sizes="(max-width: 768px) 100vw, 50vw"
+            className="object-cover"
           />
         </div>
       </div>

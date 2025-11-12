@@ -36,7 +36,11 @@ import { Combobox } from "@/components/ui/combobox";
 import { useCreateTariff } from "@/hooks/useCreateTariff";
 import { useHsCodes } from "@/hooks/useHsCodes";
 import { useCountries } from "@/hooks/useCountry";
-import { typeOfTariffs, getTariffBackendValue, getTableDisplayName } from "@/lib/testData";
+import {
+  typeOfTariffs,
+  getTariffBackendValue,
+  getTableDisplayName,
+} from "@/lib/testData";
 
 // Types
 interface CreateTariffModalProps {
@@ -77,24 +81,26 @@ export function CreateTariffModal({ isOpen, onClose }: CreateTariffModalProps) {
   const [noExpiration, setNoExpiration] = useState(false);
 
   // Data transformations
-  const countryOptions = countries?.map((country) => ({
-    value: country.code,
-    label: country.name,
-  })) || [];
+  const countryOptions =
+    countries?.map((country) => ({
+      value: country.code,
+      label: country.name,
+    })) || [];
 
-  const hsCodeOptions = hsCodes?.map((hsCode) => ({
-    value: hsCode.code,
-    label: `${hsCode.code} - ${hsCode.description}`,
-  })) || [];
+  const hsCodeOptions =
+    hsCodes?.map((hsCode) => ({
+      value: hsCode.code,
+      label: `${hsCode.code} - ${hsCode.description}`,
+    })) || [];
 
   // Form handlers
-  // Instead of having multiple useState calls, we can have a single state object for the form
-  // and a generic change handler that updates the relevant field based on input name or similar.
-  // This reduces boilerplate and makes it easier to manage form state.
-  const handleChange = (field: keyof FormData, value: string | Date | undefined | number) => {
+  const handleChange = (
+    field: keyof FormData,
+    value: string | Date | undefined | number
+  ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
-  
+
   const handleTariffTypeChange = (value: string) => {
     setFormData((prev) => ({
       ...prev,
@@ -128,47 +134,53 @@ export function CreateTariffModal({ isOpen, onClose }: CreateTariffModalProps) {
     const validations = [
       {
         condition: !formData.exportingCountry,
-        message: "Please select an exporting country"
+        message: "Please select an exporting country",
       },
       {
         condition: !formData.importingCountry,
-        message: "Please select an importing country"
+        message: "Please select an importing country",
       },
       {
         condition: formData.exportingCountry === formData.importingCountry,
-        message: "Exporting and importing countries cannot be the same"
+        message: "Exporting and importing countries cannot be the same",
       },
       {
         condition: !formData.tariffType,
-        message: "Please select a tariff type"
+        message: "Please select a tariff type",
       },
       {
-        condition: formData.tariffType === "Ad Valorem" && (formData.rate <= 0 || formData.rate > 100),
-        message: formData.rate <= 0 
-          ? "Please enter a valid tariff rate greater than or equal to 0"
-          : "Tariff rate cannot exceed 100%"
+        condition:
+          formData.tariffType === "Ad Valorem" &&
+          (formData.rate <= 0 || formData.rate > 100),
+        message:
+          formData.rate <= 0
+            ? "Please enter a valid tariff rate greater than or equal to 0"
+            : "Tariff rate cannot exceed 100%",
       },
       {
         condition: formData.tariffType === "Flat Fee" && formData.flatFee <= 0,
-        message: "Flat fee cannot be negative"
+        message: "Flat fee cannot be negative",
       },
       {
         condition: !formData.hsCode.trim(),
-        message: "Please enter an HS code"
+        message: "Please enter an HS code",
       },
       {
         condition: !formData.effectiveDate,
-        message: "Please select an effective date"
+        message: "Please select an effective date",
       },
       {
         condition: !noExpiration && !formData.expirationDate,
-        message: "Please select an expiration date"
+        message: "Please select an expiration date",
       },
       {
-        condition: !noExpiration && formData.expirationDate && formData.effectiveDate && 
-                   formData.expirationDate <= formData.effectiveDate,
-        message: "Expiration date must be after effective date"
-      }
+        condition:
+          !noExpiration &&
+          formData.expirationDate &&
+          formData.effectiveDate &&
+          formData.expirationDate <= formData.effectiveDate,
+        message: "Expiration date must be after effective date",
+      },
     ];
 
     for (const validation of validations) {
@@ -189,9 +201,15 @@ export function CreateTariffModal({ isOpen, onClose }: CreateTariffModalProps) {
       hsCode: formData.hsCode,
       exportingFrom: formData.exportingCountry,
       importingTo: formData.importingCountry,
-      type: getTableDisplayName(formData.tariffType), // Send display name instead of backend value
-      rate: getTariffBackendValue(formData.tariffType) === "Ad Valorem" ? formData.rate : null,
-      flatFee: getTariffBackendValue(formData.tariffType) === "Flat Fee" ? formData.flatFee : null,
+      type: getTableDisplayName(formData.tariffType),
+      rate:
+        getTariffBackendValue(formData.tariffType) === "Ad Valorem"
+          ? formData.rate
+          : null,
+      flatFee:
+        getTariffBackendValue(formData.tariffType) === "Flat Fee"
+          ? formData.flatFee
+          : null,
       effectiveDate: formData.effectiveDate!,
       expirationDate: noExpiration ? undefined : formData.expirationDate!,
     };
@@ -210,9 +228,9 @@ export function CreateTariffModal({ isOpen, onClose }: CreateTariffModalProps) {
 
   // Render helpers
   const renderCountrySelection = () => (
-    <div className="flex items-center gap-4">
+    <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 md:gap-4">
       <div className="flex-1">
-        <Label className="text-sm font-medium text-gray-700 mb-2 block">
+        <Label className="text-xs md:text-sm font-medium text-gray-700 mb-2 block">
           Exporting Country
         </Label>
         <Combobox
@@ -227,12 +245,12 @@ export function CreateTariffModal({ isOpen, onClose }: CreateTariffModalProps) {
         />
       </div>
 
-      <div className="mt-6">
-        <ArrowRight className="h-4 w-4 text-gray-400" />
+      <div className="self-center md:mt-6">
+        <ArrowRight className="h-4 w-4 text-gray-400 rotate-90 md:rotate-0" />
       </div>
 
       <div className="flex-1">
-        <Label className="text-sm font-medium text-gray-700 mb-2 block">
+        <Label className="text-xs md:text-sm font-medium text-gray-700 mb-2 block">
           Importing Country
         </Label>
         <Combobox
@@ -251,7 +269,7 @@ export function CreateTariffModal({ isOpen, onClose }: CreateTariffModalProps) {
 
   const renderHsCodeSelection = () => (
     <div className="space-y-2">
-      <Label className="text-sm font-medium text-gray-700">
+      <Label className="text-xs md:text-sm font-medium text-gray-700">
         HS Code
       </Label>
       <Combobox
@@ -269,10 +287,10 @@ export function CreateTariffModal({ isOpen, onClose }: CreateTariffModalProps) {
 
   const renderTariffTypeAndRate = () => (
     <div className="space-y-2">
-      <Label className="text-sm font-medium text-gray-700">
+      <Label className="text-xs md:text-sm font-medium text-gray-700">
         Tariff Type & Rate
       </Label>
-      <div className="flex gap-4">
+      <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
         <div className="flex-1">
           {getTariffBackendValue(formData.tariffType) === "Ad Valorem" ? (
             <Input
@@ -280,11 +298,15 @@ export function CreateTariffModal({ isOpen, onClose }: CreateTariffModalProps) {
               type="number"
               value={formData.rate === 0 ? "" : formData.rate.toString()}
               onChange={(e) =>
-                handleChange("rate", e.target.value === "" ? 0 : Number(e.target.value))
+                handleChange(
+                  "rate",
+                  e.target.value === "" ? 0 : Number(e.target.value)
+                )
               }
               min="0"
               max="100"
               step="0.01"
+              className="text-sm"
             />
           ) : getTariffBackendValue(formData.tariffType) === "Flat Fee" ? (
             <Input
@@ -292,10 +314,14 @@ export function CreateTariffModal({ isOpen, onClose }: CreateTariffModalProps) {
               type="number"
               value={formData.flatFee === 0 ? "" : formData.flatFee.toString()}
               onChange={(e) =>
-                handleChange("flatFee", e.target.value === "" ? 0 : Number(e.target.value))
+                handleChange(
+                  "flatFee",
+                  e.target.value === "" ? 0 : Number(e.target.value)
+                )
               }
               min="0"
               step="1"
+              className="text-sm"
             />
           ) : (
             <Input
@@ -303,17 +329,25 @@ export function CreateTariffModal({ isOpen, onClose }: CreateTariffModalProps) {
               disabled
               value=""
               readOnly
+              className="text-sm"
             />
           )}
         </div>
 
-        <Select value={formData.tariffType} onValueChange={handleTariffTypeChange}>
-          <SelectTrigger className="w-[180px]">
+        <Select
+          value={formData.tariffType}
+          onValueChange={handleTariffTypeChange}
+        >
+          <SelectTrigger className="w-full sm:w-[180px] text-sm">
             <SelectValue placeholder="Tariff Type" />
           </SelectTrigger>
           <SelectContent>
             {typeOfTariffs.map((tariff) => (
-              <SelectItem key={tariff.name} value={tariff.name}>
+              <SelectItem
+                key={tariff.name}
+                value={tariff.name}
+                className="text-sm"
+              >
                 {tariff.name}
               </SelectItem>
             ))}
@@ -330,7 +364,7 @@ export function CreateTariffModal({ isOpen, onClose }: CreateTariffModalProps) {
     disabled = false
   ) => (
     <div className="space-y-2">
-      <Label className="text-sm font-medium text-gray-700">
+      <Label className="text-xs md:text-sm font-medium text-gray-700">
         {label}
       </Label>
       <Popover>
@@ -338,12 +372,14 @@ export function CreateTariffModal({ isOpen, onClose }: CreateTariffModalProps) {
           <Button
             variant="outline"
             disabled={disabled}
-            className={`w-full justify-start text-left font-normal ${
+            className={`w-full justify-start text-left font-normal text-xs md:text-sm ${
               disabled ? "opacity-50 cursor-not-allowed" : ""
             }`}
           >
-            <CalendarIcon className="mr-2 h-4 w-4" />
-            {value && !disabled ? format(value, "PPP") : `Select ${label.toLowerCase()}`}
+            <CalendarIcon className="mr-2 h-3 w-3 md:h-4 md:w-4" />
+            {value && !disabled
+              ? format(value, "PPP")
+              : `Select ${label.toLowerCase()}`}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0">
@@ -361,12 +397,16 @@ export function CreateTariffModal({ isOpen, onClose }: CreateTariffModalProps) {
 
   const renderDateSection = () => (
     <div className="space-y-4">
-      {renderDatePicker("Effective Date", formData.effectiveDate, "effectiveDate")}
-      
       {renderDatePicker(
-        "Expiration Date", 
-        formData.expirationDate, 
-        "expirationDate", 
+        "Effective Date",
+        formData.effectiveDate,
+        "effectiveDate"
+      )}
+
+      {renderDatePicker(
+        "Expiration Date",
+        formData.expirationDate,
+        "expirationDate",
         noExpiration
       )}
 
@@ -380,7 +420,7 @@ export function CreateTariffModal({ isOpen, onClose }: CreateTariffModalProps) {
           />
           <Label
             htmlFor="no-expiration"
-            className="text-sm font-medium text-gray-700 cursor-pointer"
+            className="text-xs md:text-sm font-medium text-gray-700 cursor-pointer"
           >
             This tariff has no expiration date
           </Label>
@@ -391,25 +431,33 @@ export function CreateTariffModal({ isOpen, onClose }: CreateTariffModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">
+          <DialogTitle className="text-lg md:text-xl font-semibold">
             Define New Tariff
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6 py-4">
+        <div className="space-y-4 md:space-y-6 py-3 md:py-4">
           {renderCountrySelection()}
           {renderHsCodeSelection()}
           {renderTariffTypeAndRate()}
           {renderDateSection()}
         </div>
 
-        <DialogFooter className="flex gap-3">
-          <Button variant="outline" onClick={() => handleClose(false)}>
+        <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3">
+          <Button
+            variant="outline"
+            onClick={() => handleClose(false)}
+            className="w-full sm:w-auto text-sm"
+          >
             Cancel
           </Button>
-          <Button disabled={isPending} onClick={handleSave}>
+          <Button
+            disabled={isPending}
+            onClick={handleSave}
+            className="w-full sm:w-auto text-sm"
+          >
             {isPending ? "Creating..." : "Create Tariff"}
           </Button>
         </DialogFooter>

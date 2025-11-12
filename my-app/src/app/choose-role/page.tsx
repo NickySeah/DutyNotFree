@@ -119,8 +119,8 @@ export default function ChooseRolePage() {
   if (isPending) {
     console.log("Showing loading state");
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-lg">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+        <div className="text-base md:text-lg">Loading...</div>
       </div>
     );
   }
@@ -129,8 +129,8 @@ export default function ChooseRolePage() {
   if (!isPending && isAuthenticated && !needsRoleSelection) {
     console.log("Showing redirecting state");
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-lg">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+        <div className="text-base md:text-lg text-center">
           You already have a role assigned. Redirecting...
         </div>
       </div>
@@ -141,38 +141,40 @@ export default function ChooseRolePage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
       <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">Choose Your Role</CardTitle>
-          <CardDescription>
+        <CardHeader className="text-center px-4 md:px-6">
+          <CardTitle className="text-xl md:text-2xl font-bold">
+            Choose Your Role
+          </CardTitle>
+          <CardDescription className="text-sm md:text-base">
             Please select your role to continue using DutyNotFree
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 px-4 md:px-6">
           <div className="space-y-3">
             <div
-              className={`p-4 border-2 rounded-lg cursor-pointer transition-colors ${
+              className={`p-3 md:p-4 border-2 rounded-lg cursor-pointer transition-colors ${
                 selectedRole === "supplier"
                   ? "border-blue-500 bg-blue-50"
                   : "border-gray-200 hover:border-gray-300"
               }`}
               onClick={() => setSelectedRole("supplier")}
             >
-              <h3 className="font-semibold text-lg">Supplier</h3>
-              <p className="text-sm text-gray-600">
+              <h3 className="font-semibold text-base md:text-lg">Supplier</h3>
+              <p className="text-xs md:text-sm text-gray-600">
                 I export goods and need to manage product information
               </p>
             </div>
 
             <div
-              className={`p-4 border-2 rounded-lg cursor-pointer transition-colors ${
+              className={`p-3 md:p-4 border-2 rounded-lg cursor-pointer transition-colors ${
                 selectedRole === "importer"
                   ? "border-blue-500 bg-blue-50"
                   : "border-gray-200 hover:border-gray-300"
               }`}
               onClick={() => setSelectedRole("importer")}
             >
-              <h3 className="font-semibold text-lg">Importer</h3>
-              <p className="text-sm text-gray-600">
+              <h3 className="font-semibold text-base md:text-lg">Importer</h3>
+              <p className="text-xs md:text-sm text-gray-600">
                 I import goods and need to calculate duties and tariffs
               </p>
             </div>
@@ -181,7 +183,7 @@ export default function ChooseRolePage() {
           <Button
             onClick={handleRoleSelection}
             disabled={!selectedRole || isLoading}
-            className="w-full"
+            className="w-full text-sm md:text-base"
           >
             {isLoading ? "Setting Role..." : "Continue"}
           </Button>

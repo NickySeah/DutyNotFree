@@ -52,8 +52,8 @@ public class Bloc {
     @Schema(hidden = true)
     private Set<Country> memberCountries = new LinkedHashSet<>(); // one bloc have many members (countries)
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
-    @JoinColumn(name = "trade_party_id", insertable = false, updatable = false)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "trade_party_id")
     @JsonIgnore
     @Schema(hidden = true)
     private TradeParty tradeParty;                          // for usage in FTA as party A & party B

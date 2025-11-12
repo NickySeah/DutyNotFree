@@ -50,3 +50,7 @@ export const productService = createAuthenticatedApiInstance(process.env.NEXT_PU
 export const hsCodeService = createAuthenticatedApiInstance(process.env.NEXT_PUBLIC_HS_CODE_SERVICE_URL!);
 export const countriesService = createAuthenticatedApiInstance(process.env.NEXT_PUBLIC_COUNTRIES_SERVICE_URL!);
 export const calculatorService = createAuthenticatedApiInstance(process.env.NEXT_PUBLIC_CALCULATOR_SERVICE_URL!);
+export const ftaService = createAuthenticatedApiInstance(process.env.NEXT_PUBLIC_FTA_SERVICE_URL!);
+export const blocService = createAuthenticatedApiInstance(process.env.NEXT_PUBLIC_BLOC_SERVICE_URL!);
+export const wishlistService = createAuthenticatedApiInstance(process.env.NEXT_PUBLIC_WISHLIST_SERVICE_URL!);
+export const ragService = createAuthenticatedApiInstance(process.env.NEXT_PUBLIC_RAG_SERVICE_URL!);

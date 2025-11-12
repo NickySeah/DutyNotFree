@@ -24,7 +24,6 @@ export default function Footer() {
             <div>
             <h3 className="text-xl font-semibold text-white mb-4">Explore</h3>
             <ul className="space-y-3">
-              <li><Link href="/tariff">Tariff Definition</Link></li>
               <li><Link href="#">Pricing</Link></li>
               <li><Link href="#">Testimonials</Link></li>
             </ul>
@@ -32,7 +31,7 @@ export default function Footer() {
           <div>
             <h3 className="text-xl font-semibold text-white mb-4">Company</h3>
             <ul className="space-y-3">
-              <li><Link href="#">About Us</Link></li>
+              <li><Link href="/about">About Us</Link></li>
               <li><Link href="#">Careers</Link></li>
               <li><Link href="#">Blog</Link></li>
             </ul>
@@ -40,7 +39,7 @@ export default function Footer() {
           <div>
             <h3 className="text-xl font-semibold text-white mb-4">Support</h3>
             <ul className="space-y-3">
-              <li><Link href="#">Help Center</Link></li>
+              <li><Link href="https://www.sos.org.sg/">Help Center</Link></li>
               <li><Link href="#">Privacy Policy</Link></li>
               <li><Link href="#">Terms of Service</Link></li>
             </ul>

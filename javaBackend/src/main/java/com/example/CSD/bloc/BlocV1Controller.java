@@ -18,14 +18,15 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 
 @Tag(name = "Bloc Controller", description = "Operations related to bloc management")
 @RestController
 @RequestMapping("/api/v1/blocs")        // url starts with /blocs
 public class BlocV1Controller {
-    private BlocService blocService;
+    private BlocServiceImpl blocService;
 
-    public BlocV1Controller(BlocService bs) {
+    public BlocV1Controller(BlocServiceImpl bs) {
         this.blocService = bs;
     }
 
@@ -58,13 +59,13 @@ public class BlocV1Controller {
     })
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping()
-    public Bloc addBloc(@RequestBody BlocCreateRequest request){
+    public Bloc addBloc(@Valid @RequestBody BlocCreateRequest request){
         return blocService.addBloc(request);
     }
 
     @Operation(summary = "Update members of a bloc", description = "Updates an existing bloc")
     @PutMapping()
-    public Bloc updateBloc(@Parameter(description = "Code of the bloc to update") @RequestParam String code, @RequestBody BlocUpdateRequest request) {
+    public Bloc updateBloc(@Parameter(description = "Code of the bloc to update") @RequestParam String code, @Valid @RequestBody BlocUpdateRequest request) {
         return blocService.updateBloc(code, request);
     }
 

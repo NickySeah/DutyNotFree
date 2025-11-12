@@ -25,7 +25,7 @@ export default function MainContent({
   } = useUserRole();
 
   useEffect(() => {
-    // Skip role checking for certain pages
+    // Skip role checking for certain pages.
     const skipRoleCheck = ["/", "/login", "/register", "/choose-role"].includes(
       pathname
     );
@@ -52,8 +52,7 @@ export default function MainContent({
   if (isPending) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <PacmanLoader 
-        loading={isPending}/>
+        <PacmanLoader loading={isPending} />
       </div>
     );
   }
@@ -61,7 +60,8 @@ export default function MainContent({
   return (
     <div
       className={cn({
-        "pt-24": pathname !== "/" && pathname !== "/choose-role",
+        "pt-16 md:pt-20 lg:pt-24":
+          pathname !== "/" && pathname !== "/choose-role",
         "pt-0": pathname === "/" || pathname === "/choose-role",
       })}
     >

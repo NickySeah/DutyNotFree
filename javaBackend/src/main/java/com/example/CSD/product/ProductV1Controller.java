@@ -25,9 +25,9 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/api/v1/products")        // url starts with /products
 public class ProductV1Controller {
-    private ProductService productService;
+    private ProductServiceImpl productService;
 
-    public ProductV1Controller(ProductService ps) {
+    public ProductV1Controller(ProductServiceImpl ps) {
         this.productService = ps;
     }
 
@@ -81,7 +81,7 @@ public class ProductV1Controller {
         @Parameter(description = "HS code of the product") @RequestParam String hsCode, 
         @Parameter(description = "Name of the product") @RequestParam String name,
         @Parameter(description = "User ID associated with the product") @RequestParam String userID, 
-        @RequestBody ProductUpdateRequest productRequest) 
+        @Valid @RequestBody ProductUpdateRequest productRequest) 
     {
         return productService.updateProduct(hsCode, name, userID, productRequest);
     }
@@ -89,7 +89,7 @@ public class ProductV1Controller {
     @Operation(summary = "Update product by ID", description = "Updates a product using its unique ID")
     @ResponseStatus(HttpStatus.OK)
     @PutMapping("/{id}")
-    public Product updateProduct(@Parameter(description = "Product ID") @PathVariable Long id, @RequestBody ProductUpdateRequest productRequest) {
+    public Product updateProduct(@Parameter(description = "Product ID") @PathVariable Long id, @Valid @RequestBody ProductUpdateRequest productRequest) {
         return productService.updateProductById(id, productRequest);
     }
 

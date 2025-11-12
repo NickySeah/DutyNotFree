@@ -1,0 +1,65 @@
+# docker-compose.yml
+
+services:
+  # 1. The Java Spring Boot Backend
+  java-backend:
+    build: .  # Assumes your Dockerfile is in the same folder
+    ports:
+      - "3001:3001" # Exposes your app's port to the host machine
+    environment:
+      # --- Database Connection ---
+      # This points to the 'productdb' service name below
+      DB_HOST: productdb
+      DB_NAME: productdb
+      DB_PASSWORD: ${DB_SECRET_PASSWORD} # Use the same password as below
+      
+      # --- URLs for Next.js App ---
+      # 'host.docker.internal' is a special DNS name that lets the
+      # container talk to your main 'localhost' (where Next.js is running)
+      FRONTEND_URL: ${FRONTEND_URL}
+      
+      # --- Other Secrets ---
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      COHERE_API_KEY: ${COHERE_API_KEY}
+      PINECONE_API_KEY: ${PINECONE_API_KEY}
+    depends_on:
+      productdb: # Tells Docker to start the database first
+        condition: service_healthy
+
+  # 2. The MySQL Database for Products
+  productdb:
+    image: mysql:8.0
+    ports:
+      - "3306:3306" # Optional: lets you connect from your local machine if needed
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_SECRET_PASSWORD}
+      MYSQL_DATABASE: productdb
+    command:
+      # This sets the case-insensitivity you asked about
+      - --lower_case_table_names=1
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_SECRET_PASSWORD}"]
+      interval: 5s
+      timeout: 10s
+      retries: 20
+    volumes:
+      - product-db-data:/var/lib/mysql
+
+  # 3. The MySQL Database for Users (for Next.js)
+  userdb:
+    image: mysql:8.0
+    ports:
+      - "3307:3306" # The database is accessible from your localhost (your computer) at http://localhost:3307.
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_SECRET_PASSWORD}
+      MYSQL_DATABASE: userdb
+    command:
+      - --lower_case_table_names=1
+    volumes:
+      - user-db-data:/var/lib/mysql
+      - ./init-userdb.sql:/docker-entrypoint-initdb.d/init.sql  # Add this line
+# These 'volumes' save your database data even if you stop the containers
+volumes:
+  product-db-data:
+  user-db-data:

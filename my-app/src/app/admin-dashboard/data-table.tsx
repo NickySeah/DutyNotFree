@@ -61,34 +61,33 @@ export function DataTable<TData, TValue>({
 
   return (
     <div>
-      <div className="flex items-center py-4">
-        <div className="flex items-center space-x-2">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 py-3 md:py-4">
         <Input
           placeholder="Filter emails or names..."
           value={table.getState().globalFilter ?? ""}
           onChange={(event) => {
             table.setGlobalFilter(event.target.value);
           }}
-          className="max-w-sm"
+          className="w-full sm:max-w-sm text-sm"
         />
+        <Button
+          variant="ghost"
+          onClick={() => {
+            table.setGlobalFilter("");
+          }}
+          className="text-sm w-full sm:w-auto"
+        >
+          Clear
+        </Button>
       </div>
-      <Button
-        variant="ghost"
-        onClick={() => {
-          table.setGlobalFilter("");
-        }}
-      >
-        Clear
-      </Button>
-      </div>
-      <div className="overflow-hidden rounded-md border">
+      <div className="overflow-x-auto rounded-md border">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id}>
+                    <TableHead key={header.id} className="text-xs md:text-sm">
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -109,7 +108,7 @@ export function DataTable<TData, TValue>({
                   data-state={row.getIsSelected() && "selected"}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell key={cell.id} className="text-xs md:text-sm">
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
@@ -122,7 +121,7 @@ export function DataTable<TData, TValue>({
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className="h-24 text-center"
+                  className="h-24 text-center text-xs md:text-sm"
                 >
                   No results.
                 </TableCell>
@@ -131,12 +130,13 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
+      <div className="flex items-center justify-end space-x-2 py-3 md:py-4">
         <Button
           variant="outline"
           size="sm"
           onClick={() => table.previousPage()}
           disabled={!table.getCanPreviousPage()}
+          className="text-xs md:text-sm"
         >
           Previous
         </Button>
@@ -145,6 +145,7 @@ export function DataTable<TData, TValue>({
           size="sm"
           onClick={() => table.nextPage()}
           disabled={!table.getCanNextPage()}
+          className="text-xs md:text-sm"
         >
           Next
         </Button>

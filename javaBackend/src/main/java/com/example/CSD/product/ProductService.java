@@ -1,124 +1,84 @@
 package com.example.CSD.product;
 
 import java.util.*;
-// import javax.swing.text.html.Option;
-import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
 
-import jakarta.transaction.Transactional;
-
-import com.example.CSD.hscode.*;
-
-import io.swagger.v3.oas.annotations.Parameter;
-
-@Service
-public class ProductService {
-    private ProductRepository products;
-    private HSCodeRepository hsCodes;
-
-    public ProductService(ProductRepository products, HSCodeRepository hsCodeRepository) {
-        this.products = products;
-        this.hsCodes = hsCodeRepository;
-    }
-
-    // Retrieve all tariffs in DB
-    public List<Product> listProducts() {
-        return products.findAll();
-    }
+public interface ProductService {
+    /**
+     * Retrieves all products in the system
+     * 
+     * @return a list of all products currently stored in the system
+     *         Returns an empty list if no products are found
+     */
+    public List<Product> listProducts();
     
-    // Retrieve products based on given condition(s)
-    public List<Product> getProduct(String userID, String name, String hsCode) {
-        // If no parameters provided, return all tariffs
-        if (userID == null && name == null && hsCode == null) {
-            return listProducts();
-        }
-        
-        return products.findByFilters(userID, name, hsCode);
-    }
+    /**
+     * Retrieves products based on given condition(s)
+     * 
+     * @param userID the ID of the user who owns the product
+     * @param name the name of the product
+     * @param hsCode the HS code associated with the product
+     * @return a list of products matching the specified criteria
+     *         If no parameters are provided, returns all products
+     */
+    public List<Product> getProduct(String userID, String name, String hsCode);
 
-    // Retrieve product based on its id
-    public Product getProductById(Long id) {
-        return products.findById(id).orElseThrow(() -> new NoSuchElementException("Product with ID " + id + " not found."));
-    }
+    /**
+     * Retrieves a product by its unique ID
+     * 
+     * @param id the unique ID of the product
+     * @return the product with the specified ID
+     */
+    public Product getProductById(Long id);
 
-    public List<Product> getProductsByUserId(String userId) {
-        return products.findByUserIdOrIsPrivate(userId, false);
-    }
+    /**
+     * Retrieves products that are either owned by the specified user or are public
+     * 
+     * @param userId the ID of the user
+     * @return a list of products owned by the user or public products
+     */
+    public List<Product> getProductsByUserId(String userId);
 
-    // Create & add a new tariff to DB
-    public Product createProduct(ProductCreateRequest request) {
-        // (1) Validate Tariff Request                      // TODO: note null/trim().length() checks removed because of @NotBlank
-        String userID = request.getUserId();
-        String pName = request.getName();
-        String hsCodeValue = request.getHsCode();
-        Boolean isPrivate = request.getIsPrivate()==null ? true : request.getIsPrivate();   // Default to true if not provided
-
-        HSCode hsCode = hsCodes.findByCode(hsCodeValue)                                     // (?) Check if HS code exists
-        .orElseThrow(() -> new RuntimeException("HS Code '" + hsCodeValue + "' not found. Please provide a valid HS Code."));
-
-        // (2) Check if product with same name, userID, HS code already exists
-        if (products.existsByNameAndUserIdAndHsCode_Code(pName, userID, hsCodeValue)){
-            throw new IllegalArgumentException("Product '" + pName + "' (HS Code: '" + hsCodeValue + "') already exists.");
-        }
-
-        // (3) Create and save product 
-        Product product = new Product();
-        product.setName(pName);
-        product.setUserId(userID);
-        product.setHsCode(hsCode);
-        product.setPrivate(isPrivate);
-        return products.save(product);
-    }
+    /**
+     * Adds a new product to the system
+     * 
+     * @param request data carrier with the details of the product to be created
+     * @return the newly created product
+     */
+    public Product createProduct(ProductCreateRequest request);
      
-    // Update product; Find product using hs code, product name, user id
-    public Product updateProduct(String hsCode, String name, String userID, ProductUpdateRequest request) {
-        // (1) Retrieve queried tariff
-        Product existingProduct = products.findByNameAndUserIdAndHsCode_Code(name,userID,hsCode)
-        .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+    /**
+     * Updates an existing product identified by its HS code, name, and user ID
+     * 
+     * @param hsCode the HS code of the product
+     * @param name the name of the product
+     * @param userID the ID of the user who owns the product
+     * @param request data carrier with the details of the product to be updated
+     * @return the updated product
+     */
+    public Product updateProduct(String hsCode, String name, String userID, ProductUpdateRequest request);
 
-        // (2) Valid product request
-        if (request.isNameProvided()) {
-            String newName = request.getName();
-            if (newName == null || newName.isBlank()) {
-                throw new RuntimeException("Cannot delete product name.");
-            }
-            existingProduct.setName(newName);
-        }
-        if (request.isPrivateProvided()) {
-            System.out.println("PRIVATE PROVIDE");
-            Boolean newPrivate = request.getIsPrivate();
-            if (newPrivate == null) {
-                throw new RuntimeException("isPrivate cannot have null. Explicitly state true/false");
-            }
-            existingProduct.setPrivate(newPrivate);
-        }
+    /**
+     * Updates an existing product identified by its ID
+     * 
+     * @param id the unique ID of the product
+     * @param request data carrier with the details of the product to be updated
+     * @return the updated product
+     */
+    public Product updateProductById(Long id, ProductUpdateRequest request);
 
-        return products.save(existingProduct);
-    }
+    /**
+     * Deletes an existing product identified by its HS code, name, and user ID
+     * 
+     * @param hsCode the HS code of the product
+     * @param name the name of the product
+     * @param userID the ID of the user who owns the product
+     */
+    public void deleteProduct(String hsCode, String name, String userID);
 
-    // Update product; Find product using product id
-    public Product updateProductById(Long id, ProductUpdateRequest request) {
-        Product eP = getProductById(id);
-        return updateProduct(eP.getHsCode().getCode(), eP.getName(), eP.getUserId(), request);
-    }
-
-    // Delete product; Find product using hs code, product name, user id
-    @Transactional
-    public void deleteProduct(String hsCode, String name, String userID) {
-        if (!products.existsByNameAndUserIdAndHsCode_Code(name, userID, hsCode)){
-            throw new IllegalArgumentException(String.format("Product not found"));
-        }
-
-        products.deleteByNameAndUserIdAndHsCode_Code(name, userID, hsCode);
-    }
-
-    // Delete product; Find product using product id
-    @Transactional
-    public void deleteProductById(Long id) {
-        if (!products.existsById(id)) {
-            throw new RuntimeException("Product not found");
-        }
-
-        products.deleteById(id);
-    }
+    /**
+     * Deletes an existing product identified by its ID
+     * 
+     * @param id the unique ID of the product
+     */
+    public void deleteProductById(Long id);
 }

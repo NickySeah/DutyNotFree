@@ -16,10 +16,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/v1/calculator")   // All endpoints start with /calculator
 public class CalculatorV1Controller {
+    private CalculatorServiceImpl calculatorService;
 
-    private final CalculatorService calculatorService;
-
-    public CalculatorV1Controller(CalculatorService calculatorService) {
+    public CalculatorV1Controller(CalculatorServiceImpl calculatorService) {
         this.calculatorService = calculatorService;
     }
 

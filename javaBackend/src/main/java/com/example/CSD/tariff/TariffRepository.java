@@ -4,17 +4,18 @@ import java.time.LocalDate;
 import java.util.*;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface TariffRepository extends JpaRepository<Tariff, Long> {
+public interface TariffRepository extends JpaRepository<Tariff, Long>, JpaSpecificationExecutor<Tariff> {
     List<Tariff> findByOriginCountry_CodeAndDestCountry_CodeAndHsCode_CodeAndTariffType(String originCode, String destCode, String hsCode, String tariffType);
     Optional<Tariff> findByOriginCountry_CodeAndDestCountry_CodeAndHsCode_CodeAndTariffTypeAndEffectiveDate(String originCode, String destCode, String hsCode, String tariffType, LocalDate effectiveDate);
     boolean existsByOriginCountry_CodeAndDestCountry_CodeAndHsCode_CodeAndTariffType(String originCode, String destCode, String hsCode, String tariffType);
     void deleteByOriginCountry_CodeAndDestCountry_CodeAndHsCode_CodeAndTariffTypeAndEffectiveDate(String originCode, String destCode, String hsCode, String tariffType, LocalDate effectiveDate);
-
+    List<Tariff> findAllByExpirationDate(LocalDate date);
     // Find tariffs by optional filters, no date consideration
     @Query("""
     SELECT t FROM Tariff t 

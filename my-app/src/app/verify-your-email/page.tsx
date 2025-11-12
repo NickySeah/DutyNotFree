@@ -37,7 +37,7 @@ export default function VerifyEmailPage() {
   // Timer effect
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    
+
     if (isTimerActive && countdown > 0) {
       interval = setInterval(() => {
         setCountdown((prev) => {
@@ -78,21 +78,20 @@ export default function VerifyEmailPage() {
 
       setFeedbackMessage("A new verification link has been sent!");
       setStatus("sent");
-      
+
       // Start 2-minute countdown (120 seconds)
       setCountdown(120);
       setIsTimerActive(true);
-      
     } catch (error: unknown) {
       console.error("Resend failed:", error);
-      
+
       let errorMessage = "An unknown error occurred.";
       if (error instanceof Error) {
         errorMessage = error.message;
-      } else if (typeof error === 'string') {
+      } else if (typeof error === "string") {
         errorMessage = error;
       }
-      
+
       setFeedbackMessage(errorMessage);
       setStatus("error");
     }
@@ -102,15 +101,15 @@ export default function VerifyEmailPage() {
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
 
   // Show a loading state until the email has been read from the URL
   if (userEmail === null) {
     return (
       <main className="flex min-h-[calc(100vh-6rem)] items-center justify-center bg-background p-4">
-        <Card className="flex w-full max-w-md items-center justify-center p-8">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <Card className="flex w-full max-w-md items-center justify-center p-6 md:p-8">
+          <Loader2 className="h-6 w-6 md:h-8 md:w-8 animate-spin text-muted-foreground" />
         </Card>
       </main>
     );
@@ -121,13 +120,20 @@ export default function VerifyEmailPage() {
     return (
       <main className="flex min-h-[calc(100vh-6rem)] items-center justify-center bg-background p-4">
         <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>Missing Information</CardTitle>
-            <CardDescription>
+          <CardHeader className="space-y-2">
+            <CardTitle className="text-lg md:text-2xl">
+              Missing Information
+            </CardTitle>
+            <CardDescription className="text-sm md:text-base">
               The email address was not provided in the URL. Please return to
               the signup page and try again.
             </CardDescription>
-            <Link href="/register" className="bg-sky-500 hover:bg-sky-700 text-center text-white p-2 rounded ">Signup</Link>
+            <Link
+              href="/register"
+              className="bg-sky-500 hover:bg-sky-700 text-center text-white p-2 md:p-3 rounded text-sm md:text-base font-medium transition-colors"
+            >
+              Signup
+            </Link>
           </CardHeader>
         </Card>
       </main>
@@ -135,44 +141,54 @@ export default function VerifyEmailPage() {
   }
 
   return (
-    <main className="flex min-h-[calc(100vh-6rem)] items-center justify-center bg-background p-4">
+    <main className="flex min-h-[calc(100vh-6rem)] items-center justify-center bg-background p-3 md:p-4">
       <Card className="w-full max-w-md">
-        <CardHeader className="items-center text-center">
-          <div className="rounded-full bg-primary/10 p-4 flex align-center justify-evenly mb-4">
-            <Mail className="h-8 w-8 text-primary" />
-            <CardTitle className="text-2xl">Verify Your Email</CardTitle>
+        <CardHeader className="items-center text-center space-y-3 md:space-y-4">
+          <div className="rounded-full bg-primary/10 p-3 md:p-4 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 mb-2 md:mb-4 w-full">
+            <Mail className="h-6 w-6 md:h-8 md:w-8 text-primary flex-shrink-0" />
+            <CardTitle className="text-lg md:text-2xl">
+              Verify Your Email
+            </CardTitle>
           </div>
 
-          <CardDescription>
+          <CardDescription className="text-sm md:text-base break-words">
             We sent a verification link to{" "}
-            <span className="font-semibold text-foreground">{userEmail}</span>.
+            <span className="font-semibold text-foreground break-all">
+              {userEmail}
+            </span>
+            .
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <p className="text-center text-sm text-muted-foreground">
-            Click the link in the email to complete registration. If you don&apos;t
-            see it, check your spam folder.
+        <CardContent className="px-4 md:px-6">
+          <p className="text-center text-xs md:text-sm text-muted-foreground">
+            Click the link in the email to complete registration. If you
+            don&apos;t see it, check your spam folder.
           </p>
         </CardContent>
-        <CardFooter className="flex-col items-stretch">
+        <CardFooter className="flex-col items-stretch px-4 md:px-6">
           {(status === "error" || status === "sent") && feedbackMessage && (
             <Alert
               variant={status === "error" ? "destructive" : "default"}
-              className="mb-4"
+              className="mb-3 md:mb-4"
             >
-              <AlertTitle>
+              <AlertTitle className="text-sm md:text-base">
                 {status === "error" ? "Error" : "Success"}
               </AlertTitle>
-              <AlertDescription>{feedbackMessage}</AlertDescription>
+              <AlertDescription className="text-xs md:text-sm break-words">
+                {feedbackMessage}
+              </AlertDescription>
             </Alert>
           )}
-          
+
           {/* Timer Display */}
           {isTimerActive && countdown > 0 && (
-            <div className="flex items-center justify-center gap-2 mb-4 p-3 bg-muted rounded-lg">
-              <Clock className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">
-                Resend available in: <span className="font-mono font-semibold">{formatTime(countdown)}</span>
+            <div className="flex items-center justify-center gap-2 mb-3 md:mb-4 p-2 md:p-3 bg-muted rounded-lg">
+              <Clock className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground flex-shrink-0" />
+              <span className="text-xs md:text-sm text-muted-foreground text-center">
+                Resend available in:{" "}
+                <span className="font-mono font-semibold">
+                  {formatTime(countdown)}
+                </span>
               </span>
             </div>
           )}
@@ -180,19 +196,23 @@ export default function VerifyEmailPage() {
           <Button
             onClick={handleResendEmail}
             disabled={status === "sending" || isTimerActive}
-            className="w-full"
+            className="w-full h-10 md:h-11 text-sm md:text-base"
           >
             {status === "sending" && (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...
+                <Loader2 className="mr-2 h-3 w-3 md:h-4 md:w-4 animate-spin" />{" "}
+                Sending...
               </>
             )}
             {isTimerActive && countdown > 0 && (
               <>
-                <Clock className="mr-2 h-4 w-4" /> Wait {formatTime(countdown)}
+                <Clock className="mr-2 h-3 w-3 md:h-4 md:w-4" /> Wait{" "}
+                {formatTime(countdown)}
               </>
             )}
-            {!status.includes("sending") && !isTimerActive && "Resend Verification Email"}
+            {!status.includes("sending") &&
+              !isTimerActive &&
+              "Resend Verification Email"}
           </Button>
         </CardFooter>
       </Card>

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import Feature from "@/components/feature";
 import Link from "next/link";
 import { useUserRole } from "@/lib/checkRole";
+import { NewsFeed } from "@/components/NewsFeed";
 
 export default function HomePage() {
   const { isAuthenticated } = useUserRole();
@@ -20,38 +21,54 @@ export default function HomePage() {
           priority
           sizes="100vw"
         />
-          {/* Overlay content */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white">
-          <h1 className="text-9xl font-bold mb-4 text-emerald-400 drop-shadow-lg">
+        {/* Overlay content */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white px-4">
+          <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-bold mb-3 sm:mb-4 text-emerald-400 drop-shadow-lg">
             DutyNotFree
           </h1>
-          <p className="text-xl mb-6 font-bold text-emerald-300 drop-shadow-md">
+          <p className="text-base sm:text-lg md:text-xl mb-4 sm:mb-6 font-bold text-emerald-300 drop-shadow-md max-w-md px-4">
             Your onestop shop for tariff calculations
           </p>
           {!isAuthenticated ? (
             <div>
-              <div className="flex gap-4">
-                <Link href="/register">
-                  <Button variant="default" size="lg" className="bg-amber-900">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
+                <Link href="/register" className="w-full sm:w-auto">
+                  <Button
+                    variant="default"
+                    size="lg"
+                    className="bg-amber-900 w-full sm:w-auto"
+                  >
                     Register
                   </Button>
                 </Link>
-                <Link href="/login">
-                  <Button variant="default" size="lg" className="bg-amber-900">
+                <Link href="/login" className="w-full sm:w-auto">
+                  <Button
+                    variant="default"
+                    size="lg"
+                    className="bg-amber-900 w-full sm:w-auto"
+                  >
                     Login
                   </Button>
                 </Link>
               </div>
             </div>
           ) : (
-            <Link href="/tariff">
-              <Button variant="default" size="lg" className="bg-amber-900">
+            <Link href="/tariff" className="w-full sm:w-auto px-4">
+              <Button
+                variant="default"
+                size="lg"
+                className="bg-amber-900 w-full sm:w-auto"
+              >
                 Get Started
               </Button>
             </Link>
           )}
         </div>
       </div>
+
+      <section>
+        <NewsFeed />
+      </section>
 
       <section className="relative w-full bg-gray-50">
         <Feature />

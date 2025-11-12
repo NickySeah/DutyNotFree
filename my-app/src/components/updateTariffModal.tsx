@@ -10,7 +10,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
-  // DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,
@@ -38,10 +37,6 @@ export function UpdateTariffModal({isOpen,onClose,tariff,}: UpdateTariffModalPro
 
   // Form state
   const [formData, setFormData] = useState({
-    // exportingFrom: "",
-    // importingTo: "",
-    // description: "",
-    // hsCode: "",
     type: "",
     rate: 0,
     flatFee: 0,
@@ -63,10 +58,6 @@ export function UpdateTariffModal({isOpen,onClose,tariff,}: UpdateTariffModalPro
 
       // Map the TradeRate properties to form data
       setFormData({
-        // exportingFrom: tariff.exportingFrom || "",
-        // importingTo: tariff.importingTo || "",
-        // description: tariff.description || "",
-        // hsCode: tariff.hsCode || "",
         type: tariff.type || "",
         rate: tariff.rate || 0,
         flatFee: tariff.flatFee || 0,
@@ -83,17 +74,14 @@ export function UpdateTariffModal({isOpen,onClose,tariff,}: UpdateTariffModalPro
   // Reset form data function
   const resetFormData = () => {
     setFormData({
-      // exportingFrom: "",
-      // importingTo: "",
-      // description: "",
       type: "",
-      // hsCode: "",
       rate: 0,
       flatFee: 0,
       effectiveDate: undefined,
       expirationDate: undefined,
     });
   };
+
   // Form validation function
   const validateForm = () => {
     if (formData.rate < 0) {
@@ -161,11 +149,7 @@ export function UpdateTariffModal({isOpen,onClose,tariff,}: UpdateTariffModalPro
     }
 
     const updatePayload = {
-      tariff_id: tariff.tariff_id, // This one just take from the tariff prop
-      // hsCode: formData.hsCode,
-      // exportingFrom: formData.exportingFrom,
-      // importingTo: formData.importingTo,
-      // description: formData.description,
+      tariff_id: tariff.tariff_id,
       tariffType: formData.type,
       rate: formData.rate,
       flatFee: formData.flatFee,
@@ -190,53 +174,55 @@ export function UpdateTariffModal({isOpen,onClose,tariff,}: UpdateTariffModalPro
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] max-w-[95vw] sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-semibold text-gray-900">
+          <DialogTitle className="text-lg md:text-2xl font-semibold text-gray-900">
             Update Tariff
           </DialogTitle>
-          <div className="text-sm text-gray-600 font-mono bg-gray-50 px-3 py-2 rounded-md mt-2">
+          <div className="text-xs md:text-sm text-gray-600 font-mono bg-gray-50 px-2 md:px-3 py-1.5 md:py-2 rounded-md mt-2 break-all">
             HS Code: {tariff.hsCode}
           </div>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="space-y-3 md:space-y-4">
           {/* Trade Route Section */}
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-3 border border-blue-100">
-            <h3 className="text-sm font-semibold text-gray-700 mb-2">
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-2 md:p-3 border border-blue-100">
+            <h3 className="text-xs md:text-sm font-semibold text-gray-700 mb-2">
               Trade Route
             </h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-2 md:gap-4">
               <div className="text-center">
-                <div className="text-xs text-gray-500 mb-2">Exporting from</div>
-                <div className="flex items-center justify-center space-x-2">
+                <div className="text-[10px] md:text-xs text-gray-500 mb-1 md:mb-2">Exporting from</div>
+                <div className="flex flex-col sm:flex-row items-center justify-center space-y-1 sm:space-y-0 sm:space-x-2">
                   <ReactCountryFlag
                     countryCode={getCountryIsoCode(tariff.exportingFrom)}
                     svg
                     style={{
-                      width: "2.5em",
-                      height: "2.5em",
+                      width: "1.5em",
+                      height: "1.5em",
                       borderRadius: "4px",
                     }}
+                    className="md:w-10 md:h-10"
                   />
-                  <span className="font-medium text-gray-800">
+                  <span className="font-medium text-gray-800 text-xs md:text-sm break-words">
                     {tariff.exportingFrom}
                   </span>
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-xs text-gray-500 mb-2">Importing to</div>
-                <div className="flex items-center justify-center space-x-2">
+                <div className="text-[10px] md:text-xs text-gray-500 mb-1 md:mb-2">Importing to</div>
+                <div className="flex flex-col sm:flex-row items-center justify-center space-y-1 sm:space-y-0 sm:space-x-2">
                   <ReactCountryFlag
                     countryCode={getCountryIsoCode(tariff.importingTo)}
                     svg
                     style={{
-                      width: "2.5em",
-                      height: "2.5em",
+                      width: "1.5em",
+                      height: "1.5em",
                       borderRadius: "4px",
                     }}
+                    className="md:w-10 md:h-10"
                   />
-                  <span className="font-medium text-gray-800">
+                  <span className="font-medium text-gray-800 text-xs md:text-sm break-words">
                     {tariff.importingTo}
                   </span>
                 </div>
@@ -245,20 +231,20 @@ export function UpdateTariffModal({isOpen,onClose,tariff,}: UpdateTariffModalPro
           </div>
 
           {/* Product Information */}
-          <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
-            <h3 className="text-sm font-semibold text-gray-700 mb-2">
+          <div className="bg-gray-50 rounded-lg p-2 md:p-3 border border-gray-200">
+            <h3 className="text-xs md:text-sm font-semibold text-gray-700 mb-2">
               Product Information
             </h3>
             <div className="space-y-2">
               <div>
-                <span className="text-xs text-gray-500">Description:</span>
-                <p className="text-sm text-gray-800 mt-1">
+                <span className="text-[10px] md:text-xs text-gray-500">Description:</span>
+                <p className="text-xs md:text-sm text-gray-800 mt-1 break-words">
                   {tariff.description}
                 </p>
               </div>
               <div>
-                <span className="text-xs text-gray-500">Tariff Type:</span>
-                <span className="inline-block ml-2 px-3 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+                <span className="text-[10px] md:text-xs text-gray-500">Tariff Type:</span>
+                <span className="inline-block ml-2 px-2 md:px-3 py-0.5 md:py-1 text-[10px] md:text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
                   {tariff.type}
                 </span>
               </div>
@@ -266,21 +252,21 @@ export function UpdateTariffModal({isOpen,onClose,tariff,}: UpdateTariffModalPro
           </div>
 
           {/* Tariff Rate Section */}
-          <div className="bg-white rounded-lg p-3 border-2 border-orange-200">
-            <h3 className="text-sm font-semibold text-gray-700 mb-3">
+          <div className="bg-white rounded-lg p-2 md:p-3 border-2 border-orange-200">
+            <h3 className="text-xs md:text-sm font-semibold text-gray-700 mb-2 md:mb-3">
               Tariff Rate Update
             </h3>
 
             {getBackendValueFromData(tariff.type, tariff.rate, tariff.flatFee) === "Ad Valorem" ? (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-orange-50 rounded-md">
-                  <span className="text-sm text-gray-600">Current Rate:</span>
-                  <span className="font-bold text-orange-600 text-lg">
+              <div className="space-y-2 md:space-y-3">
+                <div className="flex items-center justify-between p-2 md:p-3 bg-orange-50 rounded-md">
+                  <span className="text-xs md:text-sm text-gray-600">Current Rate:</span>
+                  <span className="font-bold text-orange-600 text-base md:text-lg">
                     {tariff.rate}%
                   </span>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
                     New Tariff Rate (%)
                   </label>
                   <Input
@@ -293,24 +279,24 @@ export function UpdateTariffModal({isOpen,onClose,tariff,}: UpdateTariffModalPro
                         e.target.value === "" ? 0 : Number(e.target.value)
                       )
                     }
-                    className="w-full text-lg font-medium"
+                    className="w-full text-base md:text-lg font-medium"
                     min="0"
                     step="0.01"
                   />
                 </div>
               </div>
             ) : getBackendValueFromData(tariff.type, tariff.rate, tariff.flatFee) === "Flat Fee" ? (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-green-50 rounded-md">
-                  <span className="text-sm text-gray-600">
+              <div className="space-y-2 md:space-y-3">
+                <div className="flex items-center justify-between p-2 md:p-3 bg-green-50 rounded-md">
+                  <span className="text-xs md:text-sm text-gray-600">
                     Current Flat Fee:
                   </span>
-                  <span className="font-bold text-green-600 text-lg">
+                  <span className="font-bold text-green-600 text-base md:text-lg">
                     ${tariff.flatFee}
                   </span>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
                     New Flat Fee ($)
                   </label>
                   <Input
@@ -323,15 +309,15 @@ export function UpdateTariffModal({isOpen,onClose,tariff,}: UpdateTariffModalPro
                         e.target.value === "" ? 0 : Number(e.target.value)
                       )
                     }
-                    className="w-full text-lg font-medium"
+                    className="w-full text-base md:text-lg font-medium"
                     min="0"
                     step="1"
                   />
                 </div>
               </div>
             ) : (
-              <div className="p-4 bg-red-50 border border-red-200 rounded-md">
-                <span className="text-red-600 font-medium">
+              <div className="p-3 md:p-4 bg-red-50 border border-red-200 rounded-md">
+                <span className="text-red-600 font-medium text-xs md:text-sm">
                   Unknown tariff type
                 </span>
               </div>
@@ -339,24 +325,24 @@ export function UpdateTariffModal({isOpen,onClose,tariff,}: UpdateTariffModalPro
           </div>
 
           {/* Date Configuration */}
-          <div className="bg-white rounded-lg p-3 border border-gray-200">
-            <h3 className="text-sm font-semibold text-gray-700 mb-3">
+          <div className="bg-white rounded-lg p-2 md:p-3 border border-gray-200">
+            <h3 className="text-xs md:text-sm font-semibold text-gray-700 mb-2 md:mb-3">
               Date Configuration
             </h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
               {/* Effective Date */}
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-xs md:text-sm font-medium text-gray-700">
                   Effective Date
                 </label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
-                      className="w-full justify-start text-left font-normal h-10"
+                      className="w-full justify-start text-left font-normal h-9 md:h-10 text-xs md:text-sm"
                     >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      <CalendarIcon className="mr-2 h-3 w-3 md:h-4 md:w-4" />
                       {formData.effectiveDate
                         ? format(formData.effectiveDate, "PPP")
                         : "Select effective date"}
@@ -375,7 +361,7 @@ export function UpdateTariffModal({isOpen,onClose,tariff,}: UpdateTariffModalPro
 
               {/* Expiration Date */}
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-xs md:text-sm font-medium text-gray-700">
                   Expiration Date
                 </label>
                 <Popover>
@@ -383,11 +369,11 @@ export function UpdateTariffModal({isOpen,onClose,tariff,}: UpdateTariffModalPro
                     <Button
                       variant="outline"
                       disabled={noExpiration}
-                      className={`w-full justify-start text-left font-normal h-10 ${
+                      className={`w-full justify-start text-left font-normal h-9 md:h-10 text-xs md:text-sm ${
                         noExpiration ? "opacity-50 cursor-not-allowed" : ""
                       }`}
                     >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      <CalendarIcon className="mr-2 h-3 w-3 md:h-4 md:w-4" />
                       {formData.expirationDate && !noExpiration
                         ? format(formData.expirationDate, "PPP")
                         : "Select expiration date"}
@@ -407,8 +393,8 @@ export function UpdateTariffModal({isOpen,onClose,tariff,}: UpdateTariffModalPro
             </div>
 
             {/* No Expiration Checkbox */}
-            <div className="mt-3 pt-3 border-t border-gray-100">
-              <div className="flex items-center space-x-3">
+            <div className="mt-2 md:mt-3 pt-2 md:pt-3 border-t border-gray-100">
+              <div className="flex items-center space-x-2 md:space-x-3">
                 <Checkbox
                   id="no-expiration"
                   checked={noExpiration}
@@ -417,7 +403,7 @@ export function UpdateTariffModal({isOpen,onClose,tariff,}: UpdateTariffModalPro
                 />
                 <Label
                   htmlFor="no-expiration"
-                  className="text-sm font-medium text-gray-700 cursor-pointer"
+                  className="text-xs md:text-sm font-medium text-gray-700 cursor-pointer"
                 >
                   This tariff has no expiration date
                 </Label>
@@ -426,23 +412,23 @@ export function UpdateTariffModal({isOpen,onClose,tariff,}: UpdateTariffModalPro
           </div>
         </div>
 
-        <DialogFooter className="pt-4 border-t border-gray-100">
-          <div className="flex space-x-3 w-full sm:w-auto">
+        <DialogFooter className="pt-3 md:pt-4 border-t border-gray-100">
+          <div className="flex flex-col-reverse sm:flex-row space-y-2 space-y-reverse sm:space-y-0 sm:space-x-3 w-full sm:w-auto">
             <Button
               variant="outline"
               onClick={() => handleClose(false)}
-              className="flex-1 sm:flex-none"
+              className="w-full sm:w-auto text-xs md:text-sm"
             >
               Cancel
             </Button>
             <Button
               disabled={isPending}
               onClick={handleUpdate}
-              className="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
+              className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-xs md:text-sm"
             >
               {isPending ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                  <div className="w-3 h-3 md:w-4 md:h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
                   Updating...
                 </>
               ) : (
