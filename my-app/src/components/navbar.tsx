@@ -9,7 +9,7 @@ import { useUserRole } from "@/lib/checkRole";
 import { redirect, RedirectType } from "next/navigation";
 
 export default function Navbar() {
-  const { isImporter, isSupplier, isAdmin, isAuthenticated, isPending } =
+  const {  isAdmin, isAuthenticated, isPending } =
     useUserRole();
   const [mounted, setMounted] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -86,14 +86,13 @@ export default function Navbar() {
                 <Link href="/fta" className="text-lg font-semibold text-white">
                   Browse FTA
                 </Link>
-                {(isAdmin || isSupplier) && (
-                  <Link
-                    href="/product"
-                    className="text-lg font-semibold text-white"
-                  >
-                    Browse Products
-                  </Link>
-                )}
+
+                <Link
+                  href="/product"
+                  className="text-lg font-semibold text-white"
+                >
+                  Browse Products
+                </Link>
                 <Link
                   href="/calculator"
                   className="text-lg font-semibold text-white"
@@ -175,15 +174,13 @@ export default function Navbar() {
                 >
                   Browse FTA
                 </Link>
-                {(isAdmin || isSupplier) && (
-                  <Link
-                    href="/product"
-                    className="text-base font-semibold text-white hover:text-gray-300"
-                    onClick={closeMenu}
-                  >
-                    Browse Products
-                  </Link>
-                )}
+                <Link
+                  href="/product"
+                  className="text-base font-semibold text-white hover:text-gray-300"
+                  onClick={closeMenu}
+                >
+                  Browse Products
+                </Link>
                 <Link
                   href="/calculator"
                   className="text-base font-semibold text-white hover:text-gray-300"
