@@ -464,7 +464,7 @@ export default function TariffDashboard() {
                     <SelectContent>
                       <SelectItem value="all">All Products</SelectItem>
                       {products.map(product => (
-                        <SelectItem key={product.id} value={product.hsCode?.code || product.name}>
+                        <SelectItem key={product.product_id} value={product.hsCode || product.name}>
                           {product.name}
                         </SelectItem>
                       ))}

@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import ProductCard from "./productCard";
 import { Product, TariffData } from "@/types/calculator";
+import { Product as DatabaseProduct } from "@/types/product";
 import {
   Calculator,
   Package,
@@ -652,15 +653,24 @@ const TariffCalculator = () => {
                     onValueChange={(value) => {
                       if (!productsData) return;
                       const product = productsData.find(
-                        (prod) => prod.id.toString() === value
+                        (prod: DatabaseProduct) =>
+                          prod.product_id.toString() === value
                       );
                       if (product) {
-                        const addProduct = {
-                          ...product,
+                        // Map database product to calculator product format
+                        const calculatorProduct: Product = {
+                          id: product.product_id,
+                          name: product.name,
+                          user_id: product.userId,
+                          is_private: product.isPrivate,
+                          hsCode: {
+                            code: product.hsCode,
+                            description: product.description,
+                          },
                           quantity: 1,
                           value: 0,
                         };
-                        setSelectedProduct(addProduct);
+                        setSelectedProduct(calculatorProduct);
                       }
                     }}
                     value={selectedProduct?.id.toString() || ""}
@@ -674,8 +684,8 @@ const TariffCalculator = () => {
                         {productsData
                           ? productsData.map((product) => (
                               <SelectItem
-                                key={product.id}
-                                value={product.id.toString()}
+                                key={product.product_id}
+                                value={product.product_id.toString()}
                               >
                                 {product.name}
                               </SelectItem>
