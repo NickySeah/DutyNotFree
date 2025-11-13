@@ -299,9 +299,6 @@ export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
         resetForm();
         onClose();
       },
-      onError: (error) => {
-        toast.error(error.message || "Failed to create FTA");
-      },
     });
   };
 
