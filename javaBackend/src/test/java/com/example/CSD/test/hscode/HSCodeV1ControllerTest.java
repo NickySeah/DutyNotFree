@@ -30,7 +30,7 @@ class HSCodeV1ControllerTest {
     private ObjectMapper objectMapper;
 
     @MockBean
-    private HSCodeService hsCodeService;
+    private HSCodeServiceImpl hsCodeService;
 
     @Test
     void index_ShouldReturnHealthMessage_WhenTestEndpointCalled() throws Exception {

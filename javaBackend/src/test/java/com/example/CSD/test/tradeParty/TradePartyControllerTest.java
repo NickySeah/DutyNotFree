@@ -6,9 +6,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import com.example.CSD.test.tradeParty.*;
-import com.example.CSD.tradeParty.TradePartyService;
-import com.example.CSD.tradeParty.TradePartyV1Controller;
+import com.example.CSD.tradeParty.*;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -24,7 +22,7 @@ class TradePartyControllerTest {
     private MockMvc mockMvc;
 
     @MockBean
-    private TradePartyService tradePartyService;
+    private TradePartyServiceImpl tradePartyService;
 
     @Test
     void index_ShouldReturnHealthMessage_WhenTestEndpointCalled() throws Exception {

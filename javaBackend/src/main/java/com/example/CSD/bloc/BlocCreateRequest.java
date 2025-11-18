@@ -3,7 +3,7 @@ package com.example.CSD.bloc;
 import java.util.Set;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -27,7 +27,7 @@ public class BlocCreateRequest {  // Not an entity, just a data carrier
     @Schema(description = "Full name of the bloc", example = "Association of Southeast Asian Nations")
     private String name;                    // Full bloc name
 
-    @NotBlank(message = "Bloc must have at least two member countries")
+    @NotNull(message = "Bloc must have at least two member countries")
     @Schema(description = "ISO codes of bloc's member countries", example = "[096, 116, 360]")
     private Set<String> memberCodes;        // ISO codes of bloc's members (countries)
 }

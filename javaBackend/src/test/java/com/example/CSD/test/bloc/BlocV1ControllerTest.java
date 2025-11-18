@@ -37,7 +37,7 @@ class BlocV1ControllerTest {
     private ObjectMapper objectMapper;
 
     @MockBean
-    private BlocService blocService;
+    private BlocServiceImpl blocService;
 
     @Test
     void index_ShouldReturnHealthMessage_WhenTestEndpointCalled() throws Exception {

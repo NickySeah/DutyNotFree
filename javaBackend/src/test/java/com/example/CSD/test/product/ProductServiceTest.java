@@ -27,7 +27,7 @@ public class ProductServiceTest {
   private HSCodeRepository hsCodes;
 
   @InjectMocks
-  private ProductService service;
+  private ProductServiceImpl service;
 
   private HSCode hsCode;;
   private Product product1;

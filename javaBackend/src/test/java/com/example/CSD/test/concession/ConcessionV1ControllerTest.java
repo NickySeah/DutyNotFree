@@ -1,7 +1,5 @@
 package com.example.CSD.test.concession;
 
-import com.example.CSD.concession.ConcessionService;
-import com.example.CSD.concession.ConcessionV1Controller;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -14,6 +12,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.example.CSD.concession.*;
+
 @WebMvcTest(ConcessionV1Controller.class)
 @AutoConfigureMockMvc(addFilters = false)
 class ConcessionV1ControllerTest {
@@ -22,7 +22,7 @@ class ConcessionV1ControllerTest {
     private MockMvc mockMvc;
 
     @MockBean
-    private ConcessionService concessionService;
+    private ConcessionServiceImpl concessionService;
 
     @Test
     void should_ReturnHealthMessage_WhenTestEndpointCalled() throws Exception {

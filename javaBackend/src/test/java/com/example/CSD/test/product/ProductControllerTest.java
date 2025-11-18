@@ -32,7 +32,7 @@ public class ProductControllerTest {
     private ObjectMapper objectMapper;
 
     @MockBean
-    private ProductService productService;
+    private ProductServiceImpl productService;
 
     private Product testProduct;
     private HSCode testHsCode;

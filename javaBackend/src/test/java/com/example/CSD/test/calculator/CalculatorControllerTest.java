@@ -1,6 +1,7 @@
 package com.example.CSD.test.calculator;
 
 import com.example.CSD.calculator.CalculatorService;
+import com.example.CSD.calculator.CalculatorServiceImpl;
 import com.example.CSD.calculator.CalculatorV1Controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,7 +33,7 @@ public class CalculatorControllerTest {
     private ObjectMapper objectMapper;
 
     @MockBean
-    private CalculatorService calculatorService;
+    private CalculatorServiceImpl calculatorService;
 
     private Map<String, Object> mockCalculationResult;
 

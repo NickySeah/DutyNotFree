@@ -64,6 +64,7 @@ public class FTARepositoryTest {
     void should_SaveFTA_WhenValid() {
         // Arrange: Create FTA
         FTA fta = new FTA();
+        fta.setName("Test FTA");
         fta.setType(FTA.FTAType.BILATERAL);
         fta.setPartyA(testPartyA);
         fta.setPartyB(testPartyB);
@@ -89,6 +90,7 @@ public class FTARepositoryTest {
     void should_FindFTAByType_WhenTypeProvided() {
         // Arrange: Create FTAs with different types
         FTA bilateralFTA = new FTA();
+        bilateralFTA.setName("Test FTA1");
         bilateralFTA.setType(FTA.FTAType.BILATERAL);
         bilateralFTA.setPartyA(testPartyA);
         bilateralFTA.setPartyB(testPartyB);
@@ -111,6 +113,7 @@ public class FTARepositoryTest {
         tradePartyRepository.save(testPartyC);
 
         FTA bilateralFTA2 = new FTA();
+        bilateralFTA2.setName("Test FTA2");
         bilateralFTA2.setType(FTA.FTAType.BILATERAL);
         bilateralFTA2.setPartyA(testPartyA);
         bilateralFTA2.setPartyB(testPartyC);
@@ -134,6 +137,7 @@ public class FTARepositoryTest {
     void should_FindFTAByParties_WhenPartiesProvided() {
         // Arrange: Create FTA
         FTA fta = new FTA();
+        fta.setName("Test FTA");
         fta.setType(FTA.FTAType.BILATERAL);
         fta.setPartyA(testPartyA);
         fta.setPartyB(testPartyB);
@@ -157,6 +161,7 @@ public class FTARepositoryTest {
     void should_FindFTAByParties_WhenPartiesReversed() {
         // Arrange: Create FTA with partyA and partyB
         FTA fta = new FTA();
+        fta.setName("Test FTA");
         fta.setType(FTA.FTAType.BILATERAL);
         fta.setPartyA(testPartyA);
         fta.setPartyB(testPartyB);
@@ -221,6 +226,7 @@ public class FTARepositoryTest {
     void should_DeleteFTA_WhenExists() {
         // Arrange: Create and save FTA
         FTA fta = new FTA();
+        fta.setName("Test FTA");
         fta.setType(FTA.FTAType.BILATERAL);
         fta.setPartyA(testPartyA);
         fta.setPartyB(testPartyB);
@@ -245,6 +251,7 @@ public class FTARepositoryTest {
     void should_FindAllFTAs_WhenMultipleExist() {
         // Arrange: Create multiple FTAs
         FTA fta1 = new FTA();
+        fta1.setName("Test FTA1");
         fta1.setType(FTA.FTAType.BILATERAL);
         fta1.setPartyA(testPartyA);
         fta1.setPartyB(testPartyB);
@@ -266,6 +273,7 @@ public class FTARepositoryTest {
         tradePartyRepository.save(testPartyC);
 
         FTA fta2 = new FTA();
+        fta2.setName("Test FTA2");
         fta2.setType(FTA.FTAType.BILATERAL);
         fta2.setPartyA(testPartyA);
         fta2.setPartyB(testPartyC);

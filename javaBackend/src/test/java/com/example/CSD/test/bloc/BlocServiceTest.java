@@ -28,7 +28,7 @@ class BlocServiceTest {
     private CountryRepository countries;
 
     @InjectMocks
-    private BlocService blocService;
+    private BlocServiceImpl blocService;
 
     private Bloc sampleBloc;
     private Country sg;

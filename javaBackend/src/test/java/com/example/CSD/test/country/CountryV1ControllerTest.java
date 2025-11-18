@@ -29,7 +29,7 @@ class CountryV1ControllerTest {
     private ObjectMapper objectMapper;
 
     @MockBean
-    private CountryService countryService;
+    private CountryServiceImpl countryService;
 
     @Test
     void index_ShouldReturnHealthMessage_WhenTestEndpointCalled() throws Exception {

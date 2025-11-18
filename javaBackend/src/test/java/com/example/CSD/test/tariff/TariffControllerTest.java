@@ -33,7 +33,7 @@ public class TariffControllerTest {
     private ObjectMapper objectMapper;
 
     @MockBean
-    private TariffService tariffService;
+    private TariffServiceImpl tariffService;
 
     private Tariff testTariff;
     private HSCode testHsCode;

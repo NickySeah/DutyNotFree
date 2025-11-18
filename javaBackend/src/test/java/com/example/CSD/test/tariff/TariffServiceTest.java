@@ -6,9 +6,19 @@ import java.util.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import jakarta.persistence.criteria.*;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -18,6 +28,10 @@ import com.example.CSD.country.CountryRepository;
 import com.example.CSD.hscode.HSCode;
 import com.example.CSD.hscode.HSCodeRepository;
 import com.example.CSD.tariff.*;
+import com.example.CSD.user.UserDTO;
+import com.example.CSD.email.EmailService;
+import com.example.CSD.wishlist.Wishlist;
+import com.example.CSD.wishlist.WishlistService;
 
 @ExtendWith(MockitoExtension.class)
 public class TariffServiceTest {
@@ -30,8 +44,17 @@ public class TariffServiceTest {
     @Mock
     private HSCodeRepository hscodes;
 
+    @Mock
+    private WishlistService wishlistService;
+
+    @Mock
+    private EmailService emailService;
+
+    @Mock
+    private RestTemplate restTemplate;
+
     @InjectMocks
-    private TariffService tariffService;
+    private TariffServiceImpl tariffService;
 
     private Country testCountryA;
     private Country testCountryB;
@@ -649,6 +672,34 @@ public class TariffServiceTest {
         assertEquals(LocalDate.of(2024, 12, 31), result.getExpirationDate());
     }
 
+    @Test
+    public void createTariff_ShouldThrowException_WhenNewTariffStartsBeforeExistingEnds() {
+        // Existing tariff: 2025-01-01 to 2025-12-31
+        Tariff existingTariff = new Tariff();
+        existingTariff.setEffectiveDate(LocalDate.of(2025, 1, 1));
+        existingTariff.setExpirationDate(LocalDate.of(2025, 12, 31));
+
+        // New tariff: starts 2025-06-01, ongoing (no end date)
+        testCreateRequest.setEffectiveDate("2025-06-01");
+        testCreateRequest.setExpirationDate(null);
+
+        when(countries.findByCode("702")).thenReturn(Optional.of(testCountryA));
+        when(countries.findByCode("840")).thenReturn(Optional.of(testCountryB));
+        when(hscodes.findByCode("847130")).thenReturn(Optional.of(testHsCode));
+        when(tariffs.existsByOriginCountry_CodeAndDestCountry_CodeAndHsCode_CodeAndTariffType(
+                "702", "840", "847130", "MFN"))
+            .thenReturn(true);
+        when(tariffs.findByOriginCountry_CodeAndDestCountry_CodeAndHsCode_CodeAndTariffType(
+                "702", "840", "847130", "MFN"))
+            .thenReturn(Collections.singletonList(existingTariff));
+
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> tariffService.createTariff(testCreateRequest));
+
+        assertTrue(ex.getMessage().contains("The new tariff starts before the existing tariff ends."));
+        verify(tariffs, never()).save(any(Tariff.class));
+    }
+
     // ========== updateTariff() Tests ==========
     @Test
     public void updateTariff_ShouldUpdateEffectiveDate_WhenEffectiveDateProvided() {
@@ -996,5 +1047,432 @@ public class TariffServiceTest {
             tariffService.deleteTariffById(999L));
 
         assertTrue(exception.getMessage().contains("Tariff not found"));
+    }
+
+    // ========= getTariffsForWishlist() tests ===========
+    @Test
+    public void getTariffsForWishlist_ShouldReturnEmptyList_WhenWishlistIsEmpty() {
+        when(wishlistService.getWishlistsByUserId("user-1"))
+            .thenReturn(Collections.emptyList());
+
+        List<Tariff> result = tariffService.getTariffsForWishlist("user-1");
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        verify(tariffs, never()).findAll();
+    }
+
+    @Test
+    public void getTariffsForWishlist_ShouldBuildSpecAndCallFindAll_WhenWishlistHasItems() {
+        // Arrange: one wishlist item
+        Wishlist item = new Wishlist();
+        item.setUserId("user-1");
+        item.setHsCode("847130");
+        item.setExportingCountry("702");
+        item.setImportingCountry("840");
+
+        when(wishlistService.getWishlistsByUserId("user-1"))
+                .thenReturn(Collections.singletonList(item));
+
+        List<Tariff> tariffList = Collections.singletonList(testTariff);
+
+        when(tariffs.findAll(ArgumentMatchers.<Specification<Tariff>>any()))
+                .thenAnswer(invocation -> {
+                    Specification<Tariff> spec = invocation.getArgument(0);
+
+                    // Minimal JPA Criteria mocking
+                    @SuppressWarnings("unchecked")
+                    Root<Tariff> root = mock(Root.class);
+                    CriteriaQuery<?> query = mock(CriteriaQuery.class);
+                    CriteriaBuilder cb = mock(CriteriaBuilder.class);
+
+                    @SuppressWarnings("unchecked")
+                    Path<Object> hsPath = mock(Path.class);
+                    @SuppressWarnings("unchecked")
+                    Path<Object> originPath = mock(Path.class);
+                    @SuppressWarnings("unchecked")
+                    Path<Object> destPath = mock(Path.class);
+                    @SuppressWarnings("unchecked")
+                    Path<Object> hsCodePath = mock(Path.class);
+                    @SuppressWarnings("unchecked")
+                    Path<Object> originCodePath = mock(Path.class);
+                    @SuppressWarnings("unchecked")
+                    Path<Object> destCodePath = mock(Path.class);
+
+                    when(root.get("hsCode")).thenReturn(hsPath);
+                    when(root.get("originCountry")).thenReturn(originPath);
+                    when(root.get("destCountry")).thenReturn(destPath);
+                    when(hsPath.get("code")).thenReturn(hsCodePath);
+                    when(originPath.get("code")).thenReturn(originCodePath);
+                    when(destPath.get("code")).thenReturn(destCodePath);
+
+                    spec.toPredicate(root, query, cb);
+
+                    return tariffList;
+                });
+
+        // Act
+        List<Tariff> result = tariffService.getTariffsForWishlist("user-1");
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(testTariff, result.get(0));
+        verify(tariffs).findAll(ArgumentMatchers.<Specification<Tariff>>any());
+    }
+
+    // ========= notifyWishlistUsers() tests ===========
+    @Test
+    public void createTariff_ShouldNotifyWishlistUsers_WhenMatchingWishlistExists() {
+        // Arrange: normal createTariff happy-path setup
+        when(countries.findByCode("702")).thenReturn(Optional.of(testCountryA));
+        when(countries.findByCode("840")).thenReturn(Optional.of(testCountryB));
+        when(hscodes.findByCode("847130")).thenReturn(Optional.of(testHsCode));
+        when(tariffs.existsByOriginCountry_CodeAndDestCountry_CodeAndHsCode_CodeAndTariffType(
+                "702", "840", "847130", "MFN"))
+            .thenReturn(false);
+        when(tariffs.save(any(Tariff.class))).thenReturn(testTariff);
+
+        // Wishlist item that should match savedTariff
+        Wishlist wishlistItem = new Wishlist();
+        wishlistItem.setUserId("user-1");
+        wishlistItem.setHsCode("847130");
+        wishlistItem.setExportingCountry("702");
+        wishlistItem.setImportingCountry("840");
+
+        when(wishlistService.findMatchingWishlists(eq("847130"), eq("702"), eq("840")))
+            .thenReturn(Collections.singletonList(wishlistItem));
+
+        // Mock user lookup call
+        UserDTO user = new UserDTO();
+        user.setEmail("test@example.com");
+        ResponseEntity<UserDTO> response = ResponseEntity.ok(user);
+
+        when(restTemplate.exchange(
+                anyString(),
+                eq(HttpMethod.GET),
+                any(HttpEntity.class),
+                eq(UserDTO.class)))
+            .thenReturn(response);
+
+        // Act
+        tariffService.createTariff(testCreateRequest);
+
+        // Assert – verify email sent
+        verify(emailService, times(1))
+            .sendEmail(eq("test@example.com"),
+                    contains("Tariff Update"),
+                    contains("847130"));
+    } 
+
+    @Test
+    public void notifyWishlistUsers_ShouldSkipUser_WhenUserNotFoundInUserService() {
+        // Arrange: normal createTariff happy-path deps
+        when(countries.findByCode("702")).thenReturn(Optional.of(testCountryA));
+        when(countries.findByCode("840")).thenReturn(Optional.of(testCountryB));
+        when(hscodes.findByCode("847130")).thenReturn(Optional.of(testHsCode));
+        when(tariffs.existsByOriginCountry_CodeAndDestCountry_CodeAndHsCode_CodeAndTariffType(
+                "702", "840", "847130", "MFN")).thenReturn(false);
+        when(tariffs.save(any(Tariff.class))).thenReturn(testTariff);
+
+        Wishlist wishlistItem = new Wishlist();
+        wishlistItem.setUserId("missing-user");
+        wishlistItem.setHsCode("847130");
+        wishlistItem.setExportingCountry("702");
+        wishlistItem.setImportingCountry("840");
+
+        when(wishlistService.findMatchingWishlists("847130", "702", "840"))
+                .thenReturn(Collections.singletonList(wishlistItem));
+
+        HttpClientErrorException.NotFound notFound = mock(HttpClientErrorException.NotFound.class);
+
+        when(restTemplate.exchange(anyString(),
+                eq(HttpMethod.GET),
+                any(HttpEntity.class),
+                eq(UserDTO.class)))
+            .thenThrow(notFound);
+
+        // Act
+        tariffService.createTariff(testCreateRequest);
+
+        // Assert: no email sent
+        verify(emailService, never()).sendEmail(anyString(), anyString(), anyString());
+    }
+
+    @Test
+    public void notifyWishlistUsers_ShouldSkipWhenUserServiceReturnsNullBody() {
+        // Arrange: standard createTariff happy-path setup
+        when(countries.findByCode("702")).thenReturn(Optional.of(testCountryA));
+        when(countries.findByCode("840")).thenReturn(Optional.of(testCountryB));
+        when(hscodes.findByCode("847130")).thenReturn(Optional.of(testHsCode));
+        when(tariffs.existsByOriginCountry_CodeAndDestCountry_CodeAndHsCode_CodeAndTariffType(
+                "702", "840", "847130", "MFN"))
+            .thenReturn(false);
+        when(tariffs.save(any(Tariff.class))).thenReturn(testTariff);
+
+        // Matching wishlist item
+        Wishlist wishlistItem = new Wishlist();
+        wishlistItem.setUserId("user-null-body");
+        wishlistItem.setHsCode("847130");
+        wishlistItem.setExportingCountry("702");
+        wishlistItem.setImportingCountry("840");
+
+        when(wishlistService.findMatchingWishlists("847130", "702", "840"))
+            .thenReturn(Collections.singletonList(wishlistItem));
+
+        // User service responds 200 OK but with *null* body
+        ResponseEntity<UserDTO> responseWithNullBody = ResponseEntity.ok(null);
+
+        when(restTemplate.exchange(
+                anyString(),
+                eq(HttpMethod.GET),
+                any(HttpEntity.class),
+                eq(UserDTO.class)))
+            .thenReturn(responseWithNullBody);
+
+        // Act
+        tariffService.createTariff(testCreateRequest);
+
+        // Assert: userEmail stays null, so no email is sent
+        verify(emailService, never()).sendEmail(anyString(), anyString(), anyString());
+    }
+
+    @Test
+    public void notifyWishlistUsers_ShouldStopProcessing_WhenUserServiceUnauthorized() {
+        when(countries.findByCode("702")).thenReturn(Optional.of(testCountryA));
+        when(countries.findByCode("840")).thenReturn(Optional.of(testCountryB));
+        when(hscodes.findByCode("847130")).thenReturn(Optional.of(testHsCode));
+        when(tariffs.existsByOriginCountry_CodeAndDestCountry_CodeAndHsCode_CodeAndTariffType(
+                "702", "840", "847130", "MFN")).thenReturn(false);
+        when(tariffs.save(any(Tariff.class))).thenReturn(testTariff);
+
+        Wishlist wishlistItem = new Wishlist();
+        wishlistItem.setUserId("user-unauth");
+        wishlistItem.setHsCode("847130");
+        wishlistItem.setExportingCountry("702");
+        wishlistItem.setImportingCountry("840");
+
+        when(wishlistService.findMatchingWishlists("847130", "702", "840"))
+                .thenReturn(Collections.singletonList(wishlistItem));
+
+        HttpClientErrorException.Unauthorized unauthorized = mock(HttpClientErrorException.Unauthorized.class);
+
+        when(restTemplate.exchange(anyString(),
+                eq(HttpMethod.GET),
+                any(HttpEntity.class),
+                eq(UserDTO.class)))
+            .thenThrow(unauthorized);
+
+        tariffService.createTariff(testCreateRequest);
+
+        // Assert: we returned early, so no emails
+        verify(emailService, never()).sendEmail(anyString(), anyString(), anyString());
+    }
+
+    @Test
+    public void notifyWishlistUsers_ShouldSkipUser_WhenUserServiceThrowsGenericException() {
+        when(countries.findByCode("702")).thenReturn(Optional.of(testCountryA));
+        when(countries.findByCode("840")).thenReturn(Optional.of(testCountryB));
+        when(hscodes.findByCode("847130")).thenReturn(Optional.of(testHsCode));
+        when(tariffs.existsByOriginCountry_CodeAndDestCountry_CodeAndHsCode_CodeAndTariffType(
+                "702", "840", "847130", "MFN")).thenReturn(false);
+        when(tariffs.save(any(Tariff.class))).thenReturn(testTariff);
+
+        Wishlist wishlistItem = new Wishlist();
+        wishlistItem.setUserId("user-error");
+        wishlistItem.setHsCode("847130");
+        wishlistItem.setExportingCountry("702");
+        wishlistItem.setImportingCountry("840");
+
+        when(wishlistService.findMatchingWishlists("847130", "702", "840"))
+                .thenReturn(Collections.singletonList(wishlistItem));
+
+        when(restTemplate.exchange(anyString(),
+                eq(HttpMethod.GET),
+                any(HttpEntity.class),
+                eq(UserDTO.class)))
+            .thenThrow(new RuntimeException("Service down"));
+
+        tariffService.createTariff(testCreateRequest);
+
+        verify(emailService, never()).sendEmail(anyString(), anyString(), anyString());
+    }
+
+    @Test
+    public void notifyWishlistUsers_ShouldSkipWhenUserHasNoEmail() {
+        when(countries.findByCode("702")).thenReturn(Optional.of(testCountryA));
+        when(countries.findByCode("840")).thenReturn(Optional.of(testCountryB));
+        when(hscodes.findByCode("847130")).thenReturn(Optional.of(testHsCode));
+        when(tariffs.existsByOriginCountry_CodeAndDestCountry_CodeAndHsCode_CodeAndTariffType(
+                "702", "840", "847130", "MFN")).thenReturn(false);
+        when(tariffs.save(any(Tariff.class))).thenReturn(testTariff);
+
+        Wishlist wishlistItem = new Wishlist();
+        wishlistItem.setUserId("user-no-email");
+        wishlistItem.setHsCode("847130");
+        wishlistItem.setExportingCountry("702");
+        wishlistItem.setImportingCountry("840");
+
+        when(wishlistService.findMatchingWishlists("847130", "702", "840"))
+                .thenReturn(Collections.singletonList(wishlistItem));
+
+        UserDTO user = new UserDTO();
+        user.setEmail(null);  // or ""
+
+        ResponseEntity<UserDTO> response = ResponseEntity.ok(user);
+
+        when(restTemplate.exchange(anyString(),
+                eq(HttpMethod.GET),
+                any(HttpEntity.class),
+                eq(UserDTO.class)))
+            .thenReturn(response);
+
+        tariffService.createTariff(testCreateRequest);
+
+        verify(emailService, never()).sendEmail(anyString(), anyString(), anyString());
+    }
+
+    @Test
+    public void notifyWishlistUsers_ShouldFormatFlatFeeInEmailBody() {
+        LocalDate yesterday = LocalDate.now().minusDays(1);
+
+        testTariff.setStandardRate(null);
+        testTariff.setFlatFee(100.0);
+        testTariff.setExpirationDate(yesterday);
+
+        when(tariffs.findAllByExpirationDate(yesterday))
+                .thenReturn(Collections.singletonList(testTariff));
+
+        Wishlist wishlistItem = new Wishlist();
+        wishlistItem.setUserId("user-flatfee");
+        wishlistItem.setHsCode(testTariff.getHsCode().getCode());
+        wishlistItem.setExportingCountry(testTariff.getOriginCountry().getCode());
+        wishlistItem.setImportingCountry(testTariff.getDestCountry().getCode());
+
+        when(wishlistService.findMatchingWishlists(anyString(), anyString(), anyString()))
+                .thenReturn(Collections.singletonList(wishlistItem));
+
+        UserDTO user = new UserDTO();
+        user.setEmail("flatfee@example.com");
+        ResponseEntity<UserDTO> response = ResponseEntity.ok(user);
+
+        when(restTemplate.exchange(anyString(),
+                eq(HttpMethod.GET),
+                any(HttpEntity.class),
+                eq(UserDTO.class)))
+            .thenReturn(response);
+
+        // Act
+        tariffService.notifyForExpiredTariffs();
+
+        // Assert email body contains "$100.00 (flat fee)" and the expiration date
+        ArgumentCaptor<String> bodyCaptor = ArgumentCaptor.forClass(String.class);
+        verify(emailService).sendEmail(eq("flatfee@example.com"), anyString(), bodyCaptor.capture());
+
+        String body = bodyCaptor.getValue();
+        assertTrue(body.contains("$100.00 (flat fee)"));
+        assertTrue(body.contains(yesterday.toString()));
+    }
+
+    @Test
+    public void notifyWishlistUsers_ShouldUseNAAndOngoing_WhenNoRateOrFeeAndNoExpiration() {
+        // Tariff with no rate, no fee, ongoing
+        testTariff.setStandardRate(null);
+        testTariff.setFlatFee(null);
+        testTariff.setExpirationDate(null);
+
+        when(tariffs.findByOriginCountry_CodeAndDestCountry_CodeAndHsCode_CodeAndTariffTypeAndEffectiveDate(
+                "702", "840", "847130", "MFN", LocalDate.of(2025, 1, 1)))
+                .thenReturn(Optional.of(testTariff));
+
+        when(tariffs.save(any(Tariff.class))).thenReturn(testTariff);
+
+        Wishlist wishlistItem = new Wishlist();
+        wishlistItem.setUserId("user-na");
+        wishlistItem.setHsCode("847130");
+        wishlistItem.setExportingCountry("702");
+        wishlistItem.setImportingCountry("840");
+
+        when(wishlistService.findMatchingWishlists("847130", "702", "840"))
+                .thenReturn(Collections.singletonList(wishlistItem));
+
+        UserDTO user = new UserDTO();
+        user.setEmail("na@example.com");
+        ResponseEntity<UserDTO> response = ResponseEntity.ok(user);
+
+        when(restTemplate.exchange(anyString(),
+                eq(HttpMethod.GET),
+                any(HttpEntity.class),
+                eq(UserDTO.class)))
+            .thenReturn(response);
+
+        // No fields provided in testUpdateRequest -> no validation of rate/fee
+        Tariff result = tariffService.updateTariff("702", "840", "847130", "MFN",
+                "2025-01-01", testUpdateRequest);
+
+        assertNotNull(result);
+
+        ArgumentCaptor<String> bodyCaptor = ArgumentCaptor.forClass(String.class);
+        verify(emailService).sendEmail(eq("na@example.com"), anyString(), bodyCaptor.capture());
+
+        String body = bodyCaptor.getValue();
+        assertTrue(body.contains("Rate: N/A"));
+        assertTrue(body.contains("Expiration Date: Ongoing"));
+    }
+
+    // ========= notifyForExpiredTariffs() tests ===========
+    @Test
+    public void notifyForExpiredTariffs_ShouldDoNothing_WhenNoExpiredTariffs() {
+        LocalDate yesterday = LocalDate.now().minusDays(1);
+
+        when(tariffs.findAllByExpirationDate(yesterday))
+            .thenReturn(Collections.emptyList());
+
+        tariffService.notifyForExpiredTariffs();
+
+        // No wishlist lookups (so no notifications)
+        verify(wishlistService, never())
+            .findMatchingWishlists(anyString(), anyString(), anyString());
+    }
+
+    @Test
+    public void notifyForExpiredTariffs_ShouldNotifyWishlistUsers_WhenTariffsExpired() {
+        LocalDate yesterday = LocalDate.now().minusDays(1);
+
+        // Use testTariff as the expired tariff
+        testTariff.setExpirationDate(yesterday);
+        when(tariffs.findAllByExpirationDate(yesterday))
+            .thenReturn(Collections.singletonList(testTariff));
+
+        // Matching wishlist for that tariff
+        Wishlist wishlistItem = new Wishlist();
+        wishlistItem.setUserId("user-1");
+        wishlistItem.setHsCode(testTariff.getHsCode().getCode());
+        wishlistItem.setExportingCountry(testTariff.getOriginCountry().getCode());
+        wishlistItem.setImportingCountry(testTariff.getDestCountry().getCode());
+
+        when(wishlistService.findMatchingWishlists(anyString(), anyString(), anyString()))
+            .thenReturn(Collections.singletonList(wishlistItem));
+
+        // Mock user lookup
+        UserDTO user = new UserDTO();
+        user.setEmail("expired@example.com");
+        ResponseEntity<UserDTO> response = ResponseEntity.ok(user);
+
+        when(restTemplate.exchange(
+                anyString(),
+                eq(HttpMethod.GET),
+                any(HttpEntity.class),
+                eq(UserDTO.class)))
+            .thenReturn(response);
+
+        // Act
+        tariffService.notifyForExpiredTariffs();
+
+        // Assert: email was sent for the expired tariff
+        verify(emailService, times(1))
+            .sendEmail(eq("expired@example.com"),
+                    contains("Tariff Update"),
+                    contains("expired"));
     }
 }

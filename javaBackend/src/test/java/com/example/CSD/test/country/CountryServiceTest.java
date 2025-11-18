@@ -25,7 +25,7 @@ class CountryServiceTest {
     private CountryRepository countries;
 
     @InjectMocks
-    private CountryService countryService;
+    private CountryServiceImpl countryService;
 
     private Country sampleCountry1;
     private Country sampleCountry2;
@@ -51,12 +51,12 @@ class CountryServiceTest {
         sampleCountry2.setAlpha3("MYS");
 
         TradeParty tradeParty2 = new TradeParty();
-        tradeParty2.setId(1L);
+        tradeParty2.setId(2L);
         tradeParty2.setType(TradeParty.PartyType.COUNTRY);
-        tradeParty2.setCountry(sampleCountry1);
+        tradeParty2.setCountry(sampleCountry2);
         tradeParty2.setFtasAsPartyA(new HashSet<>());
         tradeParty2.setFtasAsPartyB(new HashSet<>());
-        sampleCountry1.setTradeParty(tradeParty2);
+        sampleCountry2.setTradeParty(tradeParty2);
     }
 
     // listCountries() test
@@ -282,6 +282,7 @@ class CountryServiceTest {
     // deleteCountry() tests
     @Test
     void deleteCountry_ShouldDeleteCountry_WhenNoFTAsAssociated() {
+        when(countries.existsByCode("702")).thenReturn(true);
         when(countries.findByCode("702")).thenReturn(Optional.of(sampleCountry1));
 
         countryService.deleteCountry("702");
@@ -291,7 +292,7 @@ class CountryServiceTest {
 
     @Test
     void deleteCountry_ShouldThrowException_WhenCountryCodeInvalid() {
-        when(countries.findByCode("702")).thenReturn(Optional.empty());
+        when(countries.existsByCode("702")).thenReturn(false);
 
         RuntimeException ex = assertThrows(RuntimeException.class, () -> countryService.deleteCountry("702"));
         assertTrue(ex.getMessage().contains("No country found with code 702"));
@@ -300,6 +301,7 @@ class CountryServiceTest {
 
     @Test
     void deleteCountry_ShouldThrowException_WhenDeleteCountryHasFTAsAsPartyA() {
+        when(countries.existsByCode("702")).thenReturn(true);
         when(countries.findByCode("702")).thenReturn(Optional.of(sampleCountry1));
 
         // simulate active FTA reference
@@ -312,12 +314,14 @@ class CountryServiceTest {
 
     @Test
     void deleteCountry_ShouldThrowException_WhenDeleteCountryHasFTAsAsPartyB() {
+        when(countries.existsByCode("702")).thenReturn(true);
         when(countries.findByCode("702")).thenReturn(Optional.of(sampleCountry1));
 
         // simulate active FTA reference
         sampleCountry1.getTradeParty().getFtasAsPartyB().add(new FTA());
 
         RuntimeException ex = assertThrows(RuntimeException.class, () -> countryService.deleteCountry("702"));
+        System.out.println((ex.getMessage()));
         assertTrue(ex.getMessage().contains("Cannot delete"));
         verify(countries, never()).deleteByCode(anyString());
     }

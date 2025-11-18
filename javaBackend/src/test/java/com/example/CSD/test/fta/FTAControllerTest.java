@@ -32,7 +32,7 @@ public class FTAControllerTest {
     private ObjectMapper objectMapper;
 
     @MockBean
-    private FTAService ftaService;
+    private FTAServiceImpl ftaService;
 
     private FTA testFTA;
 
@@ -111,6 +111,7 @@ public class FTAControllerTest {
     @Test
     public void createFTA_ShouldCreateFTA_WhenPostEndpointCalled() throws Exception {
         FTACreateRequest request = new FTACreateRequest();
+        request.setName("US–SG FTA");
         request.setPartyA("SG");
         request.setPartyB("US");
         request.setDefaultRate(5.0);

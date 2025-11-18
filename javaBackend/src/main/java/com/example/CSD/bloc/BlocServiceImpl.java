@@ -15,12 +15,10 @@ import com.example.CSD.tradeParty.TradePartyServiceImpl;
 public class BlocServiceImpl implements BlocService{
     private BlocRepository blocs;
     private CountryRepository countries;
-    private TradePartyServiceImpl partyService;
 
     public BlocServiceImpl(BlocRepository blocs, CountryRepository countries, TradePartyServiceImpl partyService) {
         this.blocs = blocs;
         this.countries = countries;
-        this.partyService = partyService;
     }
 
     @Override
@@ -72,10 +70,10 @@ public class BlocServiceImpl implements BlocService{
         }
 
         // Check if bloc with same code or bloc with same name exists
-        if (blocs.existsByCode(code)) {    
-            throw new RuntimeException("Bloc with code " + code + " already exists");
-        }
-        else if (blocs.existsByName(name)) {     
+        // if (blocs.existsByCode(code)) {    
+        //     throw new RuntimeException("Bloc with code " + code + " already exists");
+        // } else 
+        if (blocs.existsByName(name)) {     
             throw new RuntimeException("Bloc with name " + name + " already exists");
         }
 

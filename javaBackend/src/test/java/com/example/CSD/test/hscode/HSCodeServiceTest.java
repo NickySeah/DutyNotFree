@@ -22,7 +22,7 @@ class HSCodeServiceTest {
     private HSCodeRepository hsCodes;
 
     @InjectMocks
-    private HSCodeService hsCodeService;
+    private HSCodeServiceImpl hsCodeService;
 
     private HSCode sample1;
     private HSCode sample2;
