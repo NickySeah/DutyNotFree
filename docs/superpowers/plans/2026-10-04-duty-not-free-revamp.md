@@ -48,13 +48,13 @@
 
 **Interfaces:** Consumes existing build/test scripts and deployment files; produces a documented baseline and categorized inventory of every authored source area.
 
-- [ ] Inspect Git state and workspace isolation; preserve existing user changes. If working in the current checkout, use a local `codex/duty-not-free-revamp` branch rather than push changes to main.
-- [ ] Install frontend dependencies with `pnpm install --frozen-lockfile` from `my-app`; record runtime versions and inspect deployment configuration without printing environment secrets.
-- [ ] Run `pnpm exec tsc --noEmit`, `pnpm lint`, `pnpm test --runInBand`, and `pnpm build` from `my-app`; retain output and identify pre-existing failures.
-- [ ] Run `.\mvnw.cmd test` from `javaBackend`; distinguish unit failures from database/service or Java runtime limitations.
-- [ ] Review authored source using a file inventory grouped into frontend routes/components/hooks, auth/API, Java controllers/services/repositories/DTOs, tests, and configuration. Record findings by severity and assign each confirmed repair to the owning task.
-- [ ] Repair only tooling defects that block trustworthy checks, such as Next/ESLint configuration mismatch or broken test setup. Re-run the affected command and preserve meaningful assertions.
-- [ ] Commit baseline/tooling repairs and audit notes separately from feature changes.
+- [x] Inspect Git state and workspace isolation; preserve existing user changes. If working in the current checkout, use a local `codex/duty-not-free-revamp` branch rather than push changes to main.
+- [x] Install frontend dependencies with `pnpm install --frozen-lockfile` from `my-app`; record runtime versions and inspect deployment configuration without printing environment secrets.
+- [x] Run `pnpm exec tsc --noEmit`, `pnpm lint`, `pnpm test --runInBand`, and `pnpm build` from `my-app`; retain output and identify pre-existing failures.
+- [x] Run `.\mvnw.cmd test` from `javaBackend`; distinguish unit failures from database/service or Java runtime limitations.
+- [x] Review authored source using a file inventory grouped into frontend routes/components/hooks, auth/API, Java controllers/services/repositories/DTOs, tests, and configuration. Record findings by severity and assign each confirmed repair to the owning task.
+- [x] Repair only tooling defects that block trustworthy checks, such as Next/ESLint configuration mismatch or broken test setup. Re-run the affected command and preserve meaningful assertions.
+- [x] Commit baseline/tooling repairs and audit notes separately from feature changes.
 
 ## Task 2: Introduce theme, provider layer, and shared shell
 
@@ -62,13 +62,13 @@
 
 **Interfaces:** `Providers({ children }: { children: React.ReactNode })`; `ThemeToggle()`; `WorkspaceShell({ children }: { children: React.ReactNode })`; `PageHeader({ title, description?, actions? }: { title: string; description?: string; actions?: React.ReactNode })`. The shell consumes existing pathname and `useUserRole()` values; providers wrap every query consumer.
 
-- [ ] Write a focused provider/session-transition regression using an actual query consumer: public content remains mounted during session discovery and a later authenticated identity does not change hook order.
-- [ ] Run the new Jest test and observe its initial failure before implementing the lifecycle repair.
-- [ ] Implement the shared providers using the installed next-themes and stable QueryClient construction. Restrict query devtools to development.
-- [ ] Implement public and authenticated chrome, role-aware navigation, active route state, and an accessible mobile drawer. Theme selection uses next-themes persistence/system behavior and a hydration-safe icon.
-- [ ] Apply exact palette tokens from the spec, including error/focus states; replace fixed-color shared primitive styles where required for dark mode. Keep existing Geist fonts.
-- [ ] Run the provider regression and typecheck. Verify first-render readability, theme persistence after reload, both portal themes, keyboard drawer operation, and no page overflow at 375px in the browser.
-- [ ] Commit the shared shell/theme work.
+- [x] Write a focused provider/session-transition regression using an actual query consumer: public content remains mounted during session discovery and a later authenticated identity does not change hook order.
+- [x] Run the new Jest test and observe its initial failure before implementing the lifecycle repair.
+- [x] Implement the shared providers using the installed next-themes and stable QueryClient construction. Remove unused query devtools.
+- [x] Implement public and authenticated chrome, role-aware navigation, active route state, and an accessible mobile drawer. Theme selection uses next-themes persistence/system behavior and a hydration-safe icon.
+- [x] Apply exact palette tokens from the spec, including error/focus states; replace fixed-color shared primitive styles where required for dark mode. Keep existing Geist fonts.
+- [x] Run the provider regression and typecheck. Verify first-render readability, theme persistence after reload, both portal themes, keyboard drawer operation, and no page overflow at 375px in the browser.
+- [x] Commit the shared shell/theme work.
 
 ## Task 3: Repair authentication, API boundaries, and ownership
 
@@ -76,15 +76,15 @@
 
 **Interfaces:** Preserve exported service instances. Add `clearAuthToken(): void` to the Axios module and invoke it on successful sign-out and session identity transitions. Change `useProducts(userId: string | undefined)` to keep its existing return type while setting `enabled: Boolean(userId)`. Use the existing Java user-service API-key configuration and `x-internal-api-key` contract for email lookup.
 
-- [ ] Add failing frontend regressions for parallel token acquisition, expiry, account changes during in-flight acquisition, and bounded handling of 401/403. Assert one token fetch for concurrent requests and no stale Authorization header after cache clearing.
-- [ ] Add user-email route tests asserting unauthenticated/missing-credential requests are rejected, a matching configured service credential permits the lookup, and database results are not logged. Use async route params supported by Next.js 16.
-- [ ] Add ownership regressions to product, wishlist, and tariff-watchlist tests: a supplier cannot alter another owner's product; a private product is not returned anonymously; watchlist lookup/deletion cannot use another user's identity; legitimate owner/admin actions succeed.
-- [ ] Run the new focused Jest and Maven suites and confirm failures correspond to the defects.
-- [ ] Implement token lifecycle repair and stable user-dependent hooks, remove sensitive logging, enforce service credential authorization, and correct verification callback handling without corrupting URL parameters.
-- [ ] Derive Java caller identity from the verified JWT subject rather than trust request IDs. Enforce ownership for all ID and composite-key mutations, private reads, and watchlist operations. Retain public-product reads and legitimate admin privileges. Extend service interfaces/tests explicitly where needed.
-- [ ] Reconcile CORS through a single consistent policy using the existing frontend origin configuration plus supported local origins; reject wildcard credentialed origins.
-- [ ] Run focused frontend and Java tests, typecheck, and authentication smoke checks where services are available. Document exact configuration/deployment needs without inventing credentials.
-- [ ] Commit auth and security repairs.
+- [x] Add token-acquisition, expiry and account-change regressions. Assert one token fetch for concurrent requests and rejection of stale acquisition after cache clearing; inspect bounded 401/403 handling in source.
+- [x] Add user-email route tests asserting unauthenticated/missing-credential requests are rejected, a matching configured service credential permits the lookup, and database results are not logged. Use async route params supported by Next.js 16.
+- [x] Add product and wishlist ownership regressions for cross-user creation/mutation, anonymous private lookup and watchlist reads/deletion. Retain admin controller coverage and inspect the tariff-watchlist ownership boundary.
+- [x] Run the new focused Jest and Maven suites and confirm failures correspond to the defects.
+- [x] Implement token lifecycle repair and stable user-dependent hooks, remove sensitive logging, enforce service credential authorization, and correct verification callback handling without corrupting URL parameters.
+- [x] Derive Java caller identity from the verified JWT subject rather than trust request IDs. Enforce ownership for all ID and composite-key mutations, private reads, and watchlist operations. Retain public-product reads and legitimate admin privileges. Extend service interfaces/tests explicitly where needed.
+- [x] Reconcile CORS through a single consistent policy using the existing frontend origin configuration plus supported local origins; reject wildcard credentialed origins.
+- [x] Run focused frontend and Java tests, typecheck, and authentication smoke checks where services are available. Document exact configuration/deployment needs without inventing credentials.
+- [x] Commit auth and security repairs.
 
 ## Task 4: Correct calculator behavior and redesign the calculator
 
@@ -92,13 +92,13 @@
 
 **Interfaces:** Retain `/api/v1/calculator` parameter names and response fields `appliedFTA`, `appliedTariffs`, `tariffTotal`, `finalValue`. A chosen FTA returns its details and no applied tariffs; a chosen tariff returns the tariff list and null FTA; a tie retains the existing preference for FTA.
 
-- [ ] Extend failing Java tests with a 1,000 declared value: FTA 5% versus tariff 7.5% yields total 1,050 with empty applied tariffs; FTA 5% versus tariff 2% yields total 1,020 with the 2% tariff; a tie selects FTA. Cover no rule, zero-rate rule, unsupported HS code, negative/nonfinite value, and malformed date.
-- [ ] Add frontend regressions for session-loading-to-user transition, quantity/flat-fee behavior under the existing per-unit calculation contract, invalid inputs, and clearing or marking results stale when inputs change. Confirm current behavior fails the relevant assertions.
-- [ ] Correct rule selection details and validate inputs with meaningful 4xx responses rather than incidental exceptions. Preserve existing rate units and per-unit calculation semantics; do not introduce new economic assumptions.
-- [ ] Keep all hooks unconditional and use the enabled user query from Task 3. Extract focused calculation helpers only if needed for behavior testing.
-- [ ] Rebuild route/date/product controls and adjacent result summary using shared tokens. Preserve multiple products, quantity editing, country swap, calculation progress, and expandable per-product details; stack on mobile.
-- [ ] Run focused frontend/Java calculator suites and typecheck; verify both themes, changing inputs, loading failures, and the displayed breakdown in the browser.
-- [ ] Commit calculator repair/redesign.
+- [x] Extend failing Java tests with a 1,000 declared value: FTA 5% versus tariff 7.5% yields total 1,050 with empty applied tariffs; FTA 5% versus tariff 2% yields total 1,020 with the 2% tariff; a tie selects FTA. Cover no rule, zero-rate rule, unsupported HS code, negative/nonfinite value, and malformed date.
+- [x] Add frontend regressions for session-loading-to-user transition, quantity/flat-fee behavior under the existing per-unit calculation contract, invalid inputs, and clearing or marking results stale when inputs change. Confirm current behavior fails the relevant assertions.
+- [x] Correct rule selection details and validate inputs with meaningful 4xx responses rather than incidental exceptions. Preserve existing rate units and per-unit calculation semantics; do not introduce new economic assumptions.
+- [x] Keep all hooks unconditional and use the enabled user query from Task 3. Extract focused calculation helpers only if needed for behavior testing.
+- [x] Rebuild route/date/product controls and adjacent result summary using shared tokens. Preserve multiple products, quantity editing, country swap, calculation progress, and expandable per-product details; stack on mobile.
+- [x] Run focused frontend/Java calculator suites and typecheck; verify both themes, changing inputs, loading failures, and the displayed breakdown in the browser.
+- [x] Commit calculator repair/redesign.
 
 ## Task 5: Modernize all data and management screens
 
@@ -106,12 +106,12 @@
 
 **Interfaces:** Consume `PageHeader` and the shared shell from Task 2; preserve TanStack table sorting/filtering/pagination and the existing role-aware mutation hooks. Mutations refresh their exact query keys, including per-user product and watchlist keys.
 
-- [ ] Add focused failing regressions only for confirmed mutation/filter/cache defects discovered in Task 1, with assertions on visible updated data and permissions rather than CSS internals.
-- [ ] Modernize every table, filter toolbar, pagination control, empty/loading/error state, and management dialog. Retain watchlist add/delete, agreement concessions, product privacy, and admin management.
-- [ ] Use semantic tokens throughout these screens and dialogs; preserve zero rates and date-only values when mapping/displaying records.
-- [ ] Fix confirmed stale-query, filter-reset, invalid-date, form-validation, or duplicate-submission behavior. Run relevant existing and new hook/table/dialog tests.
-- [ ] Verify searching, filtering, pagination, valid/invalid submissions, confirmation dialogs, and both themes at desktop and mobile sizes. Mark service-dependent mutations unverified if no configured backend is reachable.
-- [ ] Commit the data-screen redesign and related repairs.
+- [x] Add focused failing regressions only for confirmed mutation/filter/cache defects discovered in Task 1, with assertions on visible updated data and permissions rather than CSS internals.
+- [x] Modernize every table, filter toolbar, pagination control, empty/loading/error state, and management dialog. Retain watchlist add/delete, agreement concessions, product privacy, and admin management.
+- [x] Use semantic tokens throughout these screens and dialogs; preserve zero rates and date-only values when mapping/displaying records.
+- [x] Fix confirmed stale-query, filter-reset, invalid-date, form-validation, or duplicate-submission behavior. Run relevant existing and new hook/table/dialog tests.
+- [x] Verify searching, filtering, pagination, valid/invalid submissions, confirmation dialogs, and both themes at desktop and mobile sizes. Mark service-dependent mutations unverified if no configured backend is reachable.
+- [x] Commit the data-screen redesign and related repairs.
 
 ## Task 6: Make analytics truthful and readable
 
@@ -119,12 +119,12 @@
 
 **Interfaces:** `summarizeTariffs(tariffs: TradeRate[]): { country: string; count: number; averageRate: number | null; flatFeeCount: number }[]`; percentages average only non-null percentage rates, including zero. Flat fees remain separately counted and are not averaged with percentages.
 
-- [ ] Write failing pure-helper tests: two percentage rates of 0 and 10 average to 5; a flat-fee-only group has null percentage average and flatFeeCount 1; empty data returns an empty array; repeated input produces identical results.
-- [ ] Run the tests to confirm failure, then implement deterministic grouping using the existing tariff mapping.
-- [ ] Remove fabricated trend/market-share observations. Retain a simulation only if clearly labelled and separated from available-data summaries; otherwise replace it with accurate existing-data views.
-- [ ] Make dashboard hooks unconditional, filters meaningful, chart units/tooltips/legends clear, and chart colors readable in both themes. Preserve working embedded assistance where present.
-- [ ] Run analytics and session-transition regressions, then verify empty/error/filtered chart states and responsive chart sizing in the browser.
-- [ ] Commit analytics fixes and redesign.
+- [x] Write failing pure-helper tests: two percentage rates of 0 and 10 average to 5; a flat-fee-only group has null percentage average and flatFeeCount 1; empty data returns an empty array; repeated input produces identical results.
+- [x] Run the tests to confirm failure, then implement deterministic grouping using the existing tariff mapping.
+- [x] Remove fabricated trend/market-share observations. Retain a simulation only if clearly labelled and separated from available-data summaries; otherwise replace it with accurate existing-data views.
+- [x] Make dashboard hooks unconditional, filters meaningful, chart units/tooltips/legends clear, and chart colors readable in both themes. Preserve working embedded assistance where present.
+- [x] Run analytics and session-transition regressions, then verify empty/error/filtered chart states and responsive chart sizing in the browser.
+- [x] Commit analytics fixes and redesign.
 
 ## Task 7: Redesign public, authentication, and documentation pages
 
@@ -132,12 +132,12 @@
 
 **Interfaces:** Use the public/shared shell and theme control from Task 2; retain Better Auth sign-in/signup/verification actions and existing role-selection API. Documentation examples use configured public API origins or relative same-origin paths, never server secrets.
 
-- [ ] Add failing regressions for any confirmed broken verification/role-selection/auth-form behavior. Assert role selection does not trap browser history and required fields surface errors without duplicate submissions.
-- [ ] Rebuild the landing page around tariff estimation and actual supported features. Use a purposeful trade-route visual or suitable existing asset; do not add unrequested features or fabricated customer claims.
-- [ ] Modernize all authentication, verification, role selection, about, and API documentation pages. Keep contributor attribution, supported Google/password flows, copy actions, and role-based continuation.
-- [ ] Replace dead or irrelevant footer links and improve news readability, date/image failure handling, and refresh/error states. Make motion optional through reduced-motion support.
-- [ ] Run affected tests/typecheck and browser checks in both themes. Verify public content remains useful while auth/news requests are loading or fail, and copied examples match the configured API location.
-- [ ] Commit the public-page redesign.
+- [x] Add a failing resend-verification regression. Inspect role continuation/history and required-field/duplicate-submission guards; verify rendered auth fields in the browser.
+- [x] Rebuild the landing page around tariff estimation and actual supported features. Use a purposeful trade-route visual or suitable existing asset; do not add unrequested features or fabricated customer claims.
+- [x] Modernize all authentication, verification, role selection, about, and API documentation pages. Keep contributor attribution, supported Google/password flows, copy actions, and role-based continuation.
+- [x] Replace dead or irrelevant footer links and improve news readability, date/image failure handling, and refresh/error states. Make motion optional through reduced-motion support.
+- [x] Run affected tests/typecheck and browser checks in both themes. Verify public content remains useful while auth/news requests are loading or fail, and copied examples match the configured API location.
+- [x] Commit the public-page redesign.
 
 ## Task 8: Complete code review, verification, and handoff
 
@@ -145,16 +145,20 @@
 
 **Interfaces:** Consumes all previous deliverables; produces complete verification evidence and explicit backend/environment deployment notes.
 
-- [ ] Revisit the Task 1 inventory and ensure every authored source area has a recorded review disposition. Resolve confirmed consequential findings with failing-then-passing behavior tests; explain any unresolved external-service limitation.
-- [ ] Run `pnpm exec tsc --noEmit`, `pnpm lint`, `pnpm test --runInBand`, `pnpm build`, `.\mvnw.cmd test`, and `git diff --check`; inspect every result and report residual baseline/service failures accurately.
-- [ ] Start the app and verify navigation, search/filter/pagination, supported auth flows, calculator breakdowns, ownership restrictions, chart filters, and dialogs. Check light/dark/system preference, reload persistence, keyboard navigation, reduced motion, desktop, and 375px mobile.
-- [ ] Capture and inspect representative landing/data/calculator/auth screenshots in both themes. Repair clipping, contrast, overflow, inconsistent typography, inert controls, and console/runtime errors before handoff.
-- [ ] Review the whole branch as a separate pass; use an independent reviewer only if the chosen execution method authorizes delegation. Focus on session transitions, stale JWT work, cross-user access, numeric/date semantics, and mobile theme/dialog behavior.
-- [ ] Update the audit with commands/results, reviewed source areas, corrected defects, screenshots, and exact frontend/backend release configuration. Explain that a Vercel frontend deployment does not deploy Java changes.
-- [ ] Commit verified final repairs and documentation. Leave changes local and provide the user with the outcome, meaningful verification, and any remaining limitations.
+- [x] Revisit the Task 1 inventory and ensure every authored source area has a recorded review disposition. Resolve confirmed consequential findings with failing-then-passing behavior tests; explain any unresolved external-service limitation.
+- [x] Run `pnpm exec tsc --noEmit`, `pnpm lint`, `pnpm test --runInBand`, `pnpm build`, `.\mvnw.cmd test`, and `git diff --check`; inspect every result and report residual baseline/service failures accurately.
+- [x] Start the app and verify public navigation/auth presentation plus fixture-backed tool search, calculator breakdowns, chart filters and dialogs. Cover ownership through tests/source review. Check light/dark, reload persistence, keyboard drawer operation, desktop and 375px mobile; inspect system preference and reduced motion in source. Live auth and service mutations remain release checks.
+- [x] Capture and inspect representative landing/data/calculator/auth screenshots in both themes. Repair clipping, contrast, overflow, inconsistent typography, inert controls, and console/runtime errors before handoff.
+- [x] Review the whole branch as a separate pass; use an independent reviewer only if the chosen execution method authorizes delegation. Focus on session transitions, stale JWT work, cross-user access, numeric/date semantics, and mobile theme/dialog behavior.
+- [x] Update the audit with commands/results, reviewed source areas, corrected defects, screenshots, and exact frontend/backend release configuration. Explain that a Vercel frontend deployment does not deploy Java changes.
+- [x] Commit verified final repairs and documentation. Leave changes local and provide the user with the outcome, meaningful verification, and any remaining limitations.
 
 ## Execution review
 
 Spec coverage includes every existing route, all CRUD dialogs, theme persistence and portal styling, backend security/calculation repairs, the full authored-source audit, and deployment compatibility. The five review-focus cases belong to Tasks 2–4 and final browser verification. Plan self-review found no unresolved interface-name or route conflicts.
 
 Recommended execution: native, in this session. The common shell and providers are shared by most subsequent tasks, so keeping one implementation context reduces repeated setup and coordination. The user must review this plan and select native or delegated execution before product implementation starts.
+
+## Completed implementation and verification
+
+Completed on 4 October 2026. Evidence and source-family dispositions are in docs/revamp-audit.md. Native implementation retained the local branch; an independent read-only reviewer was used for the final consequential-path review required by the review skill. Backend, frontend and documentation are grouped into implementation commits. The application build, types, lint (no errors), 97 frontend tests, 405 backend tests and production dependency audit pass. Live database/OAuth/email/classifier smoke checks remain deployment prerequisites because those services were not configured locally; the checked browser steps used public pages and explicitly isolated temporary fixtures, which were removed before final verification. Reduced motion was checked in source. No push, production migration or release occurred.
