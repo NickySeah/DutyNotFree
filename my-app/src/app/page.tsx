@@ -44,18 +44,20 @@ export default function HomePage() {
             Built for curious importers and suppliers.
           </p>
         </div>
-        <div className="relative pb-10 pl-0 sm:pl-7">
-          <div className="relative h-[340px] overflow-hidden rounded-2xl md:h-[430px]">
+        <div className="flex min-w-0 flex-col gap-4">
+          <div className="overflow-hidden rounded-2xl">
             <Image
               src="/images/shipyard.jpg"
               alt="Container port connecting international trade routes"
-              fill
+              width={1920}
+              height={1021}
               priority
-              sizes="(max-width: 768px) 100vw, 50vw"
-              className="object-cover"
+              quality={90}
+              sizes="(max-width: 767px) calc(100vw - 32px), (max-width: 1247px) calc((100vw - 96px) / 2), 576px"
+              className="h-auto w-full"
             />
           </div>
-          <div className="absolute bottom-0 left-0 right-8 rounded-xl border bg-card p-5 shadow-lg sm:right-16">
+          <div className="rounded-xl border bg-card p-5 sm:p-6">
             <div className="mb-4 flex items-center justify-between gap-4">
               <p className="text-sm font-semibold">
                 Every route starts with a clearer picture.
@@ -97,19 +99,21 @@ export default function HomePage() {
       </div>
       <Feature />
       <NewsFeed />
-      <section className="site-container mb-16 flex flex-col items-start justify-between gap-8 rounded-2xl border bg-card p-8 sm:flex-row sm:items-center md:p-12">
-        <div>
-          <h2 className="section-title">A better-informed next move.</h2>
-          <p className="mt-3 text-muted-foreground">
-            Bring your products, trade routes, and tariff questions together.
-          </p>
+      <section className="site-container py-16 md:py-20">
+        <div className="grid items-center gap-8 rounded-2xl border bg-card p-6 sm:p-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:p-12">
+          <div className="min-w-0">
+            <h2 className="section-title">A better-informed next move.</h2>
+            <p className="mt-3 text-muted-foreground">
+              Bring your products, trade routes, and tariff questions together.
+            </p>
+          </div>
+          <Button asChild size="lg" className="h-12 w-full sm:w-auto sm:justify-self-start lg:justify-self-end">
+            <Link href={isAuthenticated ? "/tariff" : "/register"}>
+              Open your workspace
+              <ArrowUpRight />
+            </Link>
+          </Button>
         </div>
-        <Button asChild size="lg" className="h-12">
-          <Link href={isAuthenticated ? "/tariff" : "/register"}>
-            Open your workspace
-            <ArrowUpRight />
-          </Link>
-        </Button>
       </section>
     </>
   );

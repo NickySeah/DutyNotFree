@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   agentRules: false,
+  images: { qualities: [75, 90] },
   transpilePackages: ["msw", "@mswjs/interceptors", "until-async"],
   // outputFileTracingRoot: '/Users/nogamesense2/DutyNotFree/my-app',
 
