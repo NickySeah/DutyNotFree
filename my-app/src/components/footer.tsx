@@ -1,56 +1,5 @@
 import Link from "next/link";
-
+import { Brand } from "./brand";
 export default function Footer() {
-  return (
-    <footer className="bg-gray-900 text-gray-300 py-12 px-8">
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start justify-between">
-        
-        {/* Left side: Logo + Text */}
-        <div className="flex items-center mb-8 md:mb-0">
-
-            <img
-              src="/images/Duty1.svg"
-              alt="Logo"
-              className="h-32 w-32 mr-4" // bigger logo
-            />
-
-          <p className="text-lg max-w-sm">
-            Built by Importers, for Importers
-          </p>
-        </div>
-
-        {/* Right side: Links */}
-        <div className="grid grid-cols-3 gap-12">
-            <div>
-            <h3 className="text-xl font-semibold text-white mb-4">Explore</h3>
-            <ul className="space-y-3">
-              <li><Link href="#">Pricing</Link></li>
-              <li><Link href="#">Testimonials</Link></li>
-            </ul>
-            </div>
-          <div>
-            <h3 className="text-xl font-semibold text-white mb-4">Company</h3>
-            <ul className="space-y-3">
-              <li><Link href="/about">About Us</Link></li>
-              <li><Link href="#">Careers</Link></li>
-              <li><Link href="#">Blog</Link></li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="text-xl font-semibold text-white mb-4">Support</h3>
-            <ul className="space-y-3">
-              <li><Link href="https://www.sos.org.sg/">Help Center</Link></li>
-              <li><Link href="#">Privacy Policy</Link></li>
-              <li><Link href="#">Terms of Service</Link></li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      {/* Bottom bar */}
-      <div className="mt-12 border-t border-gray-700 pt-6 text-center text-sm">
-        © {new Date().getFullYear()} DutyNotFree. All rights reserved.
-      </div>
-    </footer>
-  );
+  return <footer className="border-t bg-card py-10"><div className="site-container flex flex-col justify-between gap-8 sm:flex-row sm:items-center"><div><Brand /><p className="mt-3 text-sm text-muted-foreground">A clearer view of international trade.</p></div><div className="flex flex-wrap gap-6 text-sm text-muted-foreground"><Link href="/about">About the project</Link><Link href="/login">Log in</Link><Link href="/register">Create an account</Link></div></div><div className="site-container mt-8 flex flex-col justify-between gap-2 border-t pt-5 text-xs text-muted-foreground sm:flex-row"><span>© {new Date().getFullYear()} DutyNotFree</span><span>Built at Singapore Management University. For educational use.</span></div></footer>;
 }

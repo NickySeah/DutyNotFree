@@ -1,10 +1,14 @@
 // Polyfills for Node.js environment
 import { TextEncoder, TextDecoder } from 'util';
-import 'whatwg-fetch';
+import { ReadableStream, WritableStream, TransformStream } from 'node:stream/web';
+import { BroadcastChannel } from 'node:worker_threads';
 
 // Set up global polyfills
 global.TextEncoder = TextEncoder;
 global.TextDecoder = TextDecoder;
+Object.assign(global, { ReadableStream, WritableStream, TransformStream, BroadcastChannel });
+require('whatwg-fetch');
+Object.defineProperty(window, 'matchMedia', { writable: true, value: jest.fn().mockImplementation(query => ({ matches: false, media: query, onchange: null, addListener: jest.fn(), removeListener: jest.fn(), addEventListener: jest.fn(), removeEventListener: jest.fn(), dispatchEvent: jest.fn() })) });
 
 // Additional polyfills for MSW
 global.URL = URL;

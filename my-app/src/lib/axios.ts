@@ -3,6 +3,7 @@ import axios, { AxiosInstance } from 'axios';
 
 // This is a simple in-memory cache for our JWT.
 let jwtToken: string | null = null;
+export function clearAuthToken() { jwtToken = null; }
 
 // This is our factory function. It takes a baseURL and returns a
 // fully configured Axios instance with the JWT interceptor attached.

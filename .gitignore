@@ -4,3 +4,9 @@
 *.env.production
 application.properties
 DutyNotFree_key.pem
+
+# Local verification artifacts
+**/baseline-*.log
+**/*-after-jest.log
+.superpowers/
+my-app/verification/

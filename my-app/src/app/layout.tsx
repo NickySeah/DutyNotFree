@@ -3,9 +3,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Footer from "@/components/footer";
-import Navbar from "@/components/navbar";
-import { Toaster } from "sonner";
 import MainContent from "@/components/mainContentWrapper";
 
 const geistSans = Geist({
@@ -20,7 +17,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "DutyNotFree",
-  description: "Your onestop shop for tariff calculations",
+  description: "Explore trade agreements, compare tariffs, and estimate your import costs with DutyNotFree.",
 };
 
 export default function RootLayout({
@@ -30,14 +27,11 @@ export default function RootLayout({
 }>) {
 
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Navbar />
         <MainContent>{children}</MainContent>
-        <Toaster position="top-center" richColors />
-        <Footer />
       </body>
     </html>
   );

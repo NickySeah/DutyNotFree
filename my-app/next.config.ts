@@ -1,11 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  transpilePackages: ["msw", "@mswjs/interceptors", "until-async"],
   // outputFileTracingRoot: '/Users/nogamesense2/DutyNotFree/my-app',
 
   // Add this rewrites function
   async rewrites() {
+    if (!process.env.BACKEND_API_URL) return [];
     return [
       {
         // This is the "public" path your browser will call
