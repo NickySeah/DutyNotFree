@@ -39,6 +39,7 @@ public class ProductControllerTest {
 
     @BeforeEach
     public void setUp() {
+        org.springframework.security.core.context.SecurityContextHolder.getContext().setAuthentication(new org.springframework.security.authentication.TestingAuthenticationToken("admin-test", "", "ROLE_admin"));
         // Setup test HSCode
         testHsCode = new HSCode();
         testHsCode.setCode("847130");
@@ -51,6 +52,42 @@ public class ProductControllerTest {
         testProduct.setUserId("user67");
         testProduct.setHsCode(testHsCode);
         testProduct.setPrivate(false);
+    }
+
+    @org.junit.jupiter.api.AfterEach
+    void clearIdentity() { org.springframework.security.core.context.SecurityContextHolder.clearContext(); }
+
+    @Test
+    void supplierCannotCreateForAnotherOwner() throws Exception {
+        org.springframework.security.core.context.SecurityContextHolder.getContext().setAuthentication(new org.springframework.security.authentication.TestingAuthenticationToken("owner", "", "ROLE_supplier"));
+        mockMvc.perform(post(BASE_URL).contentType(MediaType.APPLICATION_JSON).content("{\"userId\":\"another-user\",\"name\":\"Laptop\",\"hsCode\":\"847130\",\"isPrivate\":true}")).andExpect(status().isForbidden());
+        verify(productService, never()).createProduct(any());
+    }
+
+    @Test
+    void supplierCannotUpdateOrDeleteAnotherOwnersProductById() throws Exception {
+        org.springframework.security.core.context.SecurityContextHolder.getContext().setAuthentication(new org.springframework.security.authentication.TestingAuthenticationToken("other-owner", "", "ROLE_supplier"));
+        when(productService.getProductById(1L)).thenReturn(testProduct);
+        mockMvc.perform(put(BASE_URL + "/1").contentType(MediaType.APPLICATION_JSON).content("{\"name\":\"Changed\"}")).andExpect(status().isForbidden());
+        mockMvc.perform(delete(BASE_URL + "/1")).andExpect(status().isForbidden());
+        verify(productService, never()).updateProductById(anyLong(), any());
+        verify(productService, never()).deleteProductById(anyLong());
+    }
+
+    @Test
+    void anonymousPrivateProductLookupDoesNotExposeTheRecord() throws Exception {
+        org.springframework.security.core.context.SecurityContextHolder.clearContext();
+        testProduct.setPrivate(true);
+        when(productService.getProductById(1L)).thenReturn(testProduct);
+        mockMvc.perform(get(BASE_URL + "/1")).andExpect(status().isNotFound());
+    }
+
+    @Test
+    void anonymousListDoesNotRevealPrivateProducts() throws Exception {
+        org.springframework.security.core.context.SecurityContextHolder.clearContext();
+        Product privateProduct = new Product(); privateProduct.setUserId("another-user"); privateProduct.setPrivate(true);
+        when(productService.listProducts()).thenReturn(List.of(testProduct, privateProduct));
+        mockMvc.perform(get(BASE_URL + "/all")).andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(1));
     }
 
     @Test

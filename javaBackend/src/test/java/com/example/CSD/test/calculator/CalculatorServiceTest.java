@@ -162,7 +162,7 @@ public class CalculatorServiceTest {
 
         @SuppressWarnings("unchecked")
         List<Tariff> appliedTariffs = (List<Tariff>) result.get("appliedTariffs");
-        assertEquals(1, appliedTariffs.size()); // still returned for info
+        assertEquals(0, appliedTariffs.size()); // Only rules actually applied are returned.
     }
 
     @Test
@@ -297,6 +297,7 @@ public class CalculatorServiceTest {
         assertEquals(1075.0, (Double) result.get("finalValue"), 0.01);
         assertEquals(75.0, (Double) result.get("tariffTotal"), 0.01);
         assertNull(result.get("appliedFTA"));
+        assertEquals(List.of(testTariffWithRate), result.get("appliedTariffs"));
     }
 
     @Test
@@ -378,7 +379,7 @@ public class CalculatorServiceTest {
         when(ftaService.getActiveFTA(null, "SG", "US", "2025-01-01")).thenReturn(ftas);
         when(hsCodeService.getHSCode("847130", null)).thenReturn(empty);
 
-        assertThrows(IndexOutOfBoundsException.class, () ->
+        assertThrows(org.springframework.web.server.ResponseStatusException.class, () ->
                 calculatorService.calculateTariffedValue(1000.0, "SG", "US", "847130", "2025-01-01"));
     }
 

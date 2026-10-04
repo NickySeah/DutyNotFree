@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import com.example.CSD.security.ResourceAccess;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/v1/wishlists")
@@ -28,6 +30,7 @@ public class WishlistController {
     @ApiResponse(responseCode = "200", description = "List of wishlist items")
     @GetMapping
     public ResponseEntity<List<Wishlist>> getWishlistsByUserId(@RequestParam String userId) {
+        ResourceAccess.requireOwner(userId);
         List<Wishlist> items = wishlistService.getWishlistsByUserId(userId);
         return ResponseEntity.ok(items);
     }
@@ -37,6 +40,7 @@ public class WishlistController {
     @ApiResponse(responseCode = "400", description = "Invalid data or duplicate item")
     @PostMapping
     public ResponseEntity<?> addWishlistItem(@Valid @RequestBody CreateWishlistDTO dto) {
+        ResourceAccess.requireOwner(dto.getUserId());
         try {
             Wishlist createdItem = wishlistService.createWishlist(dto);
             return new ResponseEntity<>(createdItem, HttpStatus.CREATED);
@@ -52,6 +56,10 @@ public class WishlistController {
     @ApiResponse(responseCode = "404", description = "Item not found")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteWishlistItem(@PathVariable Long id) {
+        ResourceAccess.requireOwner(ResourceAccess.userId());
+        if (!ResourceAccess.isAdmin() && wishlistService.getWishlistsByUserId(ResourceAccess.userId()).stream().noneMatch(item -> item.getId().equals(id))) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
+        }
         try {
             // The service throws an IllegalStateException if not found
             wishlistService.deleteWishlist(id);
@@ -64,4 +72,3 @@ public class WishlistController {
         }
     }
 }
-

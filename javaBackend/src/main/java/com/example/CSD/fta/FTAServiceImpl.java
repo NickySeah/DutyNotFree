@@ -68,39 +68,15 @@ public class FTAServiceImpl implements FTAService{
                 FTA f = iter.next();
                 TradeParty existingPA = f.getPartyA();                              // Get both parties in current FTA
                 TradeParty existingPB = f.getPartyB();
-                boolean AisBloc = existingPA.getType() == PartyType.BLOC;
-                boolean BisBloc = existingPB.getType() == PartyType.BLOC;
-                boolean matchA = true;
-                boolean matchB = true;
-
-                if (tPartyA != null) {                                                  // Check if query partyA matches either party    // TODO: make a helper if used elsewhere
-                    boolean targetAisCountry = tPartyA.getType() == PartyType.COUNTRY;
-                    matchA = existingPA.equals(tPartyA) || existingPB.equals(tPartyA);
-
-                    if (!matchA && targetAisCountry) {
-                        if (AisBloc && existingPA.getBloc().getMemberCountries().contains(tPartyA.getCountry())) {
-                            matchA = true;
-                        } 
-                        else if (BisBloc && existingPB.getBloc().getMemberCountries().contains(tPartyA.getCountry())) {
-                            matchA = true;
-                        }
-                    }
+                boolean matches;
+                if (tPartyA != null && tPartyB != null) {
+                    matches = (matchesParty(existingPA, tPartyA) && matchesParty(existingPB, tPartyB))
+                        || (matchesParty(existingPA, tPartyB) && matchesParty(existingPB, tPartyA));
+                } else {
+                    TradeParty requested = tPartyA != null ? tPartyA : tPartyB;
+                    matches = matchesParty(existingPA, requested) || matchesParty(existingPB, requested);
                 }
-                if (tPartyB != null) {
-                    boolean targetBisCountry = tPartyB.getType() == PartyType.COUNTRY;
-                    matchB = existingPA.equals(tPartyB) || existingPB.equals(tPartyB);
-
-                    if (!matchB && targetBisCountry) {
-                        if (AisBloc && existingPA.getBloc().getMemberCountries().contains(tPartyB.getCountry())) {
-                            matchB = true;
-                        } 
-                        else if (BisBloc && existingPB.getBloc().getMemberCountries().contains(tPartyB.getCountry())) {
-                            matchB = true;
-                        }
-                    }
-                }
-
-                if (!matchA || !matchB) {
+                if (!matches) {
                     iter.remove();
                 }
             }
@@ -160,7 +136,7 @@ public class FTAServiceImpl implements FTAService{
 
         // Default Rate
         Double defaultRate = request.getDefaultRate();
-        if (defaultRate < 0) {
+        if (defaultRate == null || !Double.isFinite(defaultRate) || defaultRate < 0) {
             throw new RuntimeException("Default rate under FTA cannot be negative. Please provide a valid default rate.");
         }
 
@@ -221,7 +197,7 @@ public class FTAServiceImpl implements FTAService{
                 }
 
                 Double finalRate = concessionRequest.getFinalRate();                            // Get final rate
-                if (finalRate == null || finalRate < 0.0) {                                     // Validate final rate
+                if (finalRate == null || !Double.isFinite(finalRate) || finalRate < 0.0) {                                     // Validate final rate
                     throw new RuntimeException("Final rate cannot be empty or negative");
                 }
 
@@ -278,7 +254,7 @@ public class FTAServiceImpl implements FTAService{
         if (request.isDefaultRateProvided()) {                          // Default rate to be updated
             Double finalRate = request.getDefaultRate();
 
-            if (finalRate < 0) {                                        // Check default rate is non-negative
+            if (finalRate == null || !Double.isFinite(finalRate) || finalRate < 0) {                                        // Check default rate is non-negative
                 throw new RuntimeException("Default rate under FTA cannot be negative. Please provide a valid default rate.");
             }
             
@@ -382,7 +358,7 @@ public class FTAServiceImpl implements FTAService{
                 }
 
                 Double finalRate = concessionRequest.getFinalRate();                    // Get final rate
-                if (finalRate == null || finalRate < 0.0) {
+                if (finalRate == null || !Double.isFinite(finalRate) || finalRate < 0.0) {
                     throw new RuntimeException("Final rate cannot be empty or negative");
                 }
 
@@ -437,6 +413,12 @@ public class FTAServiceImpl implements FTAService{
         agreements.deleteById(id);
     }
 
+    private boolean matchesParty(TradeParty existing, TradeParty requested) {
+        return existing.equals(requested)
+            || (existing.getType() == PartyType.BLOC && requested.getType() == PartyType.COUNTRY
+                && existing.getBloc().getMemberCountries().contains(requested.getCountry()));
+    }
+
     // Helper Functions to validate
     private TradeParty validateTradeParty(String code) {
         // Check if code is for Country (3 digits) or Block
@@ -487,8 +469,8 @@ public class FTAServiceImpl implements FTAService{
             LocalDate existingEffective = fta.getEffectiveDate();
             LocalDate existingExpiration = fta.getExpirationDate();
 
-            boolean newEndsBeforeExisting = endDate != null && endDate.isBefore(existingEffective.plusDays(1));
-            boolean newStartsAfterExisting = existingExpiration != null && startDate.isAfter(existingExpiration.minusDays(1));
+            boolean newEndsBeforeExisting = endDate != null && endDate.isBefore(existingEffective);
+            boolean newStartsAfterExisting = existingExpiration != null && startDate.isAfter(existingExpiration);
 
             if (!newEndsBeforeExisting && !newStartsAfterExisting) {                // (!) Overlap found
                 String issue = "";

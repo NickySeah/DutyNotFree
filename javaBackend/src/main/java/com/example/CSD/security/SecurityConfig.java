@@ -20,6 +20,8 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+    @org.springframework.beans.factory.annotation.Value("${FRONTEND_URL:https://duty-not-free.vercel.app}")
+    private String frontendUrl;
 
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
@@ -112,7 +114,7 @@ public class SecurityConfig {
                     "/api/v1/hscodes",
                     "/api/v1/tariffs",
                     "/api/v1/tariffs/*",
-                    "/api/v1/ftas/*"
+                    "/api/v1/ftas", "/api/v1/ftas/*"
                 ).hasRole("admin")
 
                 .requestMatchers(HttpMethod.DELETE, 
@@ -121,7 +123,7 @@ public class SecurityConfig {
                     "/api/v1/hscodes",
                     "/api/v1/tariffs",
                     "/api/v1/tariffs/*",
-                    "/api/v1/ftas/*"
+                    "/api/v1/ftas", "/api/v1/ftas/*"
                 ).hasRole("admin")
 
                 // SUPPLIER ACCESSSIBLE ENDPOINT FOR PRODUCT
@@ -149,7 +151,7 @@ public class SecurityConfig {
     CorsConfigurationSource corsConfigurationSource() {
         // ... (your existing CORS configuration)
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000", "http://127.0.0.1:3000", "https://duty-not-free.vercel.app"));
+        configuration.setAllowedOrigins(java.util.stream.Stream.of("http://localhost:3000", "http://127.0.0.1:3000", frontendUrl).distinct().toList());
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);

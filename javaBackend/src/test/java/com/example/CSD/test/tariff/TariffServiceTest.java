@@ -35,6 +35,28 @@ import com.example.CSD.wishlist.WishlistService;
 
 @ExtendWith(MockitoExtension.class)
 public class TariffServiceTest {
+    @Test
+    public void boundaryDayCannotBelongToTwoTariffVersions() {
+        when(countries.findByCode("702")).thenReturn(Optional.of(testCountryA));
+        when(countries.findByCode("840")).thenReturn(Optional.of(testCountryB));
+        when(hscodes.findByCode("847130")).thenReturn(Optional.of(testHsCode));
+        when(tariffs.existsByOriginCountry_CodeAndDestCountry_CodeAndHsCode_CodeAndTariffType("702", "840", "847130", "MFN")).thenReturn(true);
+        when(tariffs.findByOriginCountry_CodeAndDestCountry_CodeAndHsCode_CodeAndTariffType("702", "840", "847130", "MFN")).thenReturn(new ArrayList<>(List.of(testTariff)));
+        testCreateRequest.setEffectiveDate("2025-12-31");
+        testCreateRequest.setExpirationDate(null);
+        assertThrows(RuntimeException.class, () -> tariffService.createTariff(testCreateRequest));
+        verify(tariffs, never()).save(any());
+    }
+
+    @Test
+    public void negativeRateCannotBePersisted() {
+        when(countries.findByCode("702")).thenReturn(Optional.of(testCountryA));
+        when(countries.findByCode("840")).thenReturn(Optional.of(testCountryB));
+        when(hscodes.findByCode("847130")).thenReturn(Optional.of(testHsCode));
+        testCreateRequest.setStandardRate(-5.0);
+        assertThrows(RuntimeException.class, () -> tariffService.createTariff(testCreateRequest));
+        verify(tariffs, never()).save(any());
+    }
     @Mock
     private TariffRepository tariffs;
 

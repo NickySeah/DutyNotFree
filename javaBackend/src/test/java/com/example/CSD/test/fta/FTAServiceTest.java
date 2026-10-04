@@ -25,6 +25,36 @@ import com.example.CSD.fta.*;
 
 @ExtendWith(MockitoExtension.class)
 public class FTAServiceTest {
+    @Test
+    public void countriesOnSameBlocSideMustNotMatchExternalAgreement() {
+        Bloc bloc = new Bloc();
+        bloc.setCode("GROUP");
+        bloc.setMemberCountries(new HashSet<>(List.of(testCountryA, testCountryB)));
+        TradeParty blocParty = new TradeParty();
+        blocParty.setId(3L);
+        blocParty.setType(TradeParty.PartyType.BLOC);
+        blocParty.setBloc(bloc);
+        Country third = new Country(); third.setCode("124");
+        TradeParty thirdParty = new TradeParty(); thirdParty.setId(4L);
+        thirdParty.setType(TradeParty.PartyType.COUNTRY); thirdParty.setCountry(third);
+        testFTA.setPartyA(blocParty); testFTA.setPartyB(thirdParty);
+        when(parties.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
+        when(parties.findByCountryCode("840")).thenReturn(Optional.of(testPartyB));
+        when(agreements.findAll()).thenReturn(new ArrayList<>(List.of(testFTA)));
+        assertTrue(ftaService.getFTA(null, "702", "840").isEmpty());
+    }
+
+    @Test
+    public void equalExpirationAndEffectiveDatesOverlap() {
+        FTACreateRequest request = new FTACreateRequest();
+        request.setName("Next version"); request.setPartyA("702"); request.setPartyB("840");
+        request.setDefaultRate(5.0); request.setEffectiveDate("2025-12-31");
+        when(parties.findByCountryCode("702")).thenReturn(Optional.of(testPartyA));
+        when(parties.findByCountryCode("840")).thenReturn(Optional.of(testPartyB));
+        when(agreements.findByParties(testPartyA, testPartyB)).thenReturn(new ArrayList<>(List.of(testFTA)));
+        assertThrows(RuntimeException.class, () -> ftaService.createFTA(request));
+        verify(agreements, never()).save(any());
+    }
     @Mock
     private FTARepository agreements;
 
@@ -520,7 +550,7 @@ public class FTAServiceTest {
 
         // existingPB: NOT a bloc
         TradeParty existingPB = mock(TradeParty.class);
-        when(existingPB.getType()).thenReturn(TradeParty.PartyType.COUNTRY);
+        // No stub is needed for the unused opposite party.
 
         // FTA in repository: partyA = bloc, partyB = country
         FTA fta = new FTA();

@@ -121,6 +121,7 @@ public class TariffServiceImpl implements TariffService {
             throw new RuntimeException("Both standardRate and flatFee provided. Please provide either one but not both.");
         }
         
+        validateRate(rate, flatFee);
         // Start Date (compulsory) & End Date (optional)
         LocalDate startDate = validateDateStr(request.getEffectiveDate(), "Effective");         // returns LocalDate or throws exception if invalid format      
         LocalDate endDate = validateDateStr(request.getExpirationDate(), "Expiration");         // if empty/null, tariff is currently used        
@@ -170,13 +171,20 @@ public class TariffServiceImpl implements TariffService {
         return null;                                                                    // No date provided
     }
 
+    private void validateRate(Double rate, Double fee) {
+        if ((rate != null && (!Double.isFinite(rate) || rate < 0))
+            || (fee != null && (!Double.isFinite(fee) || fee < 0))) {
+            throw new RuntimeException("Rate and flat fee must be finite and non-negative.");
+        }
+    }
+
     private void validateDates(List<Tariff> existingTariffs, LocalDate startDate, LocalDate endDate) {
         for (Tariff tariff : existingTariffs) {                                     // Check each tariff for date overlaps
             LocalDate existingEffective = tariff.getEffectiveDate();
             LocalDate existingExpiration = tariff.getExpirationDate();
 
-            boolean newEndsBeforeExisting = endDate != null && endDate.isBefore(existingEffective.plusDays(1));
-            boolean newStartsAfterExisting = existingExpiration != null && startDate.isAfter(existingExpiration.minusDays(1));
+            boolean newEndsBeforeExisting = endDate != null && endDate.isBefore(existingEffective);
+            boolean newStartsAfterExisting = existingExpiration != null && startDate.isAfter(existingExpiration);
 
             if (!newEndsBeforeExisting && !newStartsAfterExisting) {                // (!) Overlap found
                 String issue = "";
@@ -218,6 +226,7 @@ public class TariffServiceImpl implements TariffService {
             if ((finalRate == null && finalFee == null) || (finalRate != null && finalFee != null)) {
                 throw new RuntimeException("Cannot have both standardRate & flatFee or have none defined.");
             }
+            validateRate(finalRate, finalFee);
             if (request.isStandardRateProvided()) {
                 existingTariff.setStandardRate(request.getStandardRate());
             }

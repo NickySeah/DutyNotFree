@@ -1,8 +1,10 @@
 package com.example.CSD.product;
 
 import java.util.List;
-
+import com.example.CSD.security.ResourceAccess;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -40,7 +42,7 @@ public class ProductV1Controller {
     @Operation(summary = "Get all products", description = "Returns a list of all products in the database")
     @GetMapping("/all")
     public List<Product> getAllProducts() {
-        return productService.listProducts();
+        return productService.listProducts().stream().filter(this::canRead).toList();
     }
     
     @Operation(summary = "Search products", description = "Search products by optional hsCode, name, and userID")
@@ -50,18 +52,22 @@ public class ProductV1Controller {
         @Parameter(description = "Name of the product") @RequestParam(required=false) String name,
         @Parameter(description = "User ID associated with the product") @RequestParam(required = false) String userID) 
     {
-        return productService.getProduct(userID, name, hsCode);
+        if (userID != null) ResourceAccess.requireOwner(userID);
+        return productService.getProduct(userID, name, hsCode).stream().filter(this::canRead).toList();
     }
         
     @Operation(summary = "Get product by ID", description = "Retrieve a product using its unique ID")
     @GetMapping("/{id}")
     public Product getProductById(@Parameter(description = "Product ID") @PathVariable Long id) {
-        return productService.getProductById(id);
+        Product product = productService.getProductById(id);
+        if (!canRead(product)) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found");
+        return product;
     }
 
     @Operation(summary = "Get available products to user", description = "Retrieve all products belong to users and products publicly availble")
     @GetMapping("/user/{userId}")
     public List<Product> getProductsByUserId(@Parameter(description = "Product ID") @PathVariable String userId) {
+        ResourceAccess.requireOwner(userId);
         return productService.getProductsByUserId(userId);
     }
 
@@ -72,6 +78,7 @@ public class ProductV1Controller {
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping()
     public Product createProduct(@Valid @RequestBody ProductCreateRequest productRequest) {
+        ResourceAccess.requireOwner(productRequest.getUserId());
         return productService.createProduct(productRequest);
     }
 
@@ -83,6 +90,7 @@ public class ProductV1Controller {
         @Parameter(description = "User ID associated with the product") @RequestParam String userID, 
         @Valid @RequestBody ProductUpdateRequest productRequest) 
     {
+        ResourceAccess.requireOwner(userID);
         return productService.updateProduct(hsCode, name, userID, productRequest);
     }
 
@@ -90,6 +98,7 @@ public class ProductV1Controller {
     @ResponseStatus(HttpStatus.OK)
     @PutMapping("/{id}")
     public Product updateProduct(@Parameter(description = "Product ID") @PathVariable Long id, @Valid @RequestBody ProductUpdateRequest productRequest) {
+        if (!ResourceAccess.isAdmin()) ResourceAccess.requireOwner(productService.getProductById(id).getUserId());
         return productService.updateProductById(id, productRequest);
     }
 
@@ -100,12 +109,17 @@ public class ProductV1Controller {
         @Parameter(description = "Name of the product") @RequestParam String name, 
         @Parameter(description = "User ID associated with the product") @RequestParam String userID) 
     {
+        ResourceAccess.requireOwner(userID);
         productService.deleteProduct(hsCode, name, userID);
     }
 
     @Operation(summary = "Delete product by ID", description = "Deletes a product using its unique ID")
     @DeleteMapping("/{id}")
     public void deleteProduct(@Parameter(description = "Product ID") @PathVariable Long id) {
+        if (!ResourceAccess.isAdmin()) ResourceAccess.requireOwner(productService.getProductById(id).getUserId());
         productService.deleteProductById(id);
     }   
+    private boolean canRead(Product product) {
+        return !product.isPrivate() || ResourceAccess.isAdmin() || ResourceAccess.owns(product.getUserId());
+    }
 }

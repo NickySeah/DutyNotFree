@@ -42,9 +42,14 @@ public class CalculatorServiceImpl implements CalculatorService {
             String hsCode,
             String dateStr
     ) { 
+        if (!Double.isFinite(originalValue) || originalValue < 0) throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "Value must be finite and non-negative");
+        try { LocalDate.parse(dateStr); }
+        catch (RuntimeException ex) { throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "Date must be YYYY-MM-DD"); }
         // Case 1: FTA
         List<FTA> ftas = fs.getActiveFTA(null,originCode,destCode,dateStr);     // Get all FTA between both countries
-        HSCode queryHsCode = hs.getHSCode(hsCode, null).get(0);     
+        List<HSCode> matches = hs.getHSCode(hsCode, null);
+        if (matches.isEmpty()) throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "Unknown HS code");
+        HSCode queryHsCode = matches.get(0);
         FTA bestFTA = null;                                                     // Track if an applicable FTA exists 
         Double lowestFTARate = 0.0;                                             // Track lowest FTA rate if multple applicable FTAs exist
         Double ftaCost = 0.0;                                                   // Calculate additional cost under FTA
@@ -102,7 +107,7 @@ public class CalculatorServiceImpl implements CalculatorService {
 
         if (hasFTA && hasTariffs) {     // BOTH FTA & Tariffs are applicable -> Take one with less cost
             appliedFTA = ftaCost <= tariffTotal ? ftaMap : null;
-            appliedTariffs = ftaCost <= tariffTotal ? tariffs : new ArrayList<>();
+            appliedTariffs = ftaCost <= tariffTotal ? new ArrayList<>() : tariffs;
             additionalCost = ftaCost <= tariffTotal ? ftaCost : tariffTotal;
         }
         else if (hasFTA) {              // Only FTA applicable

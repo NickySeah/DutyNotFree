@@ -104,6 +104,7 @@ public class TariffV1Controller {
     @ApiResponse(responseCode = "200", description = "List of matching tariffs")
     @GetMapping("/wishlist")
     public ResponseEntity<List<Tariff>> getWishlistTariffs(@RequestParam String userId) {
+        com.example.CSD.security.ResourceAccess.requireOwner(userId);
         List<Tariff> tariffs = tariffService.getTariffsForWishlist(userId);
         return ResponseEntity.ok(tariffs);
     }

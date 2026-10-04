@@ -39,8 +39,27 @@ class WishlistControllerTest {
 
     @BeforeEach
     void setup() {
+        org.springframework.security.core.context.SecurityContextHolder.getContext().setAuthentication(new org.springframework.security.authentication.TestingAuthenticationToken("admin-test", "", "ROLE_admin"));
         mockMvc = MockMvcBuilders.standaloneSetup(wishlistController).build();
         objectMapper = new ObjectMapper();
+    }
+
+    @org.junit.jupiter.api.AfterEach
+    void clearIdentity() { org.springframework.security.core.context.SecurityContextHolder.clearContext(); }
+
+    @Test
+    void userCannotReadAnotherWatchlist() throws Exception {
+        org.springframework.security.core.context.SecurityContextHolder.getContext().setAuthentication(new org.springframework.security.authentication.TestingAuthenticationToken("owner", "", "ROLE_importer"));
+        mockMvc.perform(get("/api/v1/wishlists").param("userId", "another-user")).andExpect(status().isForbidden());
+        verify(wishlistService, never()).getWishlistsByUserId(anyString());
+    }
+
+    @Test
+    void userCannotDeleteOutsideOwnWatchlist() throws Exception {
+        org.springframework.security.core.context.SecurityContextHolder.getContext().setAuthentication(new org.springframework.security.authentication.TestingAuthenticationToken("owner", "", "ROLE_importer"));
+        when(wishlistService.getWishlistsByUserId("owner")).thenReturn(java.util.List.of());
+        mockMvc.perform(delete(BASE_URL + "/99")).andExpect(status().isForbidden());
+        verify(wishlistService, never()).deleteWishlist(anyLong());
     }
 
     @Test
