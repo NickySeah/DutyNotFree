@@ -1,178 +1,96 @@
-import React from 'react'
-import { render, screen, waitFor } from '../../../test-utils/test-utils'
-import { DataTable } from '../data-table'
-import { columns } from '../columns'
-import userEvent from '@testing-library/user-event'
-
-// Mock data
-const mockData = [
+import React from "react";
+import {
+  render,
+  screen,
+  fireEvent,
+  within,
+  waitFor,
+} from "@/test-utils/test-utils";
+import userEvent from "@testing-library/user-event";
+import { DataTable } from "../data-table";
+import { createColumns } from "../columns";
+import type { TradeRate } from "@/types/trade";
+const columns = createColumns(
+  jest.fn(),
+  jest.fn(),
+  jest.fn(),
+  jest.fn(),
+  new Set(),
+  false,
+  false,
+);
+const record: TradeRate = {
+  tariff_id: 1,
+  hsCode: "8517",
+  description: "Telephone sets",
+  exportingFrom: "United States",
+  importingTo: "Canada",
+  exportingFromCode: "840",
+  importingToCode: "124",
+  type: "MFN",
+  rate: 5.5,
+  flatFee: 0,
+  effectiveDate: new Date("2024-01-01"),
+  expirationDate: null,
+};
+const data = [
+  record,
   {
-    tariff_id: 1,
-    hsCode: '8517',
-    description: 'Telephone sets',
-    exportingFrom: 'United States',
-    importingTo: 'Canada',
-    type: 'Standard',
-    rate: 5.5,
-    flatFee: 0,
-    effectiveDate: new Date('2024-01-01'),
-    expirationDate: null,
-  },
-  {
+    ...record,
     tariff_id: 2,
-    hsCode: '6109',
-    description: 'T-shirts',
-    exportingFrom: 'United States',
-    importingTo: 'Canada',
-    type: 'Standard',
+    description: "T-shirts",
+    hsCode: "6109",
     rate: 8.2,
-    flatFee: 0,
-    effectiveDate: new Date('2024-01-01'),
-    expirationDate: null,
   },
-]
-
-describe('DataTable - Data Fetching and Updating', () => {
-  it('should render data correctly', () => {
-    render(<DataTable columns={columns} data={mockData} />)
-
-    // Verify data is displayed
-    expect(screen.getByText('Telephone sets')).toBeInTheDocument()
-    expect(screen.getByText('T-shirts')).toBeInTheDocument()
-    expect(screen.getByText('United States')).toBeInTheDocument()
-    expect(screen.getByText('Canada')).toBeInTheDocument()
-    expect(screen.getByText('5.5%')).toBeInTheDocument()
-    expect(screen.getByText('8.2%')).toBeInTheDocument()
-  })
-
-  it('should handle empty data state', () => {
-    render(<DataTable columns={columns} data={[]} />)
-
-    // Should show empty state
-    expect(screen.getByText(/No results/)).toBeInTheDocument()
-  })
-
-  it('should handle sorting', async () => {
-    render(<DataTable columns={columns} data={mockData} />)
-
-    // Click on rate column header to sort
-    const rateHeader = screen.getByText('Rate')
-    await userEvent.click(rateHeader)
-
-    // Verify sorting is applied
-    await waitFor(() => {
-      const rows = screen.getAllByRole('row')
-      expect(rows[1]).toHaveTextContent('5.5%')
-      expect(rows[2]).toHaveTextContent('8.2%')
-    })
-  })
-
-  it('should handle pagination', async () => {
-    // Create more data to test pagination
-    const largeDataSet = Array.from({ length: 20 }, (_, i) => ({
-      ...mockData[0],
-      tariff_id: i + 1,
-      description: `Product ${i + 1}`,
-    }))
-
-    render(<DataTable columns={columns} data={largeDataSet} />)
-
-    // Verify pagination controls are present
-    expect(screen.getByText('Next')).toBeInTheDocument()
-    expect(screen.getByText('Previous')).toBeInTheDocument()
-  })
-
-  it('should handle row selection', async () => {
-    render(<DataTable columns={columns} data={mockData} />)
-
-    // Click on first row checkbox
-    const checkboxes = screen.getAllByRole('checkbox')
-    await userEvent.click(checkboxes[0])
-
-    // Verify row is selected
-    expect(checkboxes[0]).toBeChecked()
-  })
-
-  it('should handle bulk actions', async () => {
-    render(<DataTable columns={columns} data={mockData} />)
-
-    // Select multiple rows
-    const checkboxes = screen.getAllByRole('checkbox')
-    await userEvent.click(checkboxes[0])
-    await userEvent.click(checkboxes[1])
-
-    // Verify bulk actions are available
-    expect(screen.getByText('Delete Selected')).toBeInTheDocument()
-  })
-
-  it('should update when data changes', () => {
-    const { rerender } = render(<DataTable columns={columns} data={mockData} />)
-
-    // Verify initial data
-    expect(screen.getByText('Telephone sets')).toBeInTheDocument()
-
-    // Update data
-    const updatedData = [
-      ...mockData,
-      {
-        tariff_id: 3,
-        hsCode: '8703',
-        description: 'Motor cars',
-        exportingFrom: 'United States',
-        importingTo: 'Mexico',
-        type: 'Standard',
-        rate: 10.0,
-        flatFee: 0,
-        effectiveDate: new Date('2024-01-01'),
-        expirationDate: null,
-      },
-    ]
-
-    rerender(<DataTable columns={columns} data={updatedData} />)
-
-    // Verify new data is displayed
-    expect(screen.getByText('Motor cars')).toBeInTheDocument()
-    expect(screen.getByText('Mexico')).toBeInTheDocument()
-  })
-
-  it('should handle column visibility', async () => {
-    render(<DataTable columns={columns} data={mockData} />)
-
-    // Find column visibility toggle
-    const columnToggle = screen.getByText('Columns')
-    await userEvent.click(columnToggle)
-
-    // Toggle a column
-    const rateColumnToggle = screen.getByText('Rate')
-    await userEvent.click(rateColumnToggle)
-
-    // Verify column is hidden
-    expect(screen.queryByText('Rate')).not.toBeInTheDocument()
-  })
-
-  it('should handle search functionality', async () => {
-    render(<DataTable columns={columns} data={mockData} />)
-
-    // Find search input
-    const searchInput = screen.getByPlaceholderText('Search...')
-    await userEvent.type(searchInput, 'telephone')
-
-    // Verify filtering is applied
-    await waitFor(() => {
-      expect(screen.getByText('Telephone sets')).toBeInTheDocument()
-      expect(screen.queryByText('T-shirts')).not.toBeInTheDocument()
-    })
-  })
-
-  it('should handle export functionality', async () => {
-    render(<DataTable columns={columns} data={mockData} />)
-
-    // Find export button
-    const exportButton = screen.getByText('Export')
-    await userEvent.click(exportButton)
-
-    // Verify export options are shown
-    expect(screen.getByText('Export as CSV')).toBeInTheDocument()
-    expect(screen.getByText('Export as Excel')).toBeInTheDocument()
-  })
-})
+];
+test("renders records and an honest empty state", () => {
+  const { rerender } = render(<DataTable columns={columns} data={data} />);
+  expect(screen.getByText("Telephone sets")).toBeInTheDocument();
+  expect(screen.getByText("5.5%")).toBeInTheDocument();
+  rerender(<DataTable columns={columns} data={[]} />);
+  expect(screen.getByText("No results.")).toBeInTheDocument();
+});
+test("searches HS codes and clears filters", () => {
+  render(<DataTable columns={columns} data={data} />);
+  fireEvent.change(screen.getByRole("textbox"), { target: { value: "6109" } });
+  expect(screen.queryByText("Telephone sets")).not.toBeInTheDocument();
+  expect(screen.getByText("T-shirts")).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "Clear" }));
+  expect(screen.getByText("Telephone sets")).toBeInTheDocument();
+});
+test("paginates a longer dataset", async () => {
+  render(
+    <DataTable
+      columns={columns}
+      data={Array.from({ length: 12 }, (_, i) => ({
+        ...record,
+        tariff_id: i + 1,
+        description: `Product ${i + 1}`,
+      }))}
+    />,
+  );
+  expect(screen.queryByText("Product 11")).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "Go to next page" }));
+  await screen.findByText("Product 11");
+  expect(screen.queryByText("Product 1")).not.toBeInTheDocument();
+});
+test("sorts descriptions through the accessible column menu", async () => {
+  render(<DataTable columns={columns} data={data} />);
+  await userEvent.click(screen.getByRole("button", { name: "Description" }));
+  await userEvent.click(screen.getByRole("menuitem", { name: "Asc" }));
+  await waitFor(() =>
+    expect(
+      within(screen.getAllByRole("row")[1]).getByText("T-shirts"),
+    ).toBeInTheDocument(),
+  );
+});
+test("zero flat fees retain dollar units in the explorer", () => {
+  render(
+    <DataTable
+      columns={columns}
+      data={[{ ...record, type: "Excise Duty", rate: null, flatFee: 0 }]}
+    />,
+  );
+  expect(screen.getByText("$0")).toBeInTheDocument();
+  expect(screen.queryByText("null%")).not.toBeInTheDocument();
+});

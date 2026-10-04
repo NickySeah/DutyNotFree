@@ -1,6 +1,8 @@
 "use client";
 
 import type { Product } from "@/types/product";
+import { PageHeader } from "@/components/page-header";
+import { DataStatus } from "@/components/data-status";
 import { DataTable } from "./data-table";
 import { createColumns } from "./columns";
 import Link from "next/link";
@@ -21,36 +23,36 @@ export default function ProductPage() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const { userId, isSupplier, isImporter, isAdmin, isPending } = useUserRole();
 
-
-    // Early return after all hooks are called
-  if (!userId) return null;
+  // Early return after all hooks are called
   // Always call both hooks (React rules of hooks)
   const {
     data: userProducts = [],
     isLoading: isLoadingUserProducts,
     error: userProductsError,
+    refetch: refetchUser,
   } = useUserProduct(userId);
 
   const {
     data: allProducts = [],
     isLoading: isLoadingAllProducts,
     error: allProductsError,
+    refetch: refetchAll,
   } = useProducts(userId);
 
   // Determine which data to use based on role
-  const products = isSupplier ? (userProducts || []) : (allProducts || []) as Product[];
+  const products = isSupplier
+    ? userProducts || []
+    : ((allProducts || []) as Product[]);
   const isLoading = isSupplier ? isLoadingUserProducts : isLoadingAllProducts;
   const error = isSupplier ? userProductsError : allProductsError;
 
   // Column functions
   const handleModifyProduct = (product: Product) => {
-    console.log("Modifying product:", product);
     setSelectedProduct(product);
     setIsUpdateModalOpen(true);
   };
 
   const handleDeleteProduct = (product: Product) => {
-    console.log("Deleting product:", product);
     setSelectedProduct(product);
     setIsDeleteModalOpen(true);
   };
@@ -58,15 +60,25 @@ export default function ProductPage() {
   const columns = createColumns(
     handleModifyProduct,
     handleDeleteProduct,
-    isSupplier,
-    isPending
+    isSupplier || isAdmin,
+    isPending,
   );
 
   if (error) {
     return (
-      <div className="p-4 md:p-8 text-center text-red-500">
-        Error loading products
-      </div>
+      <>
+        <PageHeader
+          title="Product library"
+          description="Keep your products and classifications ready for the next shipment."
+        />
+        <DataStatus
+          error
+          retry={() => {
+            refetchUser();
+            refetchAll();
+          }}
+        />
+      </>
     );
   }
 
@@ -76,14 +88,12 @@ export default function ProductPage() {
         <ProductTableSkeleton />
       ) : (
         <>
-          <div className="p-4 md:p-8 mx-auto text-center">
-            <h1 className="text-xl md:text-2xl font-bold">Product Catalog</h1>
-            <h3 className="text-base md:text-lg font-medium text-gray-500">
-              View, manage and register new products
-            </h3>
-          </div>
+          <PageHeader
+            title="Product library"
+            description="Keep your products and classifications ready for the next shipment."
+          />
 
-          <div className="container mx-auto p-3 md:p-5">
+          <div className="space-y-6">
             {/* HS Code Assistant Section */}
             <div className="mb-6 md:mb-8">
               <div className="flex items-center justify-between mb-3 md:mb-4">
@@ -97,7 +107,7 @@ export default function ProductPage() {
             </div>
 
             {/* Existing Products Table */}
-            <div>
+            <div className="data-surface">
               <h2 className="text-lg md:text-xl font-semibold mb-3 md:mb-4">
                 {isSupplier ? "Your Products" : "All Products"}
               </h2>
@@ -107,11 +117,11 @@ export default function ProductPage() {
         </>
       )}
 
-      <div className="p-4 md:p-8 mx-auto text-center">
-        <h1 className="text-xl md:text-2xl font-bold">
+      <div className="mt-6 rounded-xl border bg-card p-6">
+        <h2 className="text-base font-semibold">
           Need help calculating tariffs?
-        </h1>
-        <p className="text-sm md:text-lg font-medium text-gray-500 mb-4">
+        </h2>
+        <p className="text-sm md:text-lg font-medium text-muted-foreground mb-4">
           Use our calculator to determine correct tariffs based on product HS
           codes.
         </p>

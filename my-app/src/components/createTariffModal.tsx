@@ -96,7 +96,7 @@ export function CreateTariffModal({ isOpen, onClose }: CreateTariffModalProps) {
   // Form handlers
   const handleChange = (
     field: keyof FormData,
-    value: string | Date | undefined | number
+    value: string | Date | undefined | number,
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
@@ -150,15 +150,17 @@ export function CreateTariffModal({ isOpen, onClose }: CreateTariffModalProps) {
       },
       {
         condition:
-          formData.tariffType === "Ad Valorem" &&
-          (formData.rate <= 0 || formData.rate > 100),
+          getTariffBackendValue(formData.tariffType) === "Ad Valorem" &&
+          (!Number.isFinite(formData.rate) || formData.rate < 0),
         message:
-          formData.rate <= 0
+          formData.rate < 0
             ? "Please enter a valid tariff rate greater than or equal to 0"
             : "Tariff rate cannot exceed 100%",
       },
       {
-        condition: formData.tariffType === "Flat Fee" && formData.flatFee <= 0,
+        condition:
+          getTariffBackendValue(formData.tariffType) === "Flat Fee" &&
+          (!Number.isFinite(formData.flatFee) || formData.flatFee < 0),
         message: "Flat fee cannot be negative",
       },
       {
@@ -230,7 +232,7 @@ export function CreateTariffModal({ isOpen, onClose }: CreateTariffModalProps) {
   const renderCountrySelection = () => (
     <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 md:gap-4">
       <div className="flex-1">
-        <Label className="text-xs md:text-sm font-medium text-gray-700 mb-2 block">
+        <Label className="text-xs md:text-sm font-medium text-foreground mb-2 block">
           Exporting Country
         </Label>
         <Combobox
@@ -246,11 +248,11 @@ export function CreateTariffModal({ isOpen, onClose }: CreateTariffModalProps) {
       </div>
 
       <div className="self-center md:mt-6">
-        <ArrowRight className="h-4 w-4 text-gray-400 rotate-90 md:rotate-0" />
+        <ArrowRight className="h-4 w-4 text-muted-foreground rotate-90 md:rotate-0" />
       </div>
 
       <div className="flex-1">
-        <Label className="text-xs md:text-sm font-medium text-gray-700 mb-2 block">
+        <Label className="text-xs md:text-sm font-medium text-foreground mb-2 block">
           Importing Country
         </Label>
         <Combobox
@@ -269,7 +271,7 @@ export function CreateTariffModal({ isOpen, onClose }: CreateTariffModalProps) {
 
   const renderHsCodeSelection = () => (
     <div className="space-y-2">
-      <Label className="text-xs md:text-sm font-medium text-gray-700">
+      <Label className="text-xs md:text-sm font-medium text-foreground">
         HS Code
       </Label>
       <Combobox
@@ -287,7 +289,7 @@ export function CreateTariffModal({ isOpen, onClose }: CreateTariffModalProps) {
 
   const renderTariffTypeAndRate = () => (
     <div className="space-y-2">
-      <Label className="text-xs md:text-sm font-medium text-gray-700">
+      <Label className="text-xs md:text-sm font-medium text-foreground">
         Tariff Type & Rate
       </Label>
       <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
@@ -300,7 +302,7 @@ export function CreateTariffModal({ isOpen, onClose }: CreateTariffModalProps) {
               onChange={(e) =>
                 handleChange(
                   "rate",
-                  e.target.value === "" ? 0 : Number(e.target.value)
+                  e.target.value === "" ? 0 : Number(e.target.value),
                 )
               }
               min="0"
@@ -316,7 +318,7 @@ export function CreateTariffModal({ isOpen, onClose }: CreateTariffModalProps) {
               onChange={(e) =>
                 handleChange(
                   "flatFee",
-                  e.target.value === "" ? 0 : Number(e.target.value)
+                  e.target.value === "" ? 0 : Number(e.target.value),
                 )
               }
               min="0"
@@ -361,10 +363,10 @@ export function CreateTariffModal({ isOpen, onClose }: CreateTariffModalProps) {
     label: string,
     value: Date | undefined,
     field: keyof FormData,
-    disabled = false
+    disabled = false,
   ) => (
     <div className="space-y-2">
-      <Label className="text-xs md:text-sm font-medium text-gray-700">
+      <Label className="text-xs md:text-sm font-medium text-foreground">
         {label}
       </Label>
       <Popover>
@@ -400,17 +402,17 @@ export function CreateTariffModal({ isOpen, onClose }: CreateTariffModalProps) {
       {renderDatePicker(
         "Effective Date",
         formData.effectiveDate,
-        "effectiveDate"
+        "effectiveDate",
       )}
 
       {renderDatePicker(
         "Expiration Date",
         formData.expirationDate,
         "expirationDate",
-        noExpiration
+        noExpiration,
       )}
 
-      <div className="pt-3 border-t border-gray-100">
+      <div className="pt-3 border-t border-border">
         <div className="flex items-center space-x-3">
           <Checkbox
             id="no-expiration"
@@ -420,7 +422,7 @@ export function CreateTariffModal({ isOpen, onClose }: CreateTariffModalProps) {
           />
           <Label
             htmlFor="no-expiration"
-            className="text-xs md:text-sm font-medium text-gray-700 cursor-pointer"
+            className="text-xs md:text-sm font-medium text-foreground cursor-pointer"
           >
             This tariff has no expiration date
           </Label>

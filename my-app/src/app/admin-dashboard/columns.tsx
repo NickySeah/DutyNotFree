@@ -87,7 +87,6 @@ export const createColumns = (
 
             <DropdownMenuItem
               onClick={() => {
-                console.log("Update User Clicked");
                 handleUpdateUser(user);
               }}
               className="text-xs md:text-sm"
@@ -98,7 +97,6 @@ export const createColumns = (
             {user.role !== "admin" && (
               <DropdownMenuItem
                 onClick={() => {
-                  console.log("Delete User clicked");
                   handleDeleteUser(user); // Call the delete function and pass the current user
                 }}
                 className="text-xs md:text-sm"

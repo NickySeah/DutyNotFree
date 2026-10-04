@@ -1,3 +1,5 @@
+> Historical pre-revamp notes. Current verification and behavior are documented in [the revamp audit](../docs/revamp-audit.md) and [repository README](../README.md).
+
 # ✅ Implementation Complete - Data Fetching and Updating
 
 ## 🎉 All 6 Test Requirements Successfully Implemented
@@ -197,4 +199,3 @@ const syncData = () => {
 - All test files remain unchanged and passing
 
 **🎉 Implementation complete! All test requirements are now fully implemented in the application.**
-

@@ -25,7 +25,7 @@ import { useUpdateTariff } from "@/hooks/useUpdateTariff";
 import type { TradeRate } from "@/types/trade";
 import { getCountryIsoCode } from "@/utils/countryUtils";
 import ReactCountryFlag from "react-country-flag";
-import { getBackendValueFromData} from "@/lib/testData";
+import { getBackendValueFromData } from "@/lib/testData";
 
 interface UpdateTariffModalProps {
   isOpen: boolean;
@@ -33,8 +33,11 @@ interface UpdateTariffModalProps {
   tariff: TradeRate | null;
 }
 
-export function UpdateTariffModal({isOpen,onClose,tariff,}: UpdateTariffModalProps) {
-
+export function UpdateTariffModal({
+  isOpen,
+  onClose,
+  tariff,
+}: UpdateTariffModalProps) {
   // Form state
   const [formData, setFormData] = useState({
     type: "",
@@ -119,7 +122,10 @@ export function UpdateTariffModal({isOpen,onClose,tariff,}: UpdateTariffModalPro
     return true;
   };
 
-  function handleChange(field: keyof typeof formData, value: string | Date | undefined | number) {
+  function handleChange(
+    field: keyof typeof formData,
+    value: string | Date | undefined | number,
+  ) {
     setFormData((prev) => ({ ...prev, [field]: value }));
   }
 
@@ -151,6 +157,7 @@ export function UpdateTariffModal({isOpen,onClose,tariff,}: UpdateTariffModalPro
     const updatePayload = {
       tariff_id: tariff.tariff_id,
       tariffType: formData.type,
+      kind: getBackendValueFromData(tariff.type, tariff.rate, tariff.flatFee),
       rate: formData.rate,
       flatFee: formData.flatFee,
       effectiveDate: formData.effectiveDate!,
@@ -176,23 +183,25 @@ export function UpdateTariffModal({isOpen,onClose,tariff,}: UpdateTariffModalPro
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="w-[95vw] max-w-[95vw] sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-lg md:text-2xl font-semibold text-gray-900">
+          <DialogTitle className="text-lg md:text-2xl font-semibold text-foreground">
             Update Tariff
           </DialogTitle>
-          <div className="text-xs md:text-sm text-gray-600 font-mono bg-gray-50 px-2 md:px-3 py-1.5 md:py-2 rounded-md mt-2 break-all">
+          <div className="text-xs md:text-sm text-muted-foreground font-mono bg-background px-2 md:px-3 py-1.5 md:py-2 rounded-md mt-2 break-all">
             HS Code: {tariff.hsCode}
           </div>
         </DialogHeader>
 
         <div className="space-y-3 md:space-y-4">
           {/* Trade Route Section */}
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-2 md:p-3 border border-blue-100">
-            <h3 className="text-xs md:text-sm font-semibold text-gray-700 mb-2">
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-2 md:p-3 border border-border">
+            <h3 className="text-xs md:text-sm font-semibold text-foreground mb-2">
               Trade Route
             </h3>
             <div className="grid grid-cols-2 gap-2 md:gap-4">
               <div className="text-center">
-                <div className="text-[10px] md:text-xs text-gray-500 mb-1 md:mb-2">Exporting from</div>
+                <div className="text-[10px] md:text-xs text-muted-foreground mb-1 md:mb-2">
+                  Exporting from
+                </div>
                 <div className="flex flex-col sm:flex-row items-center justify-center space-y-1 sm:space-y-0 sm:space-x-2">
                   <ReactCountryFlag
                     countryCode={getCountryIsoCode(tariff.exportingFrom)}
@@ -204,13 +213,15 @@ export function UpdateTariffModal({isOpen,onClose,tariff,}: UpdateTariffModalPro
                     }}
                     className="md:w-10 md:h-10"
                   />
-                  <span className="font-medium text-gray-800 text-xs md:text-sm break-words">
+                  <span className="font-medium text-foreground text-xs md:text-sm break-words">
                     {tariff.exportingFrom}
                   </span>
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-[10px] md:text-xs text-gray-500 mb-1 md:mb-2">Importing to</div>
+                <div className="text-[10px] md:text-xs text-muted-foreground mb-1 md:mb-2">
+                  Importing to
+                </div>
                 <div className="flex flex-col sm:flex-row items-center justify-center space-y-1 sm:space-y-0 sm:space-x-2">
                   <ReactCountryFlag
                     countryCode={getCountryIsoCode(tariff.importingTo)}
@@ -222,7 +233,7 @@ export function UpdateTariffModal({isOpen,onClose,tariff,}: UpdateTariffModalPro
                     }}
                     className="md:w-10 md:h-10"
                   />
-                  <span className="font-medium text-gray-800 text-xs md:text-sm break-words">
+                  <span className="font-medium text-foreground text-xs md:text-sm break-words">
                     {tariff.importingTo}
                   </span>
                 </div>
@@ -231,20 +242,24 @@ export function UpdateTariffModal({isOpen,onClose,tariff,}: UpdateTariffModalPro
           </div>
 
           {/* Product Information */}
-          <div className="bg-gray-50 rounded-lg p-2 md:p-3 border border-gray-200">
-            <h3 className="text-xs md:text-sm font-semibold text-gray-700 mb-2">
+          <div className="bg-background rounded-lg p-2 md:p-3 border border-border">
+            <h3 className="text-xs md:text-sm font-semibold text-foreground mb-2">
               Product Information
             </h3>
             <div className="space-y-2">
               <div>
-                <span className="text-[10px] md:text-xs text-gray-500">Description:</span>
-                <p className="text-xs md:text-sm text-gray-800 mt-1 break-words">
+                <span className="text-[10px] md:text-xs text-muted-foreground">
+                  Description:
+                </span>
+                <p className="text-xs md:text-sm text-foreground mt-1 break-words">
                   {tariff.description}
                 </p>
               </div>
               <div>
-                <span className="text-[10px] md:text-xs text-gray-500">Tariff Type:</span>
-                <span className="inline-block ml-2 px-2 md:px-3 py-0.5 md:py-1 text-[10px] md:text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+                <span className="text-[10px] md:text-xs text-muted-foreground">
+                  Tariff Type:
+                </span>
+                <span className="inline-block ml-2 px-2 md:px-3 py-0.5 md:py-1 text-[10px] md:text-xs font-medium bg-accent text-primary rounded-full">
                   {tariff.type}
                 </span>
               </div>
@@ -252,21 +267,27 @@ export function UpdateTariffModal({isOpen,onClose,tariff,}: UpdateTariffModalPro
           </div>
 
           {/* Tariff Rate Section */}
-          <div className="bg-white rounded-lg p-2 md:p-3 border-2 border-orange-200">
-            <h3 className="text-xs md:text-sm font-semibold text-gray-700 mb-2 md:mb-3">
+          <div className="bg-card rounded-lg p-2 md:p-3 border-2 border-orange-200">
+            <h3 className="text-xs md:text-sm font-semibold text-foreground mb-2 md:mb-3">
               Tariff Rate Update
             </h3>
 
-            {getBackendValueFromData(tariff.type, tariff.rate, tariff.flatFee) === "Ad Valorem" ? (
+            {getBackendValueFromData(
+              tariff.type,
+              tariff.rate,
+              tariff.flatFee,
+            ) === "Ad Valorem" ? (
               <div className="space-y-2 md:space-y-3">
                 <div className="flex items-center justify-between p-2 md:p-3 bg-orange-50 rounded-md">
-                  <span className="text-xs md:text-sm text-gray-600">Current Rate:</span>
+                  <span className="text-xs md:text-sm text-muted-foreground">
+                    Current Rate:
+                  </span>
                   <span className="font-bold text-orange-600 text-base md:text-lg">
                     {tariff.rate}%
                   </span>
                 </div>
                 <div>
-                  <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
+                  <label className="block text-xs md:text-sm font-medium text-foreground mb-1 md:mb-2">
                     New Tariff Rate (%)
                   </label>
                   <Input
@@ -276,7 +297,7 @@ export function UpdateTariffModal({isOpen,onClose,tariff,}: UpdateTariffModalPro
                     onChange={(e) =>
                       handleChange(
                         "rate",
-                        e.target.value === "" ? 0 : Number(e.target.value)
+                        e.target.value === "" ? 0 : Number(e.target.value),
                       )
                     }
                     className="w-full text-base md:text-lg font-medium"
@@ -285,18 +306,22 @@ export function UpdateTariffModal({isOpen,onClose,tariff,}: UpdateTariffModalPro
                   />
                 </div>
               </div>
-            ) : getBackendValueFromData(tariff.type, tariff.rate, tariff.flatFee) === "Flat Fee" ? (
+            ) : getBackendValueFromData(
+                tariff.type,
+                tariff.rate,
+                tariff.flatFee,
+              ) === "Flat Fee" ? (
               <div className="space-y-2 md:space-y-3">
-                <div className="flex items-center justify-between p-2 md:p-3 bg-green-50 rounded-md">
-                  <span className="text-xs md:text-sm text-gray-600">
+                <div className="flex items-center justify-between p-2 md:p-3 bg-accent rounded-md">
+                  <span className="text-xs md:text-sm text-muted-foreground">
                     Current Flat Fee:
                   </span>
-                  <span className="font-bold text-green-600 text-base md:text-lg">
+                  <span className="font-bold text-primary text-base md:text-lg">
                     ${tariff.flatFee}
                   </span>
                 </div>
                 <div>
-                  <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
+                  <label className="block text-xs md:text-sm font-medium text-foreground mb-1 md:mb-2">
                     New Flat Fee ($)
                   </label>
                   <Input
@@ -306,7 +331,7 @@ export function UpdateTariffModal({isOpen,onClose,tariff,}: UpdateTariffModalPro
                     onChange={(e) =>
                       handleChange(
                         "flatFee",
-                        e.target.value === "" ? 0 : Number(e.target.value)
+                        e.target.value === "" ? 0 : Number(e.target.value),
                       )
                     }
                     className="w-full text-base md:text-lg font-medium"
@@ -316,8 +341,8 @@ export function UpdateTariffModal({isOpen,onClose,tariff,}: UpdateTariffModalPro
                 </div>
               </div>
             ) : (
-              <div className="p-3 md:p-4 bg-red-50 border border-red-200 rounded-md">
-                <span className="text-red-600 font-medium text-xs md:text-sm">
+              <div className="p-3 md:p-4 bg-destructive/10 border border-red-200 rounded-md">
+                <span className="text-destructive font-medium text-xs md:text-sm">
                   Unknown tariff type
                 </span>
               </div>
@@ -325,15 +350,15 @@ export function UpdateTariffModal({isOpen,onClose,tariff,}: UpdateTariffModalPro
           </div>
 
           {/* Date Configuration */}
-          <div className="bg-white rounded-lg p-2 md:p-3 border border-gray-200">
-            <h3 className="text-xs md:text-sm font-semibold text-gray-700 mb-2 md:mb-3">
+          <div className="bg-card rounded-lg p-2 md:p-3 border border-border">
+            <h3 className="text-xs md:text-sm font-semibold text-foreground mb-2 md:mb-3">
               Date Configuration
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
               {/* Effective Date */}
               <div className="space-y-2">
-                <label className="block text-xs md:text-sm font-medium text-gray-700">
+                <label className="block text-xs md:text-sm font-medium text-foreground">
                   Effective Date
                 </label>
                 <Popover>
@@ -361,7 +386,7 @@ export function UpdateTariffModal({isOpen,onClose,tariff,}: UpdateTariffModalPro
 
               {/* Expiration Date */}
               <div className="space-y-2">
-                <label className="block text-xs md:text-sm font-medium text-gray-700">
+                <label className="block text-xs md:text-sm font-medium text-foreground">
                   Expiration Date
                 </label>
                 <Popover>
@@ -393,7 +418,7 @@ export function UpdateTariffModal({isOpen,onClose,tariff,}: UpdateTariffModalPro
             </div>
 
             {/* No Expiration Checkbox */}
-            <div className="mt-2 md:mt-3 pt-2 md:pt-3 border-t border-gray-100">
+            <div className="mt-2 md:mt-3 pt-2 md:pt-3 border-t border-border">
               <div className="flex items-center space-x-2 md:space-x-3">
                 <Checkbox
                   id="no-expiration"
@@ -403,7 +428,7 @@ export function UpdateTariffModal({isOpen,onClose,tariff,}: UpdateTariffModalPro
                 />
                 <Label
                   htmlFor="no-expiration"
-                  className="text-xs md:text-sm font-medium text-gray-700 cursor-pointer"
+                  className="text-xs md:text-sm font-medium text-foreground cursor-pointer"
                 >
                   This tariff has no expiration date
                 </Label>
@@ -412,7 +437,7 @@ export function UpdateTariffModal({isOpen,onClose,tariff,}: UpdateTariffModalPro
           </div>
         </div>
 
-        <DialogFooter className="pt-3 md:pt-4 border-t border-gray-100">
+        <DialogFooter className="pt-3 md:pt-4 border-t border-border">
           <div className="flex flex-col-reverse sm:flex-row space-y-2 space-y-reverse sm:space-y-0 sm:space-x-3 w-full sm:w-auto">
             <Button
               variant="outline"

@@ -81,6 +81,7 @@ export function DataTable<TData, TValue>({
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center py-3 md:py-4 justify-between gap-3">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
           <Input
+            aria-label="Search records"
             placeholder="Filter by HS Code or description..."
             value={table.getState().globalFilter ?? ""}
             onChange={(e) => table.setGlobalFilter(e.target.value)}
@@ -118,7 +119,7 @@ export function DataTable<TData, TValue>({
                       ? null
                       : flexRender(
                           header.column.columnDef.header,
-                          header.getContext()
+                          header.getContext(),
                         )}
                   </TableHead>
                 ))}
@@ -133,7 +134,7 @@ export function DataTable<TData, TValue>({
                     <TableCell key={cell.id} className="text-xs md:text-sm">
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext()
+                        cell.getContext(),
                       )}
                     </TableCell>
                   ))}

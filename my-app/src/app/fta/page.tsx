@@ -1,6 +1,8 @@
 "use client";
 
 import type { FTA } from "@/types/fta";
+import { PageHeader } from "@/components/page-header";
+import { DataStatus } from "@/components/data-status";
 import { DataTable } from "./data-table";
 import { createColumns } from "./columns";
 import Link from "next/dist/client/link";
@@ -27,13 +29,11 @@ export default function ProductPage() {
   };
 
   const handleModifyFTA = (fta: FTA) => {
-    console.log("Modifying FTA:", fta);
     setSelectedFTA(fta);
     setIsUpdateModalOpen(true);
   };
   // This is the delete function to be passed to createColumns
   const handleDeleteFTA = (fta: FTA) => {
-    console.log("Deleting FTA:", fta);
     setSelectedFTA(fta);
     setIsDeleteModalOpen(true);
   };
@@ -45,19 +45,17 @@ export default function ProductPage() {
     isPending,
   });
 
-  const { data: ftas = [], isLoading, error } = useFTAs();
+  const { data: ftas = [], isLoading, error, refetch } = useFTAs();
 
   if (error) {
-    console.error("FTA Error:", error);
     return (
-      <div className="p-4 md:p-8 text-center">
-        <div className="text-red-500 font-bold mb-2 text-sm md:text-base">
-          Error loading free trade agreements
-        </div>
-        <div className="text-xs md:text-sm text-gray-600">
-          {error instanceof Error ? error.message : "Unknown error"}
-        </div>
-      </div>
+      <>
+        <PageHeader
+          title="Trade agreements"
+          description="Explore the agreements that connect your markets."
+        />
+        <DataStatus error retry={() => refetch()} />
+      </>
     );
   }
 
@@ -67,25 +65,26 @@ export default function ProductPage() {
         <FtaTableSkeleton />
       ) : (
         <>
-          <div className="p-4 md:p-8 mx-auto text-center">
-            <h1 className="text-xl md:text-2xl font-bold">
-              Free Trade Agreements
-            </h1>
-            <h3 className="text-base md:text-lg font-medium text-gray-500">
-              View, manage, and define free trade agreements
-            </h3>
-          </div>
-          <div className="container mx-auto p-3 md:p-5">
+          <PageHeader
+            title="Trade agreements"
+            description="Explore the agreements that connect your markets."
+            actions={
+              <span className="rounded-lg border bg-card px-3 py-2 text-xs text-muted-foreground">
+                {ftas.length} agreements
+              </span>
+            }
+          />
+          <div className="data-surface">
             <DataTable columns={columns} data={ftas} />
           </div>
         </>
       )}
 
-      <div className="p-4 md:p-8 mx-auto text-center">
-        <h1 className="text-xl md:text-2xl font-bold">
+      <div className="mt-6 rounded-xl border bg-card p-6">
+        <h2 className="text-base font-semibold">
           Need help calculating tariffs?
-        </h1>
-        <p className="text-sm md:text-lg font-medium text-gray-500 mb-4">
+        </h2>
+        <p className="text-sm md:text-lg font-medium text-muted-foreground mb-4">
           Our calculator can help you determine the correct tariffs and fees for
           your products.
         </p>

@@ -1,12 +1,12 @@
-import { useQuery } from '@tanstack/react-query';
-import { productService } from '@/lib/axios';
-import type { Product } from '@/types/product'; 
+import { useQuery } from "@tanstack/react-query";
+import { productService } from "@/lib/axios";
+import type { Product } from "@/types/product";
 
 // Assuming this is the raw API response type
 interface ProductApiResponse {
   id: number;
   name: string;
-  user_id: string;
+  userId: string;
   private: boolean;
   hsCode: {
     code: string;
@@ -14,14 +14,15 @@ interface ProductApiResponse {
   };
 }
 
-export function useUserProduct(userId : string) {
+export function useUserProduct(userId?: string) {
   return useQuery<Product[]>({
-    queryKey: ['userProducts'],
+    queryKey: ["userProducts", userId],
+    enabled: Boolean(userId),
     queryFn: async () => {
       const response = await productService.get("", {
-        params : {
-          userID: userId
-        }
+        params: {
+          userID: userId,
+        },
       });
 
       // Map API response to Product interface
@@ -31,7 +32,7 @@ export function useUserProduct(userId : string) {
         description: item.hsCode.description,
         isPrivate: item.private,
         name: item.name,
-        userId: item.user_id,
+        userId: item.userId,
       }));
 
       return data;

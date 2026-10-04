@@ -1,3 +1,4 @@
+import { parseCalendarDate } from "@/utils/dateUtils";
 import { useQueries } from "@tanstack/react-query";
 import { tariffService, wishlistService } from "@/lib/axios";
 import type { TradeRate, WishlistItem } from "@/types/trade";
@@ -51,7 +52,7 @@ export function useWishlistData() {
         queryKey: ["wishlistTariffs", userId],
         queryFn: async (): Promise<TradeRate[]> => {
           const response = await tariffService.get(
-            `/wishlist?userId=${userId}`
+            `/wishlist?userId=${userId}`,
           );
 
           // Map API response to TradeRate interface (same as useTariffs)
@@ -69,10 +70,10 @@ export function useWishlistData() {
             rate: item.standardRate,
             flatFee: item.flatFee || 0,
             effectiveDate: item.effectiveDate
-              ? new Date(item.effectiveDate)
+              ? parseCalendarDate(item.effectiveDate)
               : null,
             expirationDate: item.expirationDate
-              ? new Date(item.expirationDate)
+              ? parseCalendarDate(item.expirationDate)
               : null,
           }));
         },
@@ -112,5 +113,7 @@ export function useWishlistData() {
     isLoading: tariffsResult.isLoading || itemsResult.isLoading,
     isError: tariffsResult.isError || itemsResult.isError,
     error: tariffsResult.error || itemsResult.error,
+    refetch: () =>
+      Promise.all([tariffsResult.refetch(), itemsResult.refetch()]),
   };
 }

@@ -1,194 +1,114 @@
 "use client";
-
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { toast } from "sonner";
+import { ArrowUpRight, Loader2, Package, Ship } from "lucide-react";
 import { useUserRole } from "@/lib/checkRole";
-
+import { Button } from "@/components/ui/button";
 export default function ChooseRolePage() {
-  const [selectedRole, setSelectedRole] = useState<
-    "supplier" | "importer" | null
-  >(null);
-  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const {
-    isAuthenticated,
-    needsRoleSelection,
-    isPending,
-    isAdmin,
-    isSupplier,
-    isImporter,
-  } = useUserRole();
-
-  // ADD DEBUG LOGGING
-  console.log("ChooseRolePage debug:", {
-    isAuthenticated,
-    needsRoleSelection,
-    isPending,
-    isAdmin,
-    isSupplier,
-    isImporter,
-  });
-
+  const { isPending, isAuthenticated, needsRoleSelection } = useUserRole();
+  const [role, setRole] = useState<"supplier" | "importer" | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
   useEffect(() => {
-    console.log("useEffect triggered with:", {
-      isPending,
-      isAuthenticated,
-      needsRoleSelection,
-    });
-
-    // If not authenticated, redirect to login
-    if (!isPending && !isAuthenticated) {
-      console.log("Redirecting to login - not authenticated");
-      router.replace("/login");
-      return;
+    if (!isPending) {
+      if (!isAuthenticated) router.replace("/login");
+      else if (!needsRoleSelection) router.replace("/tariff");
     }
-
-    // If user already has a valid role, redirect to tariff page
-    if (!isPending && isAuthenticated && !needsRoleSelection) {
-      console.log("Redirecting to tariff - user has valid role");
-      window.location.replace("/tariff"); // Use window.location instead of router
-      // router.replace("/tariff"); //Use in production
-      return;
-    }
-  }, [
-    isAuthenticated,
-    needsRoleSelection,
-    isPending,
-    router,
-    isAdmin,
-    isSupplier,
-    isImporter,
-  ]);
-
-  // Prevent back navigation
-  useEffect(() => {
-    const handlePopState = () => {
-      window.history.pushState(null, "", window.location.href);
-    };
-
-    window.history.pushState(null, "", window.location.href);
-    window.addEventListener("popstate", handlePopState);
-
-    return () => {
-      window.removeEventListener("popstate", handlePopState);
-    };
-  }, []);
-
-  const handleRoleSelection = async () => {
-    if (!selectedRole) {
-      toast.error("Please select a role");
-      return;
-    }
-
-    setIsLoading(true);
+  }, [isPending, isAuthenticated, needsRoleSelection, router]);
+  async function save() {
+    if (!role || saving) return;
+    setSaving(true);
+    setError("");
     try {
       const response = await fetch("/api/set-role", {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ role: selectedRole }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role }),
       });
-
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.error || "Failed to set role");
+        const body = await response.json();
+        throw new Error(body.error || "Could not save your role.");
       }
-
-      toast.success(`Role set successfully as ${selectedRole}`);
       window.location.replace("/tariff");
-    } catch (error) {
-      console.error("Error setting role:", error);
-      toast.error("Failed to set role. Please try again.");
-    } finally {
-      setIsLoading(false);
+    } catch (cause) {
+      setError(
+        cause instanceof Error ? cause.message : "Could not save your role.",
+      );
+      setSaving(false);
     }
-  };
-
-  // Show loading while checking authentication
-  if (isPending) {
-    console.log("Showing loading state");
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-        <div className="text-base md:text-lg">Loading...</div>
-      </div>
-    );
   }
-
-  // If user already has a role, show redirecting message
-  if (!isPending && isAuthenticated && !needsRoleSelection) {
-    console.log("Showing redirecting state");
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-        <div className="text-base md:text-lg text-center">
-          You already have a role assigned. Redirecting...
-        </div>
-      </div>
-    );
-  }
-
-  console.log("Showing role selection form");
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center px-4 md:px-6">
-          <CardTitle className="text-xl md:text-2xl font-bold">
-            Choose Your Role
-          </CardTitle>
-          <CardDescription className="text-sm md:text-base">
-            Please select your role to continue using DutyNotFree
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4 px-4 md:px-6">
-          <div className="space-y-3">
-            <div
-              className={`p-3 md:p-4 border-2 rounded-lg cursor-pointer transition-colors ${
-                selectedRole === "supplier"
-                  ? "border-blue-500 bg-blue-50"
-                  : "border-gray-200 hover:border-gray-300"
-              }`}
-              onClick={() => setSelectedRole("supplier")}
-            >
-              <h3 className="font-semibold text-base md:text-lg">Supplier</h3>
-              <p className="text-xs md:text-sm text-gray-600">
-                I export goods and need to manage product information
-              </p>
-            </div>
-
-            <div
-              className={`p-3 md:p-4 border-2 rounded-lg cursor-pointer transition-colors ${
-                selectedRole === "importer"
-                  ? "border-blue-500 bg-blue-50"
-                  : "border-gray-200 hover:border-gray-300"
-              }`}
-              onClick={() => setSelectedRole("importer")}
-            >
-              <h3 className="font-semibold text-base md:text-lg">Importer</h3>
-              <p className="text-xs md:text-sm text-gray-600">
-                I import goods and need to calculate duties and tariffs
-              </p>
-            </div>
-          </div>
-
+    <div className="site-container max-w-3xl py-16 md:py-24">
+      <p className="mb-3 text-sm text-primary">Make the workspace yours</p>
+      <h1 className="text-4xl font-semibold tracking-[-1.5px]">
+        How do you work with trade?
+      </h1>
+      <p className="mb-8 mt-4 max-w-lg text-muted-foreground">
+        Choose the role that fits. It determines how you manage products and use
+        the workspace.
+      </p>
+      {isPending || !isAuthenticated || !needsRoleSelection ? (
+        <p role="status" className="flex items-center gap-2">
+          <Loader2 className="size-4 animate-spin" />
+          Getting your account ready…
+        </p>
+      ) : (
+        <>
+          <fieldset className="grid gap-4 sm:grid-cols-2">
+            <legend className="sr-only">Your role</legend>
+            {[
+              {
+                value: "importer" as const,
+                title: "I’m an importer",
+                text: "Explore products, compare routes, and estimate the duties on your shipments.",
+                icon: Ship,
+              },
+              {
+                value: "supplier" as const,
+                title: "I’m a supplier",
+                text: "Manage your product library, classify goods, and understand their trade costs.",
+                icon: Package,
+              },
+            ].map(({ value, title, text, icon: Icon }) => (
+              <label
+                key={value}
+                className={`cursor-pointer rounded-xl border bg-card p-6 ${role === value ? "border-primary ring-1 ring-primary" : ""}`}
+              >
+                <div className="mb-5 flex items-center justify-between">
+                  <Icon className="size-6 text-primary" />
+                  <input
+                    type="radio"
+                    name="role"
+                    value={value}
+                    checked={role === value}
+                    onChange={() => setRole(value)}
+                    className="size-4 accent-[var(--primary)]"
+                  />
+                </div>
+                <span className="block text-lg font-semibold">{title}</span>
+                <span className="mt-2 block text-sm text-muted-foreground">
+                  {text}
+                </span>
+              </label>
+            ))}
+          </fieldset>
+          {error && (
+            <p role="alert" className="mt-5 text-destructive">
+              {error}
+            </p>
+          )}
           <Button
-            onClick={handleRoleSelection}
-            disabled={!selectedRole || isLoading}
-            className="w-full text-sm md:text-base"
+            onClick={save}
+            disabled={!role || saving}
+            size="lg"
+            className="mt-8 h-11"
           >
-            {isLoading ? "Setting Role..." : "Continue"}
+            {saving ? <Loader2 className="animate-spin" /> : <ArrowUpRight />}
+            Continue to workspace
           </Button>
-        </CardContent>
-      </Card>
+        </>
+      )}
     </div>
   );
 }

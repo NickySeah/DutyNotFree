@@ -147,8 +147,8 @@ export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
       excludedHsCodes: prev.excludedHsCodes.filter((code) => code !== hsCode),
       excludedHsCodeDescriptions: Object.fromEntries(
         Object.entries(prev.excludedHsCodeDescriptions).filter(
-          ([code]) => code !== hsCode
-        )
+          ([code]) => code !== hsCode,
+        ),
       ),
     }));
   };
@@ -260,14 +260,14 @@ export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
     for (const concession of formData.concessions) {
       if (concession.finalRate < 0) {
         toast.error(
-          `Concession rate for ${concession.hsCode} cannot be negative`
+          `Concession rate for ${concession.hsCode} cannot be negative`,
         );
         return false;
       }
 
       if (concession.finalRate == formData.defaultRate) {
         toast.error(
-          `Concession for ${concession.hsCode} is redundant as it has the same rate (${formData.defaultRate}%) as FTA's default rate`
+          `Concession for ${concession.hsCode} is redundant as it has the same rate (${formData.defaultRate}%) as FTA&apos;s default rate`,
         );
         return false;
       }
@@ -306,10 +306,10 @@ export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
     label: string,
     value: Date | undefined,
     field: keyof FormData,
-    disabled = false
+    disabled = false,
   ) => (
     <div className="space-y-2">
-      <Label className="text-xs md:text-sm font-medium text-gray-700">
+      <Label className="text-xs md:text-sm font-medium text-foreground">
         {label}
       </Label>
       <Popover>
@@ -373,7 +373,7 @@ export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
             </CardHeader>
             <CardContent className="space-y-3 md:space-y-4">
               <div className="space-y-2">
-                <Label className="text-xs md:text-sm font-medium text-gray-700">
+                <Label className="text-xs md:text-sm font-medium text-foreground">
                   Name
                 </Label>
                 <Input
@@ -386,7 +386,7 @@ export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
               {/* Party A & B Inputs */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                 <div className="space-y-2">
-                  <Label className="text-xs md:text-sm font-medium text-gray-700">
+                  <Label className="text-xs md:text-sm font-medium text-foreground">
                     Party A
                   </Label>
                   <Combobox
@@ -400,14 +400,14 @@ export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
                     loading={tradePartiesLoading}
                   />
                   {formData.partyA && (
-                    <div className="flex items-center space-x-2 text-xs md:text-sm text-gray-600 mt-1">
+                    <div className="flex items-center space-x-2 text-xs md:text-sm text-muted-foreground mt-1">
                       {getPartyTypeIcon(formData.partyA)}
                       <span>{getPartyDescription(formData.partyA)}</span>
                     </div>
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs md:text-sm font-medium text-gray-700">
+                  <Label className="text-xs md:text-sm font-medium text-foreground">
                     Party B
                   </Label>
                   <Combobox
@@ -421,19 +421,19 @@ export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
                     loading={tradePartiesLoading}
                   />
                   {formData.partyB && (
-                    <div className="flex items-center space-x-2 text-xs md:text-sm text-gray-600 mt-1">
+                    <div className="flex items-center space-x-2 text-xs md:text-sm text-muted-foreground mt-1">
                       {getPartyTypeIcon(formData.partyB)}
                       <span>{getPartyDescription(formData.partyB)}</span>
                     </div>
                   )}
                 </div>
               </div>
-              <p className="text-xs md:text-sm text-gray-600">
+              <p className="text-xs md:text-sm text-muted-foreground">
                 <i>Note: Order of parties does not matter.</i>
               </p>
               {/* Default Rate Input */}
               <div className="space-y-2">
-                <Label className="text-xs md:text-sm font-medium text-gray-700">
+                <Label className="text-xs md:text-sm font-medium text-foreground">
                   Default Rate (%)
                 </Label>
                 <Input
@@ -445,7 +445,7 @@ export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
                   onChange={(e) =>
                     handleChange(
                       "defaultRate",
-                      e.target.value === "" ? 0 : Number(e.target.value)
+                      e.target.value === "" ? 0 : Number(e.target.value),
                     )
                   }
                   min="0"
@@ -467,7 +467,7 @@ export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                 {/* Effective Date */}
                 <div className="space-y-2">
-                  <Label className="text-xs md:text-sm font-medium text-gray-700">
+                  <Label className="text-xs md:text-sm font-medium text-foreground">
                     Effective Date
                   </Label>
                   <div className="flex gap-2">
@@ -503,7 +503,7 @@ export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
                           const parsedDate = parse(
                             formattedValue,
                             "yyyy-MM-dd",
-                            new Date()
+                            new Date(),
                           );
                           if (isValid(parsedDate)) {
                             handleChange("effectiveDate", parsedDate);
@@ -517,11 +517,11 @@ export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
                           const parsedDate = parse(
                             effectiveDateText,
                             "yyyy-MM-dd",
-                            new Date()
+                            new Date(),
                           );
                           if (isValid(parsedDate)) {
                             setEffectiveDateText(
-                              format(parsedDate, "yyyy-MM-dd")
+                              format(parsedDate, "yyyy-MM-dd"),
                             );
                             handleChange("effectiveDate", parsedDate);
                           } else {
@@ -556,14 +556,14 @@ export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
                       </PopoverContent>
                     </Popover>
                   </div>
-                  <p className="text-[10px] md:text-xs text-gray-500">
+                  <p className="text-[10px] md:text-xs text-muted-foreground">
                     Enter date as YYYY-MM-DD or use calendar
                   </p>
                 </div>
 
                 {/* Expiration Date */}
                 <div className="space-y-2">
-                  <Label className="text-xs md:text-sm font-medium text-gray-700">
+                  <Label className="text-xs md:text-sm font-medium text-foreground">
                     Expiration Date
                   </Label>
                   <div className="flex gap-2">
@@ -599,7 +599,7 @@ export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
                           const parsedDate = parse(
                             formattedValue,
                             "yyyy-MM-dd",
-                            new Date()
+                            new Date(),
                           );
                           if (isValid(parsedDate)) {
                             handleChange("expirationDate", parsedDate);
@@ -613,11 +613,11 @@ export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
                           const parsedDate = parse(
                             expirationDateText,
                             "yyyy-MM-dd",
-                            new Date()
+                            new Date(),
                           );
                           if (isValid(parsedDate)) {
                             setExpirationDateText(
-                              format(parsedDate, "yyyy-MM-dd")
+                              format(parsedDate, "yyyy-MM-dd"),
                             );
                             handleChange("expirationDate", parsedDate);
                           } else {
@@ -658,13 +658,13 @@ export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
                       </PopoverContent>
                     </Popover>
                   </div>
-                  <p className="text-[10px] md:text-xs text-gray-500">
+                  <p className="text-[10px] md:text-xs text-muted-foreground">
                     Enter date as YYYY-MM-DD or use calendar
                   </p>
                 </div>
               </div>
 
-              <div className="pt-3 md:pt-4 border-t border-gray-100">
+              <div className="pt-3 md:pt-4 border-t border-border">
                 <div className="flex items-center space-x-3">
                   <Checkbox
                     id="no-expiration"
@@ -674,7 +674,7 @@ export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
                   />
                   <Label
                     htmlFor="no-expiration"
-                    className="text-xs md:text-sm font-medium text-gray-700 cursor-pointer"
+                    className="text-xs md:text-sm font-medium text-foreground cursor-pointer"
                   >
                     This FTA has no expiration date
                   </Label>
@@ -689,13 +689,13 @@ export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
               <CardTitle className="text-base md:text-lg">
                 Excluded HS Codes
               </CardTitle>
-              <p className="text-xs md:text-sm text-gray-600">
-                Select HS Codes to exclude from FTA's benefits
+              <p className="text-xs md:text-sm text-muted-foreground">
+                Select HS codes to exclude from this agreement
               </p>
             </CardHeader>
             <CardContent className="space-y-3 md:space-y-4">
               <div className="space-y-2">
-                <Label className="text-xs md:text-sm font-medium text-gray-700">
+                <Label className="text-xs md:text-sm font-medium text-foreground">
                   HS Code
                 </Label>
                 <Combobox
@@ -721,21 +721,21 @@ export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
 
               {formData.excludedHsCodes.length > 0 && (
                 <div className="space-y-2 md:space-y-3">
-                  <Label className="text-xs md:text-sm font-medium text-gray-700">
+                  <Label className="text-xs md:text-sm font-medium text-foreground">
                     Excluded HS Codes ({formData.excludedHsCodes.length})
                   </Label>
                   <div className="space-y-2">
                     {formData.excludedHsCodes.map((hsCode) => (
                       <div
                         key={hsCode}
-                        className="flex items-center justify-between p-2 md:p-3 bg-red-50 rounded-lg border border-red-200"
+                        className="flex items-center justify-between p-2 md:p-3 bg-destructive/10 rounded-lg border border-red-200"
                       >
                         <div className="flex-1 min-w-0">
                           <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-3 space-y-1 sm:space-y-0">
                             <span className="font-mono text-xs md:text-sm font-medium">
                               {hsCode}
                             </span>
-                            <span className="text-red-700 text-xs md:text-sm break-words">
+                            <span className="text-destructive text-xs md:text-sm break-words">
                               {formData.excludedHsCodeDescriptions[hsCode]}
                             </span>
                           </div>
@@ -744,7 +744,7 @@ export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
                           variant="ghost"
                           size="sm"
                           onClick={() => removeExcludedHsCode(hsCode)}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-100 ml-2"
+                          className="text-destructive hover:text-destructive hover:bg-red-100 ml-2"
                         >
                           <Trash2 className="h-3 w-3 md:h-4 md:w-4" />
                         </Button>
@@ -762,14 +762,14 @@ export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
               <CardTitle className="text-base md:text-lg">
                 Special Concessions
               </CardTitle>
-              <p className="text-xs md:text-sm text-gray-600">
+              <p className="text-xs md:text-sm text-muted-foreground">
                 Define special reduced rates for specific HS Codes
               </p>
             </CardHeader>
             <CardContent className="space-y-3 md:space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                 <div className="space-y-2">
-                  <Label className="text-xs md:text-sm font-medium text-gray-700">
+                  <Label className="text-xs md:text-sm font-medium text-foreground">
                     HS Code
                   </Label>
                   <Combobox
@@ -777,7 +777,7 @@ export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
                     value={newConcession.hsCode}
                     onValueChange={(value) => {
                       const selectedHsCode = hsCodes?.find(
-                        (hs) => hs.code === value
+                        (hs) => hs.code === value,
                       );
                       setNewConcession((prev) => ({
                         ...prev,
@@ -794,7 +794,7 @@ export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-xs md:text-sm font-medium text-gray-700">
+                  <Label className="text-xs md:text-sm font-medium text-foreground">
                     Final Rate (%)
                   </Label>
                   <Input
@@ -833,14 +833,14 @@ export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
 
               {formData.concessions.length > 0 && (
                 <div className="space-y-2 md:space-y-3">
-                  <Label className="text-xs md:text-sm font-medium text-gray-700">
+                  <Label className="text-xs md:text-sm font-medium text-foreground">
                     Special Concessions ({formData.concessions.length})
                   </Label>
                   <div className="space-y-2">
                     {formData.concessions.map((concession) => (
                       <div
                         key={concession.id}
-                        className="flex items-center justify-between p-2 md:p-3 bg-green-50 rounded-lg border border-green-200"
+                        className="flex items-center justify-between p-2 md:p-3 bg-accent rounded-lg border border-green-200"
                       >
                         <div className="flex-1 min-w-0">
                           <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-1 sm:space-y-0">
@@ -848,11 +848,11 @@ export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
                               <span className="font-mono text-xs md:text-sm font-medium block">
                                 {concession.hsCode}
                               </span>
-                              <span className="text-green-700 text-[10px] md:text-xs block break-words">
+                              <span className="text-primary text-[10px] md:text-xs block break-words">
                                 {concession.hsCodeDescription}
                               </span>
                             </div>
-                            <span className="text-green-700 font-medium text-sm md:text-lg">
+                            <span className="text-primary font-medium text-sm md:text-lg">
                               {concession.finalRate}%
                             </span>
                           </div>
@@ -861,7 +861,7 @@ export function CreateFTAModal({ isOpen, onClose }: CreateFTAModalProps) {
                           variant="ghost"
                           size="sm"
                           onClick={() => removeConcession(concession.id)}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50 ml-2"
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10 ml-2"
                         >
                           <Trash2 className="h-3 w-3 md:h-4 md:w-4" />
                         </Button>

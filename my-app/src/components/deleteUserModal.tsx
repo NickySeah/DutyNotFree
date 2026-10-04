@@ -34,7 +34,7 @@ export default function DeleteUserModal({
         onSuccess: () => {
           onClose();
         },
-      }
+      },
     );
   };
 
@@ -84,7 +84,7 @@ export default function DeleteUserModal({
         <div className="py-4">
           <p>Are you sure you want to delete this User?</p>
           <p className="font-semibold mt-2">{user.name}</p>
-          <p className="text-sm text-gray-600">Email: {user.email}</p>
+          <p className="text-sm text-muted-foreground">Email: {user.email}</p>
         </div>
         <div className="flex justify-end gap-2">
           <Button variant="outline" onClick={onClose}>

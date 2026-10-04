@@ -6,3 +6,8 @@ export function formatDateToYYYYMMDD(date: Date): string {
 
   return `${year}-${month}-${day}`;
 }
+
+// API dates describe a calendar day, rather than an instant in UTC.
+export function parseCalendarDate(value: string): Date {
+  return new Date(`${value}T00:00:00`);
+}

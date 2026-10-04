@@ -60,7 +60,7 @@ export function CreateProductModal({
 
   const handleChange = (
     field: keyof typeof formData,
-    value: string | boolean
+    value: string | boolean,
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
@@ -110,7 +110,7 @@ export function CreateProductModal({
       },
       onError: (error: any) => {
         toast.error(
-          error.response?.data?.message || "Failed to create product"
+          error.response?.data?.message || "Failed to create product",
         );
       },
     });
@@ -126,7 +126,7 @@ export function CreateProductModal({
   // Render helper
   const renderHsCodeSelection = () => (
     <div className="space-y-2">
-      <Label className="text-xs md:text-sm font-medium text-gray-700">
+      <Label className="text-xs md:text-sm font-medium text-foreground">
         HS Code
       </Label>
       <Combobox
@@ -146,7 +146,7 @@ export function CreateProductModal({
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="w-[95vw] max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-lg md:text-2xl font-semibold text-gray-900">
+          <DialogTitle className="text-lg md:text-2xl font-semibold text-foreground">
             Create New Product
           </DialogTitle>
         </DialogHeader>
@@ -156,7 +156,7 @@ export function CreateProductModal({
           <div>
             <Label
               htmlFor="name"
-              className="block mb-1 text-xs md:text-sm font-medium text-gray-700"
+              className="block mb-1 text-xs md:text-sm font-medium text-foreground"
             >
               Product Name
             </Label>
@@ -181,14 +181,14 @@ export function CreateProductModal({
             />
             <Label
               htmlFor="isPrivate"
-              className="text-xs md:text-sm text-gray-700 cursor-pointer"
+              className="text-xs md:text-sm text-foreground cursor-pointer"
             >
               Make product visible to public?
             </Label>
           </div>
         </div>
 
-        <DialogFooter className="pt-4 border-t border-gray-100">
+        <DialogFooter className="pt-4 border-t border-border">
           <div className="flex flex-col-reverse sm:flex-row space-y-2 space-y-reverse sm:space-y-0 sm:space-x-3 w-full sm:w-auto">
             <Button
               variant="outline"

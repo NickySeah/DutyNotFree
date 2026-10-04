@@ -1,7 +1,12 @@
 import { useDeleteProduct } from "@/hooks/useDeleteProduct";
 import { Product } from "@/types/product";
 import { toast } from "sonner";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
 interface DeleteProductModalProps {
@@ -37,8 +42,9 @@ export function DeleteProductModal({
 
   if (!product) return null;
 
-    return (    // creates pop-up box to confirm deletion
-    <Dialog open={isOpen} onOpenChange={onClose}>   
+  return (
+    // creates pop-up box to confirm deletion
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Delete Product</DialogTitle>
@@ -46,15 +52,19 @@ export function DeleteProductModal({
         <div className="py-4">
           <p>Are you sure you want to delete this product?</p>
           <p className="font-semibold mt-2">{product.name}</p>
-          <p className="text-sm text-gray-600">HS Code: {product.hsCode}</p>
-          <p className="text-sm text-gray-600">Description: {product.description}</p>
+          <p className="text-sm text-muted-foreground">
+            HS Code: {product.hsCode}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Description: {product.description}
+          </p>
         </div>
         <div className="flex justify-end gap-2">
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button 
-            variant="destructive" 
+          <Button
+            variant="destructive"
             onClick={handleDelete}
             disabled={isPending}
           >

@@ -6,6 +6,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -35,7 +36,7 @@ export function FTADetailsModal({
   fta,
 }: FTADetailsModalProps) {
   const [expandedBloc, setExpandedBloc] = useState<"partyA" | "partyB" | null>(
-    null
+    null,
   );
 
   if (!fta) return null;
@@ -69,7 +70,7 @@ export function FTADetailsModal({
 
         <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2 space-y-1 sm:space-y-0">
           <span
-            className={`font-medium text-sm md:text-base ${isBloc ? "text-blue-700" : ""}`}
+            className={`font-medium text-sm md:text-base ${isBloc ? "text-primary" : ""}`}
           >
             {party.name}
           </span>
@@ -96,7 +97,7 @@ export function FTADetailsModal({
         {isBloc && (
           <Badge
             variant="secondary"
-            className="bg-blue-100 text-blue-800 text-xs w-fit"
+            className="bg-accent text-primary text-xs w-fit"
           >
             BLOC
           </Badge>
@@ -114,8 +115,8 @@ export function FTADetailsModal({
       return null;
 
     return (
-      <div className="mt-2 pl-3 md:pl-4 border-l-2 border-blue-200">
-        <p className="text-xs md:text-sm font-medium text-gray-700 mb-2">
+      <div className="mt-2 pl-3 md:pl-4 border-l-2 border-border">
+        <p className="text-xs md:text-sm font-medium text-foreground mb-2">
           Member Countries:
         </p>
         <div className="flex flex-wrap gap-1">
@@ -123,7 +124,7 @@ export function FTADetailsModal({
             <Badge
               key={index}
               variant="outline"
-              className="text-[10px] md:text-xs bg-white"
+              className="text-[10px] md:text-xs bg-card"
             >
               {country}
             </Badge>
@@ -137,16 +138,20 @@ export function FTADetailsModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="w-[95vw] max-w-[95vw] md:max-w-[60vw] max-h-[90vh]">
         <DialogHeader>
+          <DialogDescription className="sr-only">
+            Agreement parties, effective dates, excluded classifications, and
+            special concessions.
+          </DialogDescription>
           <div className="flex items-start justify-between">
             <div className="flex-1 min-w-0">
-              <DialogTitle className="text-lg md:text-2xl font-bold text-gray-900 break-words">
+              <DialogTitle className="text-lg md:text-2xl font-bold text-foreground break-words">
                 {fta.name}
               </DialogTitle>
               <div className="flex flex-wrap items-center gap-2 md:gap-3 mt-2">
                 <Badge variant="default" className="text-xs">
                   {fta.type.charAt(0) + fta.type.slice(1).toLowerCase()}
                 </Badge>
-                <span className="text-xs md:text-sm text-gray-500">
+                <span className="text-xs md:text-sm text-muted-foreground">
                   Free Trade Agreement
                 </span>
               </div>
@@ -167,14 +172,14 @@ export function FTADetailsModal({
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                   <div>
-                    <h4 className="text-xs md:text-sm font-medium text-gray-500 mb-2 md:mb-3">
+                    <h4 className="text-xs md:text-sm font-medium text-muted-foreground mb-2 md:mb-3">
                       Party A
                     </h4>
                     {renderPartyWithBloc(fta.partyA, "partyA")}
                     {expandedBloc === "partyA" && renderBlocMembers(fta.partyA)}
                   </div>
                   <div>
-                    <h4 className="text-xs md:text-sm font-medium text-gray-500 mb-2 md:mb-3">
+                    <h4 className="text-xs md:text-sm font-medium text-muted-foreground mb-2 md:mb-3">
                       Party B
                     </h4>
                     {renderPartyWithBloc(fta.partyB, "partyB")}
@@ -195,7 +200,7 @@ export function FTADetailsModal({
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                   <div>
-                    <h4 className="text-xs md:text-sm font-medium text-gray-500 mb-2">
+                    <h4 className="text-xs md:text-sm font-medium text-muted-foreground mb-2">
                       Effective Date
                     </h4>
                     <p className="text-base md:text-lg font-semibold break-words">
@@ -205,7 +210,7 @@ export function FTADetailsModal({
                     </p>
                   </div>
                   <div>
-                    <h4 className="text-xs md:text-sm font-medium text-gray-500 mb-2">
+                    <h4 className="text-xs md:text-sm font-medium text-muted-foreground mb-2">
                       Status
                     </h4>
                     <div className="flex items-center space-x-2">
@@ -221,9 +226,9 @@ export function FTADetailsModal({
                       <span
                         className={`font-semibold text-xs md:text-base ${
                           isExpired
-                            ? "text-red-600"
+                            ? "text-destructive"
                             : isActive
-                              ? "text-green-600"
+                              ? "text-primary"
                               : "text-yellow-600"
                         }`}
                       >
@@ -235,7 +240,7 @@ export function FTADetailsModal({
                       </span>
                     </div>
                     {expirationDate && !isExpired && (
-                      <p className="text-[10px] md:text-sm text-gray-500 mt-1">
+                      <p className="text-[10px] md:text-sm text-muted-foreground mt-1">
                         Expires on {format(expirationDate, "MMMM do, yyyy")}
                       </p>
                     )}
@@ -255,38 +260,34 @@ export function FTADetailsModal({
               <CardContent>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
                   <div className="text-center">
-                    <h4 className="text-xs md:text-sm font-medium text-gray-500 mb-2">
+                    <h4 className="text-xs md:text-sm font-medium text-muted-foreground mb-2">
                       Default Rate
                     </h4>
-                    <p className="text-xl md:text-2xl font-bold text-blue-600">
+                    <p className="text-xl md:text-2xl font-bold text-primary">
                       {fta.defaultRate}%
-                    </p>
-                    <p className="text-[10px] md:text-xs text-gray-500 mt-1">
-                      {fta.applicableTariffLines?.toLocaleString()} Applicable
-                      Tariff Lines
                     </p>
                   </div>
 
                   <div className="text-center">
-                    <h4 className="text-xs md:text-sm font-medium text-gray-500 mb-2">
+                    <h4 className="text-xs md:text-sm font-medium text-muted-foreground mb-2">
                       Excluded
                     </h4>
-                    <p className="text-xl md:text-2xl font-bold text-red-600">
+                    <p className="text-xl md:text-2xl font-bold text-destructive">
                       {fta.excludedTariffLines?.toLocaleString()}
                     </p>
-                    <p className="text-[10px] md:text-xs text-gray-500 mt-1">
+                    <p className="text-[10px] md:text-xs text-muted-foreground mt-1">
                       Tariff Lines Excluded
                     </p>
                   </div>
 
                   <div className="text-center">
-                    <h4 className="text-xs md:text-sm font-medium text-gray-500 mb-2">
+                    <h4 className="text-xs md:text-sm font-medium text-muted-foreground mb-2">
                       Concessions
                     </h4>
-                    <p className="text-xl md:text-2xl font-bold text-green-600">
+                    <p className="text-xl md:text-2xl font-bold text-primary">
                       {fta.specialConcessionsCount?.toLocaleString()}
                     </p>
-                    <p className="text-[10px] md:text-xs text-gray-500 mt-1">
+                    <p className="text-[10px] md:text-xs text-muted-foreground mt-1">
                       Special Concessions
                     </p>
                   </div>
@@ -295,26 +296,26 @@ export function FTADetailsModal({
                 {/* Special Concessions Details */}
                 {fta.specialConcessions.length > 0 && (
                   <div className="mt-4 md:mt-6 pt-3 md:pt-4 border-t">
-                    <h4 className="text-xs md:text-sm font-medium text-gray-700 mb-2 md:mb-3">
+                    <h4 className="text-xs md:text-sm font-medium text-foreground mb-2 md:mb-3">
                       Special Concessions Details
                     </h4>
                     <div className="space-y-2">
                       {fta.specialConcessions.map((concession) => (
                         <div
                           key={concession.id}
-                          className="flex flex-col sm:flex-row sm:justify-between sm:items-center p-2 bg-green-50 rounded gap-2"
+                          className="flex flex-col sm:flex-row sm:justify-between sm:items-center p-2 bg-accent rounded gap-2"
                         >
                           <div className="flex-1 min-w-0">
                             <span className="font-mono text-xs md:text-sm block">
                               {concession.hsCode.code}
                             </span>
-                            <p className="text-[10px] md:text-xs text-gray-600 break-words">
+                            <p className="text-[10px] md:text-xs text-muted-foreground break-words">
                               {concession.hsCode.description}
                             </p>
                           </div>
                           <Badge
                             variant="outline"
-                            className="bg-white text-xs w-fit"
+                            className="bg-card text-xs w-fit"
                           >
                             {concession.finalRate}%
                           </Badge>
@@ -327,17 +328,17 @@ export function FTADetailsModal({
                 {/* Excluded HS Codes */}
                 {fta.excludedHsCodes.length > 0 && (
                   <div className="mt-3 md:mt-4 pt-3 md:pt-4 border-t">
-                    <h4 className="text-xs md:text-sm font-medium text-gray-700 mb-2 md:mb-3">
+                    <h4 className="text-xs md:text-sm font-medium text-foreground mb-2 md:mb-3">
                       Excluded Tariff Lines
                     </h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                       {fta.excludedHsCodes.map((hsCode, index) => (
                         <div
                           key={index}
-                          className="flex flex-col sm:flex-row sm:items-center sm:space-x-2 p-2 bg-red-50 rounded text-xs md:text-sm"
+                          className="flex flex-col sm:flex-row sm:items-center sm:space-x-2 p-2 bg-destructive/10 rounded text-xs md:text-sm"
                         >
                           <span className="font-mono">{hsCode.code}</span>
-                          <span className="text-[10px] md:text-xs text-gray-600 break-words">
+                          <span className="text-[10px] md:text-xs text-muted-foreground break-words">
                             {hsCode.description}
                           </span>
                         </div>

@@ -21,18 +21,11 @@ export function proxy(request: NextRequest) {
     request.cookies.get("better-auth.session_token") ||
     request.cookies.get("better-auth.session_token.0");
 
-  // Add debug logging (remove after fixing)
-  console.log("Middleware check:", {
-    pathname,
-    hasCookie: !!sessionCookie,
-    cookieValue: sessionCookie?.value?.substring(0, 20) + "...",
-    allCookies: request.cookies.getAll().map((c) => c.name),
-  });
-
   // No session - can only access landing, register, login
   if (!sessionCookie) {
     const allowedRoutes = [
       "/",
+      "/about",
       "/login",
       "/register",
       "/verify-your-email",

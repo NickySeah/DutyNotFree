@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { CheckIcon, ChevronsUpDownIcon } from "lucide-react"
+import * as React from "react";
+import { CheckIcon, ChevronsUpDownIcon } from "lucide-react";
 
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -12,12 +12,12 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command"
+} from "@/components/ui/command";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
+} from "@/components/ui/popover";
 
 interface ComboboxOption {
   value: string;
@@ -45,8 +45,8 @@ export function Combobox({
   width = "w-[200px]",
   loading = false,
 }: ComboboxProps) {
-  const [open, setOpen] = React.useState(false)
-  const [search, setSearch] = React.useState("")
+  const [open, setOpen] = React.useState(false);
+  const [search, setSearch] = React.useState("");
 
   // Get selected option for display
   const selectedOption = options.find((option) => option.value === value);
@@ -54,12 +54,13 @@ export function Combobox({
   // Filter options based on search and limit results for performance
   const filteredOptions = React.useMemo(() => {
     if (!search) return options.slice(0, 50); // Show first 50 items when no search
-    
-    const filtered = options.filter((option) =>
-      option.label.toLowerCase().includes(search.toLowerCase()) ||
-      option.value.toLowerCase().includes(search.toLowerCase())
+
+    const filtered = options.filter(
+      (option) =>
+        option.label.toLowerCase().includes(search.toLowerCase()) ||
+        option.value.toLowerCase().includes(search.toLowerCase()),
     );
-    
+
     return filtered.slice(0, 100); // Limit to 100 results
   }, [options, search]);
 
@@ -81,8 +82,8 @@ export function Combobox({
           className={cn(width, "justify-between h-auto min-h-[40px] px-3 py-2")}
           disabled={loading}
         >
-          <span 
-            className="text-left truncate pr-2 flex-1" 
+          <span
+            className="text-left truncate pr-2 flex-1"
             title={selectedOption?.label}
           >
             {selectedOption ? truncateLabel(selectedOption.label) : placeholder}
@@ -90,27 +91,28 @@ export function Combobox({
           <ChevronsUpDownIcon className="h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent 
-        className="p-0 max-h-[300px]" 
+      <PopoverContent
+        className="p-0 max-h-[300px]"
         align="start"
         side="bottom"
         sideOffset={4}
-        style={{ width: 'var(--radix-popover-trigger-width)', minWidth: '300px' }}
+        style={{
+          width: "var(--radix-popover-trigger-width)",
+          minWidth: "300px",
+        }}
       >
         <Command shouldFilter={false}>
-          <CommandInput 
-            placeholder={searchPlaceholder} 
+          <CommandInput
+            placeholder={searchPlaceholder}
             value={search}
             onValueChange={setSearch}
             className="h-9"
           />
-          <CommandList 
-            className="max-h-[250px] overflow-y-auto"
-          >
+          <CommandList className="max-h-[250px] overflow-y-auto">
             <CommandEmpty className="py-6 text-center text-sm text-muted-foreground">
               {loading ? (
                 <div className="flex items-center justify-center gap-2">
-                  <div className="animate-spin h-4 w-4 border-2 border-gray-300 border-t-gray-600 rounded-full"></div>
+                  <div className="animate-spin h-4 w-4 border-2 border-border border-t-gray-600 rounded-full"></div>
                   Loading...
                 </div>
               ) : search ? (
@@ -121,7 +123,7 @@ export function Combobox({
             </CommandEmpty>
             <CommandGroup>
               {!search && filteredOptions.length === 50 && (
-                <div className="px-3 py-2 text-xs text-muted-foreground text-center border-b bg-gray-50">
+                <div className="px-3 py-2 text-xs text-muted-foreground text-center border-b bg-background">
                   Showing first 50 items. Type to search for more.
                 </div>
               )}
@@ -130,20 +132,22 @@ export function Combobox({
                   key={option.value}
                   value={option.label}
                   onSelect={() => {
-                    onValueChange(option.value === value ? "" : option.value)
-                    setOpen(false)
-                    setSearch("") // Clear search when item is selected
+                    onValueChange(option.value === value ? "" : option.value);
+                    setOpen(false);
+                    setSearch(""); // Clear search when item is selected
                   }}
-                  className="flex items-start gap-3 py-3 px-3 cursor-pointer hover:bg-gray-50 focus:bg-gray-100"
+                  className="flex items-start gap-3 py-3 px-3 cursor-pointer hover:bg-background focus:bg-background"
                 >
                   <CheckIcon
                     className={cn(
                       "h-4 w-4 shrink-0 mt-0.5",
-                      value === option.value ? "opacity-100 text-blue-600" : "opacity-0"
+                      value === option.value
+                        ? "opacity-100 text-primary"
+                        : "opacity-0",
                     )}
                   />
                   <div className="flex-1 min-w-0">
-                    <span 
+                    <span
                       className="block text-sm leading-5 break-words"
                       title={option.label}
                     >
@@ -153,8 +157,9 @@ export function Combobox({
                 </CommandItem>
               ))}
               {search && filteredOptions.length === 100 && (
-                <div className="px-3 py-2 text-xs text-muted-foreground text-center border-t bg-gray-50">
-                  Showing first 100 results. Refine search for more specific results.
+                <div className="px-3 py-2 text-xs text-muted-foreground text-center border-t bg-background">
+                  Showing first 100 results. Refine search for more specific
+                  results.
                 </div>
               )}
             </CommandGroup>
@@ -162,5 +167,5 @@ export function Combobox({
         </Command>
       </PopoverContent>
     </Popover>
-  )
+  );
 }

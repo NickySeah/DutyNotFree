@@ -1,120 +1,67 @@
-import Image from "next/image";
-
+import {
+  Calculator,
+  Database,
+  Globe2,
+  Bell,
+  Package,
+  BarChart3,
+} from "lucide-react";
+const tools = [
+  {
+    icon: Calculator,
+    title: "See the full cost",
+    text: "Estimate duties across multiple products with a clear breakdown of the rules applied.",
+  },
+  {
+    icon: Database,
+    title: "Explore the tariff landscape",
+    text: "Search the available dataset by product classification, origin, destination, and tariff type.",
+  },
+  {
+    icon: Globe2,
+    title: "Find the agreement advantage",
+    text: "Understand trade agreement rates, exclusions, and product-specific concessions.",
+  },
+  {
+    icon: Package,
+    title: "Build your product library",
+    text: "Keep your HS classifications and products organized for the next calculation.",
+  },
+  {
+    icon: Bell,
+    title: "Keep a watch on your routes",
+    text: "Follow tariff rules and receive email notifications when those rules change.",
+  },
+  {
+    icon: BarChart3,
+    title: "Turn data into perspective",
+    text: "Compare the available tariff rates with focused charts and useful filters.",
+  },
+];
 export default function Feature() {
   return (
-    <div className="bg-gray-50 pb-16">
-      <div className="mx-auto max-w-2xl px-6 lg:max-w-7xl lg:px-8">
-        <h2 className="text-center text-base/7 font-semibold text-indigo-600">
-          Import faster
+    <section id="tools" className="site-container py-20">
+      <div className="mb-12 grid gap-5 md:grid-cols-2">
+        <h2 className="section-title max-w-md">
+          The details of trade.
+          <br />A simpler way to see them.
         </h2>
-        <p className="mx-auto mt-2 max-w-lg text-center text-4xl font-semibold tracking-tight text-balance text-gray-950 sm:text-5xl">
-          Everything you need to for your business
+        <p className="max-w-md self-end text-base leading-relaxed text-muted-foreground">
+          From the first product classification to the final estimate, your
+          toolkit keeps the essential details connected.
         </p>
-        <div className="mt-10 grid gap-4 sm:mt-16 lg:grid-cols-3 lg:grid-rows-2">
-          <div className="relative lg:row-span-2">
-            <div className="absolute inset-px rounded-lg bg-white lg:rounded-l-4xl" />
-            <div className="relative flex h-full flex-col overflow-hidden rounded-[calc(var(--radius-lg)+1px)] lg:rounded-l-[calc(2rem+1px)]">
-              <div className="px-8 pt-8 pb-3 sm:px-10 sm:pt-10 sm:pb-0">
-                <p className="mt-2 text-lg font-medium tracking-tight text-gray-950 max-lg:text-center">
-                  Calculate with confidence
-                </p>
-                <p className="mt-2 max-w-lg text-sm/6 text-gray-600 max-lg:text-center">
-                  Use our built-in calculator to estimate costs, duties, and
-                  savings in seconds.
-                </p>
-              </div>
-              <div className="@container relative min-h-120 w-full grow max-lg:mx-auto max-lg:max-w-sm">
-                {/* Image here */}
-                <Image
-                  alt=""
-                  src="/images/calculate.svg"
-                  fill
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                />
-              </div>
-            </div>
-            <div className="pointer-events-none absolute inset-px rounded-lg shadow-sm outline outline-black/5 lg:rounded-l-4xl" />
-          </div>
-          <div className="relative max-lg:row-start-1">
-            <div className="absolute inset-px rounded-lg bg-white max-lg:rounded-t-4xl" />
-            <div className="relative flex h-full flex-col overflow-hidden rounded-[calc(var(--radius-lg)+1px)] max-lg:rounded-t-[calc(2rem+1px)]">
-              <div className="px-8 pt-8 sm:px-10 sm:pt-10">
-                <p className="mt-2 text-lg font-medium tracking-tight text-gray-950 max-lg:text-center">
-                  Alerts Made for You
-                </p>
-                <p className="mt-2 max-w-lg text-sm/6 text-gray-600 max-lg:text-center">
-                  Receive custom notifications based on the countries,
-                  industries, or products you care about.
-                </p>
-              </div>
-              <div className="flex flex-1 items-center justify-center px-8 max-lg:pt-10 max-lg:pb-12 sm:px-10 lg:pb-2">
-                {/* add image here */}
-                <Image
-                  alt=""
-                  src="/images/notification.svg"
-                  width={300}
-                  height={200}
-                  className="max-lg:mx-auto"
-                  style={{ borderRadius: "25px" }}
-                />
-              </div>
-            </div>
-            <div className="pointer-events-none absolute inset-px rounded-lg shadow-sm outline outline-black/5 max-lg:rounded-t-4xl" />
-          </div>
-          <div className="relative max-lg:row-start-3 lg:col-start-2 lg:row-start-2">
-            <div className="absolute inset-px rounded-lg bg-white" />
-            <div className="relative flex h-full flex-col overflow-hidden rounded-[calc(var(--radius-lg)+1px)]">
-              <div className="px-8 pt-8 sm:px-10 sm:pt-10">
-                <p className="mt-2 text-lg font-medium tracking-tight text-gray-950 max-lg:text-center">
-                  Understand the Bigger Picture
-                </p>
-                <p className="mt-2 max-w-lg text-sm/6 text-gray-600 max-lg:text-center">
-                  Visualize tariff trends and patterns to make smarter business
-                  decisions.
-                </p>
-              </div>
-              <div className="@container flex flex-1 items-center max-lg:py-6 lg:pb-2">
-                {/* add image here */}
-                {/* add image here */}
-                <div className="relative w-full h-full min-h-[200px]">
-                  <Image
-                    alt=""
-                    src="/images/chart.svg"
-                    fill
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                    className="object-contain"
-                  />
-                </div>
-              </div>
-            </div>
-            <div className="pointer-events-none absolute inset-px rounded-lg shadow-sm outline outline-black/5" />
-          </div>
-          <div className="relative lg:row-span-2">
-            <div className="absolute inset-px rounded-lg bg-white max-lg:rounded-b-4xl lg:rounded-r-4xl" />
-            <div className="relative flex h-full flex-col overflow-hidden rounded-[calc(var(--radius-lg)+1px)] max-lg:rounded-b-[calc(2rem+1px)] lg:rounded-r-[calc(2rem+1px)]">
-              <div className="px-8 pt-8 pb-3 sm:px-10 sm:pt-10 sm:pb-0">
-                <p className="mt-2 text-lg font-medium tracking-tight text-gray-950 max-lg:text-center">
-                  Stay Updated in Real-Time
-                </p>
-                <p className="mt-2 max-w-lg text-sm/6 text-gray-600 max-lg:text-center">
-                  Get the latest tariff changes instantly, so you never miss
-                  important updates.
-                </p>
-              </div>
-              <div className="relative min-h-120 w-full grow">
-                {/* Image here */}
-                <Image
-                  alt=""
-                  src="/images/realTime.svg"
-                  fill
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                />
-              </div>
-            </div>
-            <div className="pointer-events-none absolute inset-px rounded-lg shadow-sm outline outline-black/5 max-lg:rounded-b-4xl lg:rounded-r-4xl" />
-          </div>
-        </div>
       </div>
-    </div>
+      <div className="grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
+        {tools.map(({ icon: Icon, title, text }) => (
+          <div key={title} className="border-t pt-7">
+            <Icon className="mb-5 size-6 text-primary" />
+            <h3 className="text-lg font-semibold tracking-tight">{title}</h3>
+            <p className="mt-2 max-w-sm text-sm leading-relaxed text-muted-foreground">
+              {text}
+            </p>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }

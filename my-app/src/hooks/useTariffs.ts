@@ -1,3 +1,4 @@
+import { parseCalendarDate } from "@/utils/dateUtils";
 import { useQuery } from "@tanstack/react-query";
 import { tariffService } from "@/lib/axios";
 import type { TradeRate } from "@/types/trade";
@@ -45,9 +46,11 @@ export function useTariffs() {
         type: item.tariffType,
         rate: item.standardRate,
         flatFee: item.flatFee || 0,
-        effectiveDate: item.effectiveDate ? new Date(item.effectiveDate) : null,
+        effectiveDate: item.effectiveDate
+          ? parseCalendarDate(item.effectiveDate)
+          : null,
         expirationDate: item.expirationDate
-          ? new Date(item.expirationDate)
+          ? parseCalendarDate(item.expirationDate)
           : null,
       }));
     },

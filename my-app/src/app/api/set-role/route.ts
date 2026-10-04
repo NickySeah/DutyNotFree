@@ -5,14 +5,10 @@ export async function PUT(request: NextRequest) {
   try {
     const { role } = await request.json();
 
-    console.log("Setting role:", role);
-
     // Get the current session
     const session = await auth.api.getSession({
       headers: request.headers,
     });
-
-    console.log("Session:", session);
 
     // If no session, return unauthorized
     if (!session) {
@@ -26,7 +22,7 @@ export async function PUT(request: NextRequest) {
     ) {
       return NextResponse.json(
         { error: "User already has a role assigned and cannot change it" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -34,8 +30,6 @@ export async function PUT(request: NextRequest) {
     if (!["supplier", "importer"].includes(role)) {
       return NextResponse.json({ error: "Invalid role" }, { status: 400 });
     }
-
-    console.log("Updating user with ID:", session.user.id);
 
     // Direct database update
     const db = auth.options.database;
@@ -54,7 +48,7 @@ export async function PUT(request: NextRequest) {
     console.error("Error setting role:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

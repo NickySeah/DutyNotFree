@@ -1,3 +1,5 @@
+> Historical pre-revamp notes. Current verification and behavior are documented in [the revamp audit](../docs/revamp-audit.md) and [repository README](../README.md).
+
 # Quick Start - Testing Guide
 
 ## 🚀 Quick Setup

@@ -1,3 +1,5 @@
+> Historical pre-revamp notes. Current verification and behavior are documented in [the revamp audit](../docs/revamp-audit.md) and [repository README](../README.md).
+
 # ✅ TEST SUCCESS - All 6 Requirements Implemented
 
 ## 🎉 SUCCESS: All Test Requirements Completed

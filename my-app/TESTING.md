@@ -1,3 +1,5 @@
+> Historical pre-revamp notes. Current verification and behavior are documented in [the revamp audit](../docs/revamp-audit.md) and [repository README](../README.md).
+
 # Data Fetching and Updating Tests
 
 This document outlines the comprehensive test suite for data fetching and updating functionality in the DutyNotFree application.

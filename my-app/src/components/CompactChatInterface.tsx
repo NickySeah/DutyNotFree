@@ -41,9 +41,13 @@ export function CompactChatInterface() {
     }
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(stripDots(text));
-    toast.success("Copied to clipboard!");
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(stripDots(text));
+      toast.success("Copied to clipboard!");
+    } catch {
+      toast.error("Could not copy. Select and copy the code manually.");
+    }
   };
 
   // Helper function to check if HS codes are valid
@@ -71,10 +75,10 @@ export function CompactChatInterface() {
     <Card className="mb-4 md:mb-6">
       <CardHeader className="pb-3 px-4 md:px-6">
         <CardTitle className="flex items-center gap-2 text-base md:text-lg">
-          <MessageSquare className="w-4 h-4 md:w-5 md:h-5 text-blue-500" />
+          <MessageSquare className="w-4 h-4 md:w-5 md:h-5 text-primary" />
           AI HS Code Assistant
         </CardTitle>
-        <p className="text-xs md:text-sm text-gray-600">
+        <p className="text-xs md:text-sm text-muted-foreground">
           Describe your product to get AI-powered HS code suggestions
         </p>
       </CardHeader>
@@ -85,7 +89,8 @@ export function CompactChatInterface() {
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
+            onKeyDown={handleKeyPress}
+            aria-label="Product description for HS classification"
             placeholder="Describe your product..."
             disabled={isLoading}
             className="flex-1 text-sm"
@@ -106,7 +111,7 @@ export function CompactChatInterface() {
         {/* Loading State */}
         {isLoading && (
           <div className="flex items-center justify-center py-3 md:py-4">
-            <div className="flex items-center space-x-2 text-gray-600">
+            <div className="flex items-center space-x-2 text-muted-foreground">
               <Loader2 className="w-4 h-4 animate-spin" />
               <span className="text-xs md:text-sm">Analyzing product...</span>
             </div>
@@ -117,7 +122,7 @@ export function CompactChatInterface() {
         {response && isExpanded && (
           <div className="space-y-3">
             <div className="flex items-center justify-between gap-2">
-              <h4 className="font-medium text-gray-800 text-sm md:text-base line-clamp-1">
+              <h4 className="font-medium text-foreground text-sm md:text-base line-clamp-1">
                 Results for: {`"${response.query}"`}
               </h4>
               <Button
@@ -131,8 +136,8 @@ export function CompactChatInterface() {
             </div>
 
             {response.error ? (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-red-600 text-xs md:text-sm">
+              <div className="p-3 bg-destructive/10 border border-red-200 rounded-lg">
+                <p className="text-destructive text-xs md:text-sm">
                   {response.error}
                 </p>
               </div>
@@ -146,11 +151,11 @@ export function CompactChatInterface() {
                       {validHSCodes.map((hsCode, index) => (
                         <div
                           key={index}
-                          className="p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                          className="p-3 border border-border rounded-lg hover:bg-background transition-colors"
                         >
                           <div className="flex items-start justify-between mb-2 gap-2">
                             <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 min-w-0">
-                              <span className="font-mono text-xs md:text-sm font-medium text-blue-600 break-all">
+                              <span className="font-mono text-xs md:text-sm font-medium text-primary break-all">
                                 {stripDots(hsCode.hs_code)}
                               </span>
                               {hsCode.type_of_product !== "N/A" && (
@@ -173,7 +178,7 @@ export function CompactChatInterface() {
                             </Button>
                           </div>
                           {hsCode.hs_description !== "N/A" && (
-                            <p className="text-[11px] md:text-xs text-gray-600 leading-relaxed">
+                            <p className="text-[11px] md:text-xs text-muted-foreground leading-relaxed">
                               {hsCode.hs_description}
                             </p>
                           )}

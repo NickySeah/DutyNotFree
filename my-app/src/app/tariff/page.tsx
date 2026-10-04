@@ -1,6 +1,8 @@
 "use client";
 
 import type { TradeRate } from "@/types/trade";
+import { PageHeader } from "@/components/page-header";
+import { DataStatus } from "@/components/data-status";
 import { DataTable } from "./data-table";
 import { createColumns } from "./columns";
 import { createWishlistColumns } from "./wishlistColumns";
@@ -31,13 +33,11 @@ export default function ProductPage() {
 
   // This function will be passed to createColumns
   const handleModifyTariff = (tariff: TradeRate) => {
-    console.log("Modifying tariff:", tariff);
     setSelectedTariff(tariff);
     setIsUpdateModalOpen(true);
   };
   // This is the delete function to be passed to createColumns
   const handleDeleteTariff = (tariff: TradeRate) => {
-    console.log("Deleting tariff:", tariff);
     setSelectedTariff(tariff);
     setIsDeleteModalOpen(true);
   };
@@ -47,7 +47,6 @@ export default function ProductPage() {
       // Here you would show a login prompt or toast
       return;
     }
-    console.log("Adding to wishlist:", tariff);
 
     // Call the mutation from your hook
     createWishlistMutation({
@@ -63,18 +62,25 @@ export default function ProductPage() {
     data: allTariffs = [],
     isLoading: isAllTariffsLoading,
     error,
+    refetch,
   } = useTariffs();
   const {
     wishlistTariffs,
     wishlistItems,
     isLoading: isWishlistLoading,
+    isError: isWishlistError,
+    refetch: refetchWishlist,
   } = useWishlistData();
 
   if (error) {
     return (
-      <div className="p-4 md:p-8 text-center text-red-500">
-        Error loading tariffs
-      </div>
+      <>
+        <PageHeader
+          title="Tariff explorer"
+          description="Find the duties that apply to your next trade route."
+        />
+        <DataStatus error retry={() => refetch()} />
+      </>
     );
   }
 
@@ -82,8 +88,8 @@ export default function ProductPage() {
   const wishlistedItemKeys = new Set<string>(
     wishlistItems.map(
       (item) =>
-        `${item.hsCode}-${item.exportingCountry}-${item.importingCountry}`
-    )
+        `${item.hsCode}-${item.exportingCountry}-${item.importingCountry}`,
+    ),
   );
 
   // --- 2. Create the helper Map ---
@@ -102,7 +108,6 @@ export default function ProductPage() {
 
     if (wishlistId) {
       // Call your DELETE API mutation here
-      console.log("Deleting wishlist item with ID:", wishlistId);
       deleteWishlistMutation(wishlistId);
     } else {
       console.error("Could not find wishlist ID for tariff:", tariff);
@@ -116,7 +121,7 @@ export default function ProductPage() {
     handleRemoveFromWishlist, // <-- new
     wishlistedItemKeys,
     isAdmin,
-    isPending
+    isPending,
   );
 
   // Create Wishlist columns
@@ -124,15 +129,18 @@ export default function ProductPage() {
 
   return (
     <div>
-      <div className="p-4 md:p-8 mx-auto text-center">
-        <h1 className="text-xl md:text-2xl font-bold">Tariff Definition</h1>
-        <h3 className="text-base md:text-lg font-medium text-gray-500">
-          View, manage, and define tariffs and fees
-        </h3>
-      </div>
+      <PageHeader
+        title="Tariff explorer"
+        description="Find the duties that apply to your next trade route."
+        actions={
+          <span className="rounded-lg border bg-card px-3 py-2 text-xs text-muted-foreground">
+            {allTariffs.length} tariff records
+          </span>
+        }
+      />
 
-      <Tabs defaultValue="all" className="container mx-auto p-3 md:p-5">
-        <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto">
+      <Tabs defaultValue="all" className="data-surface">
+        <TabsList className="grid w-full max-w-sm grid-cols-2">
           <TabsTrigger value="all" className="text-sm md:text-base">
             All Tariffs
           </TabsTrigger>
@@ -164,11 +172,13 @@ export default function ProductPage() {
 
         {/* --- "My Wishlist" Tab --- */}
         <TabsContent value="my_wishlist">
-          <div className="text-center font-bold text-xs md:text-sm text-muted-foreground p-3 md:p-4 bg-blue-200 border border-blue-200 rounded-md mb-4">
+          <div className="text-center font-bold text-xs md:text-sm text-muted-foreground p-3 md:p-4 bg-accent border border-border rounded-md mb-4">
             You will receive an email notification for any creations, updates,
             or expirations for tariffs you are watching.
           </div>
-          {isWishlistLoading ? (
+          {isWishlistError ? (
+            <DataStatus error retry={() => refetchWishlist()} />
+          ) : isWishlistLoading ? (
             <TariffTableSkeleton />
           ) : (
             <DataTable columns={wishlistTableColumns} data={wishlistTariffs} />
@@ -176,11 +186,11 @@ export default function ProductPage() {
         </TabsContent>
       </Tabs>
 
-      <div className="p-4 md:p-8 mx-auto text-center">
-        <h1 className="text-xl md:text-2xl font-bold">
+      <div className="mt-6 rounded-xl border bg-card p-6">
+        <h2 className="text-base font-semibold">
           Need help calculating tariffs?
-        </h1>
-        <p className="text-sm md:text-lg font-medium text-gray-500 mb-4">
+        </h2>
+        <p className="text-sm md:text-lg font-medium text-muted-foreground mb-4">
           Our calculator can help you determine the correct tariffs and fees for
           your products.
         </p>

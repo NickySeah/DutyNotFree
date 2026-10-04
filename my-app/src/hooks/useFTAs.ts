@@ -1,11 +1,12 @@
-import { useQuery } from '@tanstack/react-query'
-import { ftaService } from '@/lib/axios'
-import type { FTA, TradeParty } from '@/types/fta'
+import { parseCalendarDate } from "@/utils/dateUtils";
+import { useQuery } from "@tanstack/react-query";
+import { ftaService } from "@/lib/axios";
+import type { FTA, TradeParty } from "@/types/fta";
 
 interface FTAApiResponse {
   id: number;
   name: string;
-  type: 'BILATERAL' | 'PLURILATERAL';
+  type: "BILATERAL" | "PLURILATERAL";
   partyA: TradePartyApiResponse;
   partyB: TradePartyApiResponse;
   effectiveDate: string;
@@ -27,7 +28,7 @@ interface FTAApiResponse {
 
 interface TradePartyApiResponse {
   id: number;
-  type: 'COUNTRY' | 'BLOC';
+  type: "COUNTRY" | "BLOC";
   country?: {
     code: string;
     name: string;
@@ -46,34 +47,36 @@ interface TradePartyApiResponse {
 
 export function useFTAs() {
   return useQuery({
-    queryKey: ['ftas'],
+    queryKey: ["ftas"],
     queryFn: async (): Promise<FTA[]> => {
-      const response = await ftaService.get('/all');
+      const response = await ftaService.get("/all");
       const apiData: FTAApiResponse[] = response.data;
-      
+
       return apiData.map((item: FTAApiResponse) => {
         // Map TradeParty
         const mapTradeParty = (party: TradePartyApiResponse): TradeParty => {
           const baseParty: TradeParty = {
             id: party.id,
             type: party.type,
-            name: party.type === 'COUNTRY' ? party.country!.name : party.bloc!.name
+            name:
+              party.type === "COUNTRY" ? party.country!.name : party.bloc!.name,
           };
 
-          if (party.type === 'COUNTRY' && party.country) {
+          if (party.type === "COUNTRY" && party.country) {
             return {
               ...baseParty,
-              country: party.country
+              country: party.country,
             };
-          } 
-          else if (party.type === 'BLOC' && party.bloc) {
+          } else if (party.type === "BLOC" && party.bloc) {
             return {
               ...baseParty,
               bloc: {
                 code: party.bloc.code,
                 name: party.bloc.name,
-                memberCountries: party.bloc.memberCountries?.map(member => member.name) || []
-              }
+                memberCountries:
+                  party.bloc.memberCountries?.map((member) => member.name) ||
+                  [],
+              },
             };
           }
 
@@ -83,7 +86,6 @@ export function useFTAs() {
         // Calculate display fields
         const excludedTariffLines = item.excludedHsCodes.length;
         const specialConcessionsCount = item.specialConcessions.length;
-        const applicableTariffLines = 11418 - excludedTariffLines;
 
         return {
           id: item.id,
@@ -91,14 +93,17 @@ export function useFTAs() {
           type: item.type,
           partyA: mapTradeParty(item.partyA),
           partyB: mapTradeParty(item.partyB),
-          effectiveDate: item.effectiveDate ? new Date(item.effectiveDate) : undefined,
-          expirationDate: item.expirationDate ? new Date(item.expirationDate) : undefined,
+          effectiveDate: item.effectiveDate
+            ? parseCalendarDate(item.effectiveDate)
+            : undefined,
+          expirationDate: item.expirationDate
+            ? parseCalendarDate(item.expirationDate)
+            : undefined,
           defaultRate: item.defaultRate,
           excludedHsCodes: item.excludedHsCodes,
           specialConcessions: item.specialConcessions,
-          applicableTariffLines,
           excludedTariffLines,
-          specialConcessionsCount
+          specialConcessionsCount,
         };
       });
     },

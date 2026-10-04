@@ -1,15 +1,16 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { tariffService } from '@/lib/axios';
-import { formatDateToYYYYMMDD } from '@/utils/dateUtils';
-import { getBackendValueFromData } from '@/lib/testData';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { tariffService } from "@/lib/axios";
+import { formatDateToYYYYMMDD } from "@/utils/dateUtils";
+import { getBackendValueFromData } from "@/lib/testData";
 
 type TariffUpdateInput = {
-  tariff_id : number;
+  tariff_id: number;
   // hsCode: string;
   // exportingFrom?: string;
   // importingTo?: string;
   // description?: string;
   tariffType: string;
+  kind: string;
   rate: number;
   flatFee: number;
   effectiveDate: Date;
@@ -28,17 +29,19 @@ export function useUpdateTariff() {
         // dest_country: payload.importingTo,
         // description: payload.description,
         // tariff_type: payload.type,
-        standardRate: getBackendValueFromData(payload.tariffType, payload.rate, payload.flatFee) === "Ad Valorem" ? payload.rate : null,
-        flatFee: getBackendValueFromData(payload.tariffType, payload.rate, payload.flatFee) === "Flat Fee" ? payload.flatFee : null,
+        standardRate: payload.kind === "Ad Valorem" ? payload.rate : null,
+        flatFee: payload.kind === "Flat Fee" ? payload.flatFee : null,
         effectiveDate: formatDateToYYYYMMDD(payload.effectiveDate), // Convert to YYYY-MM-DD
-        expirationDate: payload.expirationDate ? formatDateToYYYYMMDD(payload.expirationDate) : null, // Convert to YYYY-MM-DD or null
+        expirationDate: payload.expirationDate
+          ? formatDateToYYYYMMDD(payload.expirationDate)
+          : null, // Convert to YYYY-MM-DD or null
       };
       const response = await tariffService.put(`${tariff_id}`, backendPayload);
       return response.data;
     },
-        onSuccess: () => {
+    onSuccess: () => {
       // Invalidate and refetch tariffs data
-      queryClient.invalidateQueries({ queryKey: ['tariffs'] });
+      queryClient.invalidateQueries({ queryKey: ["tariffs"] });
     },
   });
 }

@@ -28,7 +28,7 @@ export const createColumns = (
   onRemoveFromWishlist: (tariff: TradeRate) => void, // <-- ADDED
   wishlistedItemKeys: Set<string>, // <-- ADDED
   isAdmin: boolean,
-  isPending: boolean
+  isPending: boolean,
 ): ColumnDef<TradeRate>[] => {
   return [
     {
@@ -39,9 +39,9 @@ export const createColumns = (
       cell: ({ row }) => {
         const description = row.getValue("description") as string;
         return (
-          <div className="text-center max-w-xs">
+          <div className="text-left max-w-xs">
             <span
-              className="block truncate cursor-help hover:bg-slate-100 px-2 py-1 rounded transition-colors"
+              className="block truncate cursor-help hover:bg-background px-2 py-1 rounded transition-colors"
               title={description}
             >
               {description}
@@ -56,7 +56,7 @@ export const createColumns = (
         return <DataTableColumnHeader column={column} title="HSN Code" />;
       },
       cell: ({ row }) => (
-        <div className="text-center">{row.getValue("hsCode")}</div>
+        <div className="text-left">{row.getValue("hsCode")}</div>
       ),
     },
     {
@@ -71,7 +71,7 @@ export const createColumns = (
             <ReactCountryFlag
               countryCode={countryCode}
               svg
-              style={{ width: "3em", height: "3em" }}
+              style={{ width: "1.25em", height: "1.25em" }}
             />
           </div>
         );
@@ -89,7 +89,7 @@ export const createColumns = (
             <ReactCountryFlag
               countryCode={countryCode}
               svg
-              style={{ width: "3em", height: "3em" }}
+              style={{ width: "1.25em", height: "1.25em" }}
             />
           </div>
         );
@@ -97,9 +97,9 @@ export const createColumns = (
     },
     {
       accessorKey: "type",
-      header: () => <div className="text-center">Type</div>,
+      header: () => <div className="text-left">Type</div>,
       cell: ({ row }) => (
-        <div className="text-center">{row.getValue("type")}</div>
+        <div className="text-left">{row.getValue("type")}</div>
       ),
     },
     {
@@ -113,8 +113,8 @@ export const createColumns = (
         const flatFee = tradeRate.flatFee;
 
         return (
-          <div className="text-center">
-            {flatFee !== null && flatFee > 0 ? `$${flatFee}` : `${rate}%`}
+          <div className="text-left">
+            {rate === null ? `$${flatFee ?? 0}` : `${rate}%`}
           </div>
         );
       },
@@ -127,7 +127,7 @@ export const createColumns = (
       cell: ({ row }) => {
         const date = new Date(row.getValue("effectiveDate"));
         return (
-          <div className="text-center">
+          <div className="text-left">
             {date.toLocaleDateString("en-US", {
               year: "numeric",
               month: "2-digit",
@@ -144,7 +144,7 @@ export const createColumns = (
           <DataTableColumnHeader
             column={column}
             title="Status"
-            className="text-center"
+            className="text-left"
           />
         );
       },
@@ -172,7 +172,7 @@ export const createColumns = (
         }
 
         return (
-          <div className="text-center">
+          <div className="text-left">
             <span
               className={`px-2 py-1 rounded-full text-xs font-medium ${
                 isActive
@@ -210,11 +210,11 @@ export const createColumns = (
     },
     // {
     //   accessorKey: "expirationDate",
-    //   header: () => <div className="text-center">Expiration Date</div>,
+    //   header: () => <div className="text-left">Expiration Date</div>,
     //   cell: ({ row }) => {
     //     const date = new Date(row.getValue("expirationDate"));
     //     return (
-    //       <div className="text-center">
+    //       <div className="text-left">
     //         {date.toLocaleDateString("en-US", {
     //           year: "numeric",
     //           month: "2-digit",
@@ -254,15 +254,12 @@ export const createColumns = (
                 >
                   Copy Description
                 </DropdownMenuItem>
-                <DropdownMenuItem 
-                onClick={() => onAddToWishlist(tradeRate)}
-                >
+                <DropdownMenuItem onClick={() => onAddToWishlist(tradeRate)}>
                   Add to wishlist
-                  </DropdownMenuItem>
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={() => {
-                    console.log("Modify Tariff Details clicked");
                     onModify(tradeRate);
                   }}
                 >
@@ -270,7 +267,6 @@ export const createColumns = (
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => {
-                    console.log("Delete Tariff clicked");
                     onDelete(tradeRate); // Call the delete function and pass the current tradeRate
                   }}
                 >

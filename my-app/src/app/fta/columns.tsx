@@ -47,7 +47,7 @@ export const createColumns = ({
         <DataTableColumnHeader column={column} title="Name" />
       ),
       cell: ({ row }) => (
-        <div className="text-center font-medium text-xs md:text-sm">
+        <div className="text-left font-medium text-xs md:text-sm">
           {row.getValue("name")}
         </div>
       ),
@@ -81,7 +81,7 @@ export const createColumns = ({
                 <span className="font-semibold text-xs md:text-sm">
                   {partyA.bloc?.code}
                 </span>
-                <span className="text-[10px] md:text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                <span className="text-[10px] md:text-xs bg-accent text-primary px-2 py-1 rounded-full">
                   Bloc
                 </span>
               </>
@@ -119,7 +119,7 @@ export const createColumns = ({
                 <span className="font-semibold text-xs md:text-sm">
                   {partyB.bloc?.code}
                 </span>
-                <span className="text-[10px] md:text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                <span className="text-[10px] md:text-xs bg-accent text-primary px-2 py-1 rounded-full">
                   Bloc
                 </span>
               </>
@@ -129,14 +129,14 @@ export const createColumns = ({
       },
     },
     {
-      accessorKey: "applicableTariffLines",
+      accessorKey: "excludedTariffLines",
       header: () => (
-        <div className="text-center text-xs md:text-sm">Number of HS Code</div>
+        <div className="text-left text-xs md:text-sm">Excluded HS codes</div>
       ),
       // header: ({ column }) => (<DataTableColumnHeader column={column} title="Applicable Tariff Lines" />),
       cell: ({ row }) => (
-        <div className="text-center font-mono text-xs md:text-sm">
-          {row.getValue("applicableTariffLines")?.toLocaleString()}
+        <div className="text-left font-mono text-xs md:text-sm">
+          {row.getValue("excludedTariffLines")?.toLocaleString()}
         </div>
       ),
     },
@@ -148,7 +148,7 @@ export const createColumns = ({
       cell: ({ row }) => {
         const date = new Date(row.getValue("effectiveDate"));
         return (
-          <div className="text-center text-xs md:text-sm">
+          <div className="text-left text-xs md:text-sm">
             {date.toLocaleDateString("en-US", {
               year: "numeric",
               month: "2-digit",
@@ -165,7 +165,7 @@ export const createColumns = ({
           <DataTableColumnHeader
             column={column}
             title="Status"
-            className="text-center"
+            className="text-left"
           />
         );
       },
@@ -193,7 +193,7 @@ export const createColumns = ({
         }
 
         return (
-          <div className="text-center">
+          <div className="text-left">
             <span
               className={`px-2 py-1 rounded-full text-[10px] md:text-xs font-medium ${
                 isActive
@@ -274,7 +274,7 @@ export const createColumns = ({
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => onDelete(fta)}
-                    className="text-red-600 text-xs md:text-sm"
+                    className="text-destructive text-xs md:text-sm"
                   >
                     Delete FTA
                   </DropdownMenuItem>

@@ -7,6 +7,7 @@ import { sendEmail } from "../email/send-email";
 import { Session } from "../lib/auth-client";
 
 export const auth = betterAuth({
+  baseURL: process.env.BETTER_AUTH_URL || process.env.NEXT_PUBLIC_BASE_URL,
   plugins: [
     nextCookies(),
     admin(),
@@ -25,14 +26,17 @@ export const auth = betterAuth({
           };
         },
         // IMPORTANT: The issuer URL must be the public URL of your Next.js app
-        issuer: process.env.NEXT_PUBLIC_BASE_URL,
+        issuer:
+          process.env.NEXT_PUBLIC_BASE_URL ||
+          process.env.BETTER_AUTH_URL ||
+          "http://localhost:3000",
         audience: "api://my-java-backend", // A unique identifier for your Java API
       },
     }),
   ],
   database: createPool({
     host: process.env.DB_HOST,
-    port: Number(process.env.DB_PORT),
+    port: Number(process.env.DB_PORT || 3306),
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
@@ -50,7 +54,9 @@ export const auth = betterAuth({
   emailVerification: {
     autoSignInAfterVerification: true,
     sendVerificationEmail: async ({ user, url }) => {
-      url += `choose-role`; // Scuff way to set callbackURL per email
+      const verificationUrl = new URL(url);
+      verificationUrl.searchParams.set("callbackURL", "/choose-role");
+      url = verificationUrl.toString();
       await sendEmail(url, user as Session);
     },
   },

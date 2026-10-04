@@ -1,273 +1,131 @@
-import React from 'react'
-import { render, screen, waitFor, fireEvent } from '../../test-utils/test-utils'
-import TariffCalculator from '../page'
-import userEvent from '@testing-library/user-event'
-
-// Mock the toast function
-jest.mock('sonner', () => ({
-  toast: {
-    warning: jest.fn(),
-    error: jest.fn(),
-    success: jest.fn(),
-  },
-}))
-
-// Mock the date-fns format function
-jest.mock('date-fns', () => ({
-  format: jest.fn((date) => 'January 1, 2024'),
-}))
-
-// Mock the dateUtils
-jest.mock('../../../utils/dateUtils', () => ({
-  formatDateToYYYYMMDD: jest.fn((date) => '2024-01-01'),
-}))
-
-describe('TariffCalculator - Data Fetching and Updating', () => {
-  beforeEach(() => {
-    jest.clearAllMocks()
-  })
-
-  it('should fetch tariff data successfully', async () => {
-    render(<TariffCalculator />)
-
-    // Wait for countries to load
-    await waitFor(() => {
-      expect(screen.getByText('United States')).toBeInTheDocument()
-    })
-
-    // Select origin country
-    const originSelect = screen.getByDisplayValue('Select a country')
-    await userEvent.click(originSelect)
-    await userEvent.click(screen.getByText('United States'))
-
-    // Select destination country
-    const destSelect = screen.getAllByDisplayValue('Select a country')[1]
-    await userEvent.click(destSelect)
-    await userEvent.click(screen.getByText('Canada'))
-
-    // Select a product
-    const productSelect = screen.getByDisplayValue('Select a product')
-    await userEvent.click(productSelect)
-    await userEvent.click(screen.getByText('Smartphone'))
-
-    // Add the product
-    const addButton = screen.getByText('Add Product')
-    await userEvent.click(addButton)
-
-    // Wait for product to be added
-    await waitFor(() => {
-      expect(screen.getByText('Smartphone')).toBeInTheDocument()
-    })
-
-    // Verify that tariff calculation is triggered
-    await waitFor(() => {
-      expect(screen.getByText(/Calculating:/)).toBeInTheDocument()
-    })
-  })
-
-  it('should show loading indicator while fetching data', async () => {
-    render(<TariffCalculator />)
-
-    // Should show loading state for countries
-    await waitFor(() => {
-      expect(screen.getByText('No countries or date selected.')).toBeInTheDocument()
-    })
-
-    // Wait for countries to load
-    await waitFor(() => {
-      expect(screen.getByText('United States')).toBeInTheDocument()
-    })
-  })
-
-  it('should hide loading indicator after data loads', async () => {
-    render(<TariffCalculator />)
-
-    // Wait for countries to load
-    await waitFor(() => {
-      expect(screen.getByText('United States')).toBeInTheDocument()
-    })
-
-    // Loading indicator should be gone
-    expect(screen.queryByText('Loading...')).not.toBeInTheDocument()
-  })
-
-  it('should display error message on fetch failure', async () => {
-    // Mock error response for countries
-    const { server } = await import('../../../mocks/server')
-    server.use(
-      require('msw').http.get('http://localhost:8083/all', () => {
-        return require('msw').HttpResponse.error()
-      })
-    )
-
-    render(<TariffCalculator />)
-
-    // Should handle error state gracefully
-    await waitFor(() => {
-      expect(screen.getByText('No countries or date selected.')).toBeInTheDocument()
-    })
-  })
-
-  it('should update chart when new data is added', async () => {
-    render(<TariffCalculator />)
-
-    // Wait for countries to load
-    await waitFor(() => {
-      expect(screen.getByText('United States')).toBeInTheDocument()
-    })
-
-    // Select countries
-    const originSelect = screen.getByDisplayValue('Select a country')
-    await userEvent.click(originSelect)
-    await userEvent.click(screen.getByText('United States'))
-
-    const destSelect = screen.getAllByDisplayValue('Select a country')[1]
-    await userEvent.click(destSelect)
-    await userEvent.click(screen.getByText('Canada'))
-
-    // Select date
-    const dateButton = screen.getByText('Pick a date')
-    await userEvent.click(dateButton)
-    // Note: Calendar interaction would need more complex setup
-
-    // Add a product
-    const productSelect = screen.getByDisplayValue('Select a product')
-    await userEvent.click(productSelect)
-    await userEvent.click(screen.getByText('Smartphone'))
-
-    const addButton = screen.getByText('Add Product')
-    await userEvent.click(addButton)
-
-    // Verify product is added and calculation updates
-    await waitFor(() => {
-      expect(screen.getByText('Smartphone')).toBeInTheDocument()
-    })
-
-    // Verify results panel updates
-    await waitFor(() => {
-      expect(screen.getByText(/Total Goods Value/)).toBeInTheDocument()
-    })
-  })
-
-  it('should update chart when existing data changes', async () => {
-    render(<TariffCalculator />)
-
-    // Wait for countries to load
-    await waitFor(() => {
-      expect(screen.getByText('United States')).toBeInTheDocument()
-    })
-
-    // Select countries and add product
-    const originSelect = screen.getByDisplayValue('Select a country')
-    await userEvent.click(originSelect)
-    await userEvent.click(screen.getByText('United States'))
-
-    const destSelect = screen.getAllByDisplayValue('Select a country')[1]
-    await userEvent.click(destSelect)
-    await userEvent.click(screen.getByText('Canada'))
-
-    const productSelect = screen.getByDisplayValue('Select a product')
-    await userEvent.click(productSelect)
-    await userEvent.click(screen.getByText('Smartphone'))
-
-    const addButton = screen.getByText('Add Product')
-    await userEvent.click(addButton)
-
-    // Wait for product to be added
-    await waitFor(() => {
-      expect(screen.getByText('Smartphone')).toBeInTheDocument()
-    })
-
-    // Change destination country to trigger recalculation
-    const destSelect2 = screen.getAllByDisplayValue('Canada')[0]
-    await userEvent.click(destSelect2)
-    await userEvent.click(screen.getByText('Mexico'))
-
-    // Verify that calculation is triggered again
-    await waitFor(() => {
-      expect(screen.getByText(/Calculating:/)).toBeInTheDocument()
-    })
-  })
-
-  it('should handle multiple products correctly', async () => {
-    render(<TariffCalculator />)
-
-    // Wait for countries to load
-    await waitFor(() => {
-      expect(screen.getByText('United States')).toBeInTheDocument()
-    })
-
-    // Select countries
-    const originSelect = screen.getByDisplayValue('Select a country')
-    await userEvent.click(originSelect)
-    await userEvent.click(screen.getByText('United States'))
-
-    const destSelect = screen.getAllByDisplayValue('Select a country')[1]
-    await userEvent.click(destSelect)
-    await userEvent.click(screen.getByText('Canada'))
-
-    // Add first product
-    const productSelect = screen.getByDisplayValue('Select a product')
-    await userEvent.click(productSelect)
-    await userEvent.click(screen.getByText('Smartphone'))
-
-    const addButton = screen.getByText('Add Product')
-    await userEvent.click(addButton)
-
-    // Add second product
-    await userEvent.click(productSelect)
-    await userEvent.click(screen.getByText('T-Shirt'))
-
-    await userEvent.click(addButton)
-
-    // Verify both products are added
-    await waitFor(() => {
-      expect(screen.getByText('Smartphone')).toBeInTheDocument()
-      expect(screen.getByText('T-Shirt')).toBeInTheDocument()
-    })
-
-    // Verify product count updates
-    expect(screen.getByText(/Products \(2\)/)).toBeInTheDocument()
-  })
-
-  it('should recalculate when products are removed', async () => {
-    render(<TariffCalculator />)
-
-    // Wait for countries to load
-    await waitFor(() => {
-      expect(screen.getByText('United States')).toBeInTheDocument()
-    })
-
-    // Select countries and add product
-    const originSelect = screen.getByDisplayValue('Select a country')
-    await userEvent.click(originSelect)
-    await userEvent.click(screen.getByText('United States'))
-
-    const destSelect = screen.getAllByDisplayValue('Select a country')[1]
-    await userEvent.click(destSelect)
-    await userEvent.click(screen.getByText('Canada'))
-
-    const productSelect = screen.getByDisplayValue('Select a product')
-    await userEvent.click(productSelect)
-    await userEvent.click(screen.getByText('Smartphone'))
-
-    const addButton = screen.getByText('Add Product')
-    await userEvent.click(addButton)
-
-    // Wait for product to be added
-    await waitFor(() => {
-      expect(screen.getByText('Smartphone')).toBeInTheDocument()
-    })
-
-    // Remove the product (assuming there's a remove button)
-    const removeButton = screen.getByRole('button', { name: /remove/i })
-    await userEvent.click(removeButton)
-
-    // Verify product is removed and count updates
-    await waitFor(() => {
-      expect(screen.queryByText('Smartphone')).not.toBeInTheDocument()
-    })
-
-    expect(screen.getByText(/Products \(0\)/)).toBeInTheDocument()
-  })
-})
+import React from "react";
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  act,
+} from "@/test-utils/test-utils";
+import TariffCalculator from "../page";
+import { calculatorService } from "@/lib/axios";
+jest.mock("@/hooks/useCountry", () => ({
+  useCountries: () => ({
+    data: [
+      { code: "702", name: "Singapore" },
+      { code: "840", name: "United States" },
+    ],
+    isPending: false,
+    isError: false,
+  }),
+}));
+jest.mock("@/hooks/useProducts", () => ({
+  useProducts: () => ({
+    data: [{ product_id: 1, name: "Laptop", hsCode: "847130" }],
+    isPending: false,
+    isError: false,
+  }),
+}));
+const response = {
+  tariffTotal: 20,
+  finalValue: 220,
+  appliedFTA: null,
+  appliedTariffs: [],
+};
+function shipment() {
+  render(<TariffCalculator />);
+  fireEvent.change(screen.getByLabelText("Origin country"), {
+    target: { value: "702" },
+  });
+  fireEvent.change(screen.getByLabelText("Destination country"), {
+    target: { value: "840" },
+  });
+  fireEvent.change(screen.getByLabelText("Select product to add"), {
+    target: { value: "1" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Add product" }));
+  fireEvent.change(screen.getByLabelText("Unit value (USD)"), {
+    target: { value: "100" },
+  });
+  fireEvent.change(screen.getByLabelText("Quantity"), {
+    target: { value: "2" },
+  });
+}
+afterEach(() => jest.restoreAllMocks());
+test("submits declared line value, renders totals, and clears the estimate after edits", async () => {
+  const request = jest
+    .spyOn(calculatorService, "get")
+    .mockResolvedValue({ data: response });
+  shipment();
+  fireEvent.click(screen.getByRole("button", { name: "Calculate duties" }));
+  await screen.findByText("$220.00");
+  expect(request).toHaveBeenCalledWith(
+    "",
+    expect.objectContaining({
+      params: expect.objectContaining({
+        value: 200,
+        origin: "702",
+        dest: "840",
+        hsCode: "847130",
+      }),
+    }),
+  );
+  fireEvent.change(screen.getByLabelText("Quantity"), {
+    target: { value: "3" },
+  });
+  expect(screen.queryByText("$220.00")).not.toBeInTheDocument();
+  expect(
+    screen.queryByText("Applied rules, product by product"),
+  ).not.toBeInTheDocument();
+});
+test("rejects a stale result after the route changes while a request is pending", async () => {
+  let resolve!: (value: { data: typeof response }) => void;
+  jest.spyOn(calculatorService, "get").mockImplementation(
+    () =>
+      new Promise((r) => {
+        resolve = r;
+      }),
+  );
+  shipment();
+  fireEvent.click(screen.getByRole("button", { name: "Calculate duties" }));
+  await waitFor(() => expect(resolve).toBeDefined());
+  fireEvent.click(
+    screen.getByRole("button", { name: "Swap origin and destination" }),
+  );
+  await act(async () => resolve({ data: response }));
+  expect(screen.queryByText("$220.00")).not.toBeInTheDocument();
+  expect(screen.getByLabelText("Origin country")).toHaveValue("840");
+});
+test("invalid quantities never reach the service", async () => {
+  const request = jest.spyOn(calculatorService, "get");
+  shipment();
+  fireEvent.change(screen.getByLabelText("Quantity"), {
+    target: { value: "0" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Calculate duties" }));
+  expect(await screen.findByRole("alert")).toHaveTextContent("whole quantity");
+  expect(request).not.toHaveBeenCalled();
+});
+test("service failures show a retryable error and no partial estimate", async () => {
+  jest
+    .spyOn(calculatorService, "get")
+    .mockRejectedValue(new Error("Service unavailable"));
+  shipment();
+  fireEvent.click(screen.getByRole("button", { name: "Calculate duties" }));
+  expect(await screen.findByRole("alert")).toHaveTextContent(
+    "Service unavailable",
+  );
+  expect(
+    screen.queryByText("Applied rules, product by product"),
+  ).not.toBeInTheDocument();
+  expect(
+    screen.getByRole("button", { name: "Calculate duties" }),
+  ).toBeEnabled();
+});
+test("removing the last line disables calculation", () => {
+  shipment();
+  fireEvent.click(screen.getByRole("button", { name: "Remove Laptop" }));
+  expect(
+    screen.getByRole("button", { name: "Calculate duties" }),
+  ).toBeDisabled();
+  expect(screen.getByText("What are you shipping?")).toBeInTheDocument();
+});

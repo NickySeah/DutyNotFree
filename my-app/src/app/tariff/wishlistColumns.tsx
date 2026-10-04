@@ -10,7 +10,7 @@ import type { TradeRate } from "@/types/trade";
 
 // This function creates the columns for the Wishlist table
 export const createWishlistColumns = (
-  onRemove: (tariff: TradeRate) => void // Function to remove from wishlist
+  onRemove: (tariff: TradeRate) => void, // Function to remove from wishlist
 ): ColumnDef<TradeRate>[] => {
   return [
     // --- Re-using your existing columns (simplified for brevity) ---
@@ -67,9 +67,9 @@ export const createWishlistColumns = (
     },
     {
       accessorKey: "type",
-      header: () => <div className="text-center">Type</div>,
+      header: () => <div className="text-left">Type</div>,
       cell: ({ row }) => (
-        <div className="text-center">{row.getValue("type")}</div>
+        <div className="text-left">{row.getValue("type")}</div>
       ),
     },
     {
@@ -78,11 +78,7 @@ export const createWishlistColumns = (
       cell: ({ row }) => {
         const rate = row.original.rate;
         const flatFee = row.original.flatFee;
-        return (
-          <div>
-            {flatFee !== null && flatFee > 0 ? `$${flatFee}` : `${rate}%`}
-          </div>
-        );
+        return <div>{rate === null ? `$${flatFee ?? 0}` : `${rate}%`}</div>;
       },
     },
     {
@@ -93,7 +89,7 @@ export const createWishlistColumns = (
       cell: ({ row }) => {
         const date = new Date(row.getValue("effectiveDate"));
         return (
-          <div className="text-center">
+          <div className="text-left">
             {date.toLocaleDateString("en-US", {
               year: "numeric",
               month: "2-digit",
@@ -110,7 +106,7 @@ export const createWishlistColumns = (
           <DataTableColumnHeader
             column={column}
             title="Status"
-            className="text-center"
+            className="text-left"
           />
         );
       },
@@ -138,7 +134,7 @@ export const createWishlistColumns = (
         }
 
         return (
-          <div className="text-center">
+          <div className="text-left">
             <span
               className={`px-2 py-1 rounded-full text-xs font-medium ${
                 isActive
@@ -187,7 +183,7 @@ export const createWishlistColumns = (
             onClick={() => onRemove(tradeRate)}
             aria-label="Remove from wishlist"
           >
-            <X className="h-4 w-4 text-red-500" />
+            <X className="h-4 w-4 text-destructive" />
           </Button>
         );
       },

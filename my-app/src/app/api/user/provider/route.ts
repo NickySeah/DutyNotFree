@@ -21,12 +21,10 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get("userId");
 
-    console.log("Fetching providerId for userId:", userId);
-
     if (!userId) {
       return NextResponse.json(
         { error: "User ID is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -39,15 +37,14 @@ export async function GET(request: NextRequest) {
     // 4. Query with proper mysql2 typing
     const [rows] = await db.execute<AccountRow[]>(
       "SELECT providerId FROM account WHERE userId = ? LIMIT 1",
-      [userId]
+      [userId],
     );
 
     // 5. Check if account exists
     if (!rows || rows.length === 0) {
-      console.log(`No account found for user ID ${userId}`);
       return NextResponse.json(
         { error: `Account not found for user ID ${userId}` },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -59,7 +56,7 @@ export async function GET(request: NextRequest) {
     console.error("Error fetching providerId:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

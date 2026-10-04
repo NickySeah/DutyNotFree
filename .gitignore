@@ -10,3 +10,4 @@ DutyNotFree_key.pem
 **/*-after-jest.log
 .superpowers/
 my-app/verification/
+**/baseline-*.json

@@ -116,19 +116,19 @@ export function UpdateProductModal({
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="w-[95vw] max-w-[95vw] sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-lg md:text-2xl font-semibold text-gray-900">
+          <DialogTitle className="text-lg md:text-2xl font-semibold text-foreground">
             Update Product
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-3 md:space-y-4">
-          <div className="bg-white rounded-lg p-2 md:p-3 border-2 border-orange-200">
-            <h3 className="text-xs md:text-sm font-semibold text-gray-700 mb-2 md:mb-3">
+          <div className="bg-card rounded-lg p-2 md:p-3 border-2 border-orange-200">
+            <h3 className="text-xs md:text-sm font-semibold text-foreground mb-2 md:mb-3">
               Product Name
             </h3>
 
             <div className="space-y-2 md:space-y-3">
-              <span className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
+              <span className="block text-xs md:text-sm font-medium text-foreground mb-1 md:mb-2">
                 Current Name:
               </span>
               <div className="flex items-center justify-between p-2 md:p-3 bg-orange-50 rounded-md">
@@ -137,7 +137,7 @@ export function UpdateProductModal({
                 </span>
               </div>
               <div>
-                <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
+                <label className="block text-xs md:text-sm font-medium text-foreground mb-1 md:mb-2">
                   New Name:
                 </label>
                 <Input
@@ -152,24 +152,24 @@ export function UpdateProductModal({
           </div>
 
           {/* Product Information */}
-          <div className="bg-gray-50 rounded-lg p-2 md:p-3 border border-gray-200">
-            <h3 className="text-xs md:text-sm font-semibold text-gray-700 mb-2">
+          <div className="bg-background rounded-lg p-2 md:p-3 border border-border">
+            <h3 className="text-xs md:text-sm font-semibold text-foreground mb-2">
               Product Information
             </h3>
             <div className="space-y-2">
               <div>
-                <span className="text-[10px] md:text-xs text-gray-500">
+                <span className="text-[10px] md:text-xs text-muted-foreground">
                   HS Code:
                 </span>
-                <p className="text-xs md:text-sm text-gray-800 mt-1 font-mono break-all">
+                <p className="text-xs md:text-sm text-foreground mt-1 font-mono break-all">
                   {product.hsCode}
                 </p>
               </div>
               <div>
-                <span className="text-[10px] md:text-xs text-gray-500">
+                <span className="text-[10px] md:text-xs text-muted-foreground">
                   Description:
                 </span>
-                <p className="text-xs md:text-sm text-gray-800 mt-1 break-words">
+                <p className="text-xs md:text-sm text-foreground mt-1 break-words">
                   {product.description}
                 </p>
               </div>
@@ -177,8 +177,8 @@ export function UpdateProductModal({
           </div>
 
           {/* Visibility Configuration */}
-          <div className="bg-white rounded-lg p-2 md:p-3 border border-blue-200">
-            <h3 className="text-xs md:text-sm font-semibold text-gray-700 mb-2 md:mb-3">
+          <div className="bg-card rounded-lg p-2 md:p-3 border border-border">
+            <h3 className="text-xs md:text-sm font-semibold text-foreground mb-2 md:mb-3">
               Product Visibility
             </h3>
 
@@ -194,7 +194,7 @@ export function UpdateProductModal({
                 />
                 <Label
                   htmlFor="isPrivate"
-                  className="text-xs md:text-sm text-gray-700 cursor-pointer"
+                  className="text-xs md:text-sm text-foreground cursor-pointer"
                 >
                   Visible to Public?
                 </Label>
@@ -203,7 +203,7 @@ export function UpdateProductModal({
           </div>
         </div>
 
-        <DialogFooter className="pt-3 md:pt-4 border-t border-gray-100">
+        <DialogFooter className="pt-3 md:pt-4 border-t border-border">
           <div className="flex flex-col-reverse sm:flex-row space-y-2 space-y-reverse sm:space-y-0 sm:space-x-3 w-full sm:w-auto">
             <Button
               variant="outline"
